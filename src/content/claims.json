@@ -1,0 +1,27 @@
+{
+  "weak-lift": {
+    "evidence": "internal_lift",
+    "caveat": "caveat.internalSuite",
+    "retracted": false
+  },
+  "swe-bench": {
+    "evidence": "external[0]",
+    "caveat": "caveat.easySlice",
+    "retracted": false
+  },
+  "terminal-bench": {
+    "evidence": "external[1]",
+    "caveat": "caveat.publishedNegative",
+    "retracted": false
+  },
+  "maturity": {
+    "evidence": "maturity",
+    "caveat": "caveat.alphaNotGa",
+    "retracted": false
+  },
+  "learning-lift": {
+    "evidence": null,
+    "caveat": "caveat.retracted",
+    "retracted": true
+  }
+}

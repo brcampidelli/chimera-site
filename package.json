@@ -15,7 +15,8 @@
     "verify:tokens": "tsx scripts/sync-tokens.ts --check",
     "sync:i18n": "tsx scripts/i18n-pending.ts",
     "verify:i18n": "tsx scripts/i18n-pending.ts --check",
-    "verify": "npm run verify:tokens && npm run verify:i18n && npm run typecheck && npm run test"
+    "verify:truth": "tsx scripts/verify-truth.ts",
+    "verify": "npm run verify:tokens && npm run verify:i18n && npm run verify:truth && npm run typecheck && npm run test"
   },
   "dependencies": {
     "next": "^15.1.0",
