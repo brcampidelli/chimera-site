@@ -1,0 +1,91 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # A release of the product changes the download page, the command reference, the benchmark
+  # figures and the release stream. The site follows it rather than waiting for someone to notice.
+  repository_dispatch:
+    types: [chimera-release]
+  schedule:
+    # A nightly net, so a missed dispatch costs a day rather than staying missed.
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out chimera-agent
+        uses: actions/checkout@v4
+        with:
+          repository: brcampidelli/chimera-agent
+          ref: ${{ vars.CHIMERA_REF || 'main' }}
+          path: .content/chimera
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The same gates CI runs. A deploy that skips them is a deploy that publishes the thing the
+      # gates exist to stop.
+      - run: npm run verify:tokens
+      - run: npm run verify:i18n
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # verify:truth reads the built HTML, so it runs after the build, and it blocks.
+      - run: npm run verify:truth
+
+      - name: Pre-compress
+        run: |
+          find out -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json' \
+            -o -name '*.svg' -o -name '*.xml' -o -name '*.txt' \) -size +1k \
+            -exec gzip -9 -k -f {} \;
+
+      - name: Ship it
+        env:
+          KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          SHA: ${{ github.sha }}
+        run: |
+          install -m 600 /dev/null key && printf '%s' "$KEY" > key
+          ssh_opts="-i key -o StrictHostKeyChecking=accept-new"
+
+          # Land the new tree beside the old one, then move the symlink. The site is never
+          # half-written: it is one directory until the instant it is the other.
+          ssh $ssh_opts "root@$HOST" "mkdir -p /srv/chimeraagent/releases/$SHA"
+          rsync -az --delete -e "ssh $ssh_opts" out/ "root@$HOST:/srv/chimeraagent/releases/$SHA/"
+          ssh $ssh_opts "root@$HOST" "ln -sfn /srv/chimeraagent/releases/$SHA /srv/chimeraagent/current"
+
+          # Keep five. A rollback is `ln -sfn` at one of them, which is why they are kept at all.
+          ssh $ssh_opts "root@$HOST" \
+            "cd /srv/chimeraagent/releases && ls -1t | tail -n +6 | xargs -r rm -rf"
+
+      - name: Prove it is live
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+        run: |
+          # Against the server itself, by Host header — so this passes before DNS has propagated
+          # and fails for a reason that is actually about the deploy.
+          for path in / /en/docs/ /pt/ /skills-index.json /sitemap.xml; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: chimeraagent.space" \
+              --resolve "chimeraagent.space:443:$(getent hosts "$HOST" | awk '{print $1}')" \
+              "https://chimeraagent.space$path" || echo 000)
+            echo "$path -> $code"
+            [ "$code" = "200" ] || exit 1
+          done

@@ -1,0 +1,39 @@
+# chimeraagent.space — one nginx serving a folder of files.
+#
+# The VPS already runs Traefik on 80 and 443, with Let's Encrypt over the HTTP challenge and a
+# global HTTP→HTTPS redirect, and it only picks up containers that opt in by label. So the site is
+# not a new web server: it is a container with two labels, and TLS is somebody else's job.
+#
+# The document root is a symlink. Deploys land in `releases/<sha>/` and the switch is `ln -sfn`,
+# which makes a rollback the same one-line command as a deploy.
+
+services:
+  site:
+    image: nginx:1.27-alpine
+    container_name: chimera-site
+    restart: unless-stopped
+    volumes:
+      # `current` is the symlink. Mounting the parent too means the container survives the symlink
+      # being repointed at a directory it has never seen — without it, nginx would be holding an
+      # inode that no longer has a name.
+      - /srv/chimeraagent/releases:/srv/releases:ro
+      - /srv/chimeraagent/current:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chimera-site.rule=Host(`chimeraagent.space`) || Host(`www.chimeraagent.space`)"
+      - "traefik.http.routers.chimera-site.entrypoints=websecure"
+      - "traefik.http.routers.chimera-site.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chimera-site.loadbalancer.server.port=80"
+      # www → apex, so one address is canonical in the browser as well as in the markup.
+      - "traefik.http.routers.chimera-site.middlewares=chimera-site-www"
+      - "traefik.http.middlewares.chimera-site-www.redirectregex.regex=^https?://www\\.chimeraagent\\.space/(.*)"
+      - "traefik.http.middlewares.chimera-site-www.redirectregex.replacement=https://chimeraagent.space/$${1}"
+      - "traefik.http.middlewares.chimera-site-www.redirectregex.permanent=true"
+
+networks:
+  traefik:
+    external: true
+    name: traefik_default
