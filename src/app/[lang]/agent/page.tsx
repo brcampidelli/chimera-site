@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Card, Cards, Section } from "@/components/ui/Section";
 import { Snippet } from "@/components/ui/Snippet";
 import { Wordmark } from "@/components/Wordmark";
-import { SEGMENTS, canonicalPath, isLocaleSegment, localePath } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment, localePath } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
 export function generateStaticParams() {
@@ -22,7 +22,7 @@ export async function generateMetadata({
   return {
     title: t("agent.title"),
     description: t("agent.lead"),
-    alternates: { canonical: canonicalPath(lang, "/agent") },
+    alternates: alternatesFor(lang, "/agent"),
   };
 }
 

@@ -73,3 +73,30 @@ export function canonicalPath(segment: LocaleSegment, path = "/"): string {
   if (segment === DEFAULT_LOCALE && path === "/") return "/";
   return localePath(segment, path);
 }
+
+/**
+ * The canonical plus the eight sibling translations, for a route that exists in every language.
+ *
+ * This lived on the home page and nowhere else: an audit of the live site found `hreflang` on 9
+ * URLs out of 1160. The site had paid the entire cost of nine languages and then withheld the one
+ * signal that tells a search engine which translation to serve — so the nine versions of every page
+ * were mutually invisible and competed with each other instead of adding up.
+ *
+ * `x-default` names the version to serve when no language matches, which is what stops a search
+ * engine from choosing one on its own.
+ *
+ * Only for routes that genuinely exist in all nine. A blog post exists in the languages it was
+ * written in, and that page uses `translationsOf` instead — claiming a translation that is really
+ * the English text is lying to a search engine, which is the same sin as lying to a reader.
+ */
+export function alternatesFor(segment: LocaleSegment, path = "/") {
+  return {
+    canonical: canonicalPath(segment, path),
+    languages: {
+      ...Object.fromEntries(
+        LOCALES.map((locale) => [locale.bcp47, canonicalPath(locale.segment, path)]),
+      ),
+      "x-default": canonicalPath(DEFAULT_LOCALE, path),
+    },
+  };
+}

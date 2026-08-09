@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
 
@@ -17,7 +17,7 @@ export async function generateMetadata({
   if (!isLocaleSegment(lang)) return {};
   return {
     title: translator(lang)("privacy.title"),
-    alternates: { canonical: canonicalPath(lang, "/privacy") },
+    alternates: alternatesFor(lang, "/privacy"),
   };
 }
 

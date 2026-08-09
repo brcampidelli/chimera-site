@@ -10,7 +10,7 @@ import {
   formatRate,
   type Measurement,
 } from "@/content/evidence";
-import { SEGMENTS, canonicalPath, isLocaleSegment, type LocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
 
@@ -27,7 +27,7 @@ export async function generateMetadata({
   if (!isLocaleSegment(lang)) return {};
   return {
     title: translator(lang)("evidence.title"),
-    alternates: { canonical: canonicalPath(lang, "/evidence") },
+    alternates: alternatesFor(lang, "/evidence"),
   };
 }
 

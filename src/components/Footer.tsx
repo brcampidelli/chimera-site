@@ -102,7 +102,7 @@ export function Footer({ locale }: Props) {
             {" · "}
             {/* A site claiming nine languages owes a straight answer about what that means. */}
             <Link href={to("/coverage")} className="focus-ring rounded hover:text-foreground">
-              {t("coverage.title")}
+              {t("footer.coverage")}
             </Link>
           </p>
           <p className="sr-only">{SITE.domain}</p>

@@ -58,6 +58,35 @@ export function isTier1(key: string): boolean {
   return TIER1_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
 
+/**
+ * The chrome — the frame every page carries, in every language.
+ *
+ * A prefix list cannot see *where* a string is rendered, and that blind spot shipped: the footer's
+ * "Translation coverage" link was keyed `coverage.title`, so the rule read it as page content, let
+ * it sit untranslated, and `/coverage/` went on reporting Tier 1 complete for all nine languages
+ * while that link was English on 84 pages. The gate was not wrong about its rule; it was reporting
+ * green over something the rule could not look at.
+ *
+ * So the rule gets eyes: every key these components pass to `t()` must be Tier 1, whatever its
+ * prefix. A gate that cannot see the defect it exists to stop is a gate that lies by omission, and
+ * this project has no business shipping one of those.
+ */
+const CHROME = ["Header.tsx", "Footer.tsx", "LanguageSwitcher.tsx", "ThemeToggle.tsx", "Search.tsx"];
+
+export function chromeKeysNotTier1(): string[] {
+  const offenders: string[] = [];
+  for (const file of CHROME) {
+    const path = join(SITE_ROOT, "src", "components", file);
+    if (!existsSync(path)) continue;
+    const source = readFileSync(path, "utf8");
+    for (const match of source.matchAll(/\bt\(\s*"([^"]+)"/g)) {
+      const key = match[1] as string;
+      if (!isTier1(key)) offenders.push(`${file}: ${key}`);
+    }
+  }
+  return [...new Set(offenders)].sort();
+}
+
 const read = (file: string): Record<string, string> =>
   JSON.parse(readFileSync(file, "utf8")) as Record<string, string>;
 
@@ -97,6 +126,19 @@ function main(): void {
     const onDisk = existsSync(PENDING) ? readFileSync(PENDING, "utf8") : "";
     if (onDisk !== rendered) {
       console.error("i18n: _pending.json is stale. Run `npm run sync:i18n` and commit it.");
+      process.exit(1);
+    }
+
+    // Before checking whether Tier 1 is complete, check that Tier 1 is the right set. A string in
+    // the frame of every page that the prefix rule reads as page content is a hole this gate
+    // cannot see through, and it has been through one already.
+    const chrome = chromeKeysNotTier1();
+    if (chrome.length > 0) {
+      console.error(
+        `i18n: ${chrome.length} chrome string(s) are keyed outside Tier 1, so nothing forces them ` +
+          "to be translated. Rename the key under a Tier 1 prefix, or add the prefix to the list.",
+      );
+      for (const entry of chrome) console.error(`  ${entry}`);
       process.exit(1);
     }
 

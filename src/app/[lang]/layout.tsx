@@ -2,14 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import {
-  LOCALES,
-  SEGMENTS,
-  canonicalPath,
-  isLocaleSegment,
-  localeOf,
-  type LocaleSegment,
-} from "@/i18n/locales";
+import { LOCALES, SEGMENTS, alternatesFor, canonicalPath, isLocaleSegment, localeOf, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { SITE } from "@/lib/site";
 import { PRE_PAINT_SCRIPT, THEME_COLOR } from "@/lib/theme";
@@ -54,12 +47,9 @@ export async function generateMetadata({
       images: [{ url: "/og.png", width: 1200, height: 630, alt: SITE.name }],
     },
     twitter: { card: "summary_large_image", images: ["/og.png"] },
-    alternates: {
-      canonical: canonicalPath(locale, "/"),
-      // Every language on every page. Someone who lands on the German page from a German search
-      // should not have to find the switcher to learn their language exists here.
-      languages: Object.fromEntries(LOCALES.map((l) => [l.bcp47, canonicalPath(l.segment, "/")])),
-    },
+    // Every language on every page — which this comment claimed while the home page was the only
+    // page that did it. An audit of the live site found hreflang on 9 URLs out of 1160.
+    alternates: alternatesFor(locale, "/"),
   };
 }
 

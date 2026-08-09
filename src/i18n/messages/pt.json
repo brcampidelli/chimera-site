@@ -119,6 +119,7 @@
   "footer.alpha": "Alpha — sólido e muito testado, ainda não endurecido em produção.",
   "footer.community": "Comunidade",
   "footer.copyright": "Copyright {year} The Chimera Agent Authors",
+  "footer.coverage": "Cobertura de tradução",
   "footer.donate": "Apoiar o projeto",
   "footer.learn": "Aprender",
   "footer.license": "Apache-2.0",

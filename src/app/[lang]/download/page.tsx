@@ -7,7 +7,7 @@ import {
   releases,
   type Download,
 } from "@/content/releases";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
 
@@ -26,7 +26,7 @@ export async function generateMetadata({
   return {
     title: t("download.title"),
     description: t("download.subtitle"),
-    alternates: { canonical: canonicalPath(lang, "/download") },
+    alternates: alternatesFor(lang, "/download"),
   };
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import pending from "@/i18n/messages/_pending.json";
-import { LOCALES, SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { LOCALES, SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { KEYS, dictionaries } from "@/i18n/messages";
 import { translator } from "@/i18n/messages";
 import { TIER1_PREFIXES } from "../../../../scripts/i18n-pending";
@@ -19,7 +19,7 @@ export async function generateMetadata({
   if (!isLocaleSegment(lang)) return {};
   return {
     title: translator(lang)("coverage.title"),
-    alternates: { canonical: canonicalPath(lang, "/coverage") },
+    alternates: alternatesFor(lang, "/coverage"),
   };
 }
 

@@ -13,7 +13,7 @@ import {
   skillsAvailable,
   type SectionName,
 } from "@/content/skills";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
 
@@ -34,7 +34,7 @@ export async function generateMetadata({
   return {
     title: skill.name,
     description: skill.description,
-    alternates: { canonical: canonicalPath(lang, `/skills/${slug}`) },
+    alternates: alternatesFor(lang, `/skills/${slug}`),
   };
 }
 

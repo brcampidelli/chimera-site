@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { DocsShell } from "@/components/docs/DocsShell";
 import { docSlugs, docsAvailable, loadDoc } from "@/content/docs";
 import { DOCS_INDEX_SLUG } from "@/content/docs-nav";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 
 export function generateStaticParams() {
   // `index` is served at `/docs/`, so it must not also exist at `/docs/index/`. Two URLs for one
@@ -22,7 +22,7 @@ export async function generateMetadata({
   const doc = await loadDoc(lang, slug);
   return {
     title: doc.title,
-    alternates: { canonical: canonicalPath(lang, `/docs/${slug}`) },
+    alternates: alternatesFor(lang, `/docs/${slug}`),
   };
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS, SITE } from "@/lib/site";
 import { THEME_COLOR } from "@/lib/theme";
@@ -21,7 +21,7 @@ export async function generateMetadata({
   return {
     title: t("press.title"),
     description: t("press.subtitle"),
-    alternates: { canonical: canonicalPath(lang, "/press") },
+    alternates: alternatesFor(lang, "/press"),
   };
 }
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SkillFilter } from "@/components/skills/SkillFilter";
 import { skillHref, skills, skillsAvailable } from "@/content/skills";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
 
@@ -21,7 +21,7 @@ export async function generateMetadata({
   return {
     title: t("skills.title"),
     description: t("skills.subtitle"),
-    alternates: { canonical: canonicalPath(lang, "/skills") },
+    alternates: alternatesFor(lang, "/skills"),
   };
 }
 

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { DocsShell } from "@/components/docs/DocsShell";
 import { docsAvailable, loadDoc } from "@/content/docs";
 import { DOCS_INDEX_SLUG } from "@/content/docs-nav";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
 export function generateStaticParams() {
@@ -19,7 +19,7 @@ export async function generateMetadata({
   if (!isLocaleSegment(lang)) return {};
   return {
     title: translator(lang)("docs.title"),
-    alternates: { canonical: canonicalPath(lang, "/docs") },
+    alternates: alternatesFor(lang, "/docs"),
   };
 }
 

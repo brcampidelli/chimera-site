@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CLI_THEMES, cli, cliAvailable, cliHref, commandByName } from "@/content/cli";
-import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
 export function generateStaticParams() {
@@ -20,7 +20,7 @@ export async function generateMetadata({
   return {
     title: t("cli.title"),
     description: t("cli.subtitle"),
-    alternates: { canonical: canonicalPath(lang, "/cli") },
+    alternates: alternatesFor(lang, "/cli"),
   };
 }
 

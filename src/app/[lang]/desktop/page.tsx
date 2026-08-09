@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, Cards, Section } from "@/components/ui/Section";
 import { Wordmark } from "@/components/Wordmark";
-import { SEGMENTS, canonicalPath, isLocaleSegment, localePath } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment, localePath } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
 export function generateStaticParams() {
@@ -21,7 +21,7 @@ export async function generateMetadata({
   return {
     title: t("desktop.title"),
     description: t("desktop.lead"),
-    alternates: { canonical: canonicalPath(lang, "/desktop") },
+    alternates: alternatesFor(lang, "/desktop"),
   };
 }
 

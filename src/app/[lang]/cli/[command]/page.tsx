@@ -11,7 +11,7 @@ import {
   type CliCommand,
   type CliParam,
 } from "@/content/cli";
-import { SEGMENTS, canonicalPath, isLocaleSegment, type LocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
 export function generateStaticParams() {
@@ -33,7 +33,7 @@ export async function generateMetadata({
   return {
     title: `chimera ${found.name}`,
     description: found.help,
-    alternates: { canonical: canonicalPath(lang, `/cli/${command}`) },
+    alternates: alternatesFor(lang, `/cli/${command}`),
   };
 }
 

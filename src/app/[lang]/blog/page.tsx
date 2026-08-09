@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORIES, categoryHref, type Category } from "@/content/blog";
 import { entries } from "@/content/blog-feed";
-import { SEGMENTS, canonicalPath, isLocaleSegment, localePath, type LocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment, localePath, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
 export function generateStaticParams() {
@@ -22,7 +22,7 @@ export async function generateMetadata({
     title: t("blog.title"),
     description: t("blog.subtitle"),
     alternates: {
-      canonical: canonicalPath(lang, "/blog"),
+      ...alternatesFor(lang, "/blog"),
       types: { "application/rss+xml": `${localePath(lang, "/blog")}rss.xml` },
     },
   };
