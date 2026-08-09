@@ -17,6 +17,18 @@
   "nav.discord": "Discord",
   "nav.primary": "Principal",
 
+  "search.open": "Buscar",
+  "search.placeholder": "Buscar no site…",
+  "search.empty": "Nada corresponde.",
+  "search.unavailable": "A busca é construída junto com o site, então não existe em desenvolvimento.",
+  "search.close": "Fechar",
+
+  "docs.onThisPage": "Nesta página",
+  "docs.editOnGitHub": "Editar esta página no GitHub",
+  "docs.untranslated": "Esta página ainda não foi traduzida, então você está lendo o original em inglês.",
+  "docs.title": "Documentação",
+  "docs.subtitle": "Instalar, ligar a um modelo, e fazer alguma coisa de verdade com ele.",
+
   "theme.label": "Tema",
   "theme.system": "Sistema",
   "theme.light": "Claro",

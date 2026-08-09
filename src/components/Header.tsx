@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Search } from "@/components/Search";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Wordmark } from "@/components/Wordmark";
 import { localePath, type LocaleSegment } from "@/i18n/locales";
@@ -51,6 +52,15 @@ export function Header({ locale }: Props) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <Search
+            labels={{
+              open: t("search.open"),
+              placeholder: t("search.placeholder"),
+              empty: t("search.empty"),
+              unavailable: t("search.unavailable"),
+              close: t("search.close"),
+            }}
+          />
           <Link
             href={to("/download")}
             className="focus-ring rounded-chip bg-accent-grad px-3.5 py-1.5 text-sm font-semibold text-accent-foreground transition duration-1 ease-out"

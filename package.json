@@ -6,7 +6,7 @@
   "description": "chimeraagent.space — the Chimera site, docs, blog and skill hub.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && pagefind --site out --output-subdir _pagefind && tsx scripts/postbuild.ts",
     "start": "npx serve out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -20,13 +20,22 @@
   "dependencies": {
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-slug": "^6.0.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
+    "pagefind": "^1.5.2",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",

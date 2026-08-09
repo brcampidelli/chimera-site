@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 @import "./motion.css";
+@import "./prose.css";
 
 @layer base {
   html {
