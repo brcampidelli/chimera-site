@@ -67,11 +67,26 @@ jobs:
           # nothing about newlines and sends you looking at the network instead.
           install -m 600 /dev/null key
           printf '%s\n' "$KEY" | tr -d '\r' > key
-          # Fail here, with a sentence, rather than three lines later with libcrypto's.
-          ssh-keygen -y -f key > /dev/null 2>&1 || {
-            echo "HOSTINGER_SSH_KEY is not a usable private key — re-paste it, whole, including the BEGIN/END lines." >&2
+          # Fail here, with a sentence, rather than three lines later with libcrypto's — and say
+          # enough about the SHAPE of the value to tell the failure modes apart. None of this
+          # reveals the key: the header and footer are fixed strings, and a count is a count.
+          if ! ssh-keygen -y -f key > /dev/null 2>&1; then
+            {
+              echo "HOSTINGER_SSH_KEY is not a usable private key. What arrived:"
+              echo "  lines:            $(wc -l < key)"
+              echo "  bytes:            $(wc -c < key)"
+              echo "  carriage returns: $(tr -cd '\r' < key | wc -c) (before stripping: see above)"
+              echo "  first line is the OPENSSH header: $(head -1 key | grep -qx -- '-----BEGIN OPENSSH PRIVATE KEY-----' && echo yes || echo NO)"
+              echo "  last line is the OPENSSH footer:  $(grep -v '^$' key | tail -1 | grep -qx -- '-----END OPENSSH PRIVATE KEY-----' && echo yes || echo NO)"
+              echo "  looks like a PUBLIC key instead:  $(head -1 key | grep -q '^ssh-' && echo YES || echo no)"
+              echo "  longest body line:                $(sed '1d;$d' key | awk '{ if (length($0) > m) m = length($0) } END { print m+0 }')"
+              echo
+              echo "A healthy ed25519 key here is 8 lines, 432 bytes, header yes, footer yes, public no."
+              echo "ssh-keygen's own words:"
+              ssh-keygen -y -f key 2>&1 | sed 's/^/  /'
+            } >&2
             exit 1
-          }
+          fi
           ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new"
           remote="$SSH_USER@$HOST"
           root="domains/chimeraagent.space"
