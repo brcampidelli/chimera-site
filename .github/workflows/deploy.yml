@@ -51,41 +51,59 @@ jobs:
       # verify:truth reads the built HTML, so it runs after the build, and it blocks.
       - run: npm run verify:truth
 
-      - name: Pre-compress
+      - name: Add the server configuration
         run: |
-          find out -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json' \
-            -o -name '*.svg' -o -name '*.xml' -o -name '*.txt' \) -size +1k \
-            -exec gzip -9 -k -f {} \;
+          cp deploy/htaccess out/.htaccess
+          cp deploy/htaccess-static out/_next/static/.htaccess
 
       - name: Ship it
         env:
           KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
-          HOST: ${{ secrets.HOSTINGER_HOST }}
+          HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          # Not `USER`: the runner already defines that, and a secret that silently loses to an
+          # environment default is a deploy that lands in somebody else's home directory.
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
           SHA: ${{ github.sha }}
         run: |
-          install -m 600 /dev/null key && printf '%s' "$KEY" > key
-          ssh_opts="-i key -o StrictHostKeyChecking=accept-new"
+          install -m 600 /dev/null key && printf '%s\n' "$KEY" > key
+          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new"
+          remote="$SSH_USER@$HOST"
+          root="domains/chimeraagent.space"
+          rel="chimera-site/releases"
 
-          # Land the new tree beside the old one, then move the symlink. The site is never
-          # half-written: it is one directory until the instant it is the other.
-          ssh $ssh_opts "root@$HOST" "mkdir -p /srv/chimeraagent/releases/$SHA"
-          rsync -az --delete -e "ssh $ssh_opts" out/ "root@$HOST:/srv/chimeraagent/releases/$SHA/"
-          ssh $ssh_opts "root@$HOST" "ln -sfn /srv/chimeraagent/releases/$SHA /srv/chimeraagent/current"
+          # Land the new tree beside the old one, then move the symlink. The document root IS the
+          # symlink — verified against this host before the workflow was written — so the site is
+          # one directory until the instant it is the other, and is never half-written.
+          ssh $ssh_opts "$remote" "mkdir -p ~/$rel/$SHA"
+
+          # --link-dest hardlinks whatever the previous release already has, so a deploy that
+          # changes six pages transfers six pages rather than eighty megabytes.
+          ssh $ssh_opts "$remote" "readlink -f ~/$root/public_html 2>/dev/null || true" > prev.txt
+          prev=$(cat prev.txt)
+          link_dest=""
+          if [ -n "$prev" ] && [ "$prev" != "$(printf '/home/%s/%s/%s' "$SSH_USER" "$rel" "$SHA")" ]; then
+            link_dest="--link-dest=$prev"
+          fi
+
+          rsync -az --delete $link_dest -e "ssh $ssh_opts" out/ "$remote:$rel/$SHA/"
+          ssh $ssh_opts "$remote" "ln -sfn ~/$rel/$SHA ~/$root/public_html"
 
           # Keep five. A rollback is `ln -sfn` at one of them, which is why they are kept at all.
-          ssh $ssh_opts "root@$HOST" \
-            "cd /srv/chimeraagent/releases && ls -1t | tail -n +6 | xargs -r rm -rf"
+          ssh $ssh_opts "$remote" \
+            "cd ~/$rel && ls -1t | tail -n +6 | xargs -r rm -rf"
 
       - name: Prove it is live
         env:
-          HOST: ${{ secrets.HOSTINGER_HOST }}
+          IP: ${{ secrets.HOSTINGER_SSH_HOST }}
         run: |
-          # Against the server itself, by Host header — so this passes before DNS has propagated
-          # and fails for a reason that is actually about the deploy.
+          # Against the server itself, by --resolve, not by DNS. A smoke test that resolves the
+          # domain would pass by reaching whatever the domain currently points at, which during a
+          # DNS change is precisely not the thing being tested.
           for path in / /en/docs/ /pt/ /skills-index.json /sitemap.xml; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: chimeraagent.space" \
-              --resolve "chimeraagent.space:443:$(getent hosts "$HOST" | awk '{print $1}')" \
-              "https://chimeraagent.space$path" || echo 000)
+            code=$(curl -s -o /dev/null -L -w '%{http_code}' \
+              --resolve "chimeraagent.space:443:$IP" \
+              --resolve "chimeraagent.space:80:$IP" \
+              "http://chimeraagent.space$path" || echo 000)
             echo "$path -> $code"
             [ "$code" = "200" ] || exit 1
           done

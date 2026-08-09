@@ -1,0 +1,51 @@
+# Shipped to the document root as `.htaccess` by the deploy workflow.
+#
+# This replaces what nginx.conf used to say when the site was going to live on the VPS. The hosting
+# runs LiteSpeed with Apache-compatible overrides, so routing, caching and headers are declared
+# here instead of in a server block we control.
+#
+# Two things this file deliberately does NOT do:
+#   * compression — LiteSpeed compresses on the fly, so pre-compressed .gz files would only be dead
+#     weight in the release directory;
+#   * a rewrite for trailing slashes — Next writes `<route>/index.html` for every page and
+#     DirectoryIndex already resolves that. A rewrite here would be a second, divergent copy of a
+#     rule the server already has.
+#
+# The year-long cache lives in `deploy/htaccess-static`, which the workflow drops into
+# `_next/static/`. It has to be scoped by path rather than by extension: `.js` matched anywhere
+# would also match Pagefind's `pagefind.js`, whose name does not change when its bytes do, and
+# pinning that for a year would freeze search at whatever it was on the day someone first used it.
+
+DirectoryIndex index.html
+Options -Indexes +FollowSymLinks
+
+# One address is canonical in the browser as well as in the markup. Without this, `www` serves the
+# same 1156 pages under a second hostname — which is what it did on the first deploy, and which the
+# canonical tags mitigate but do not fix.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^www\.chimeraagent\.space$ [NC]
+    RewriteRule ^(.*)$ https://chimeraagent.space/$1 [R=301,L]
+</IfModule>
+
+# The 404 is a real page, in English. Next's export writes both `404.html` and `404/index.html`.
+ErrorDocument 404 /404/index.html
+
+<IfModule mod_headers.c>
+    # A static site that never loads a third-party script can say so, and a CSP that says so is a
+    # CSP that actually restricts something. `unsafe-inline` covers exactly one script: the theme
+    # resolver in <head>, which has to run before the first paint.
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # HTML must not be cached hard, or a deploy takes a day to become visible.
+    <FilesMatch "\.html$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddCharset utf-8 .html .css .js .json .xml .txt .svg
+</IfModule>
