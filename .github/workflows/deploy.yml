@@ -60,7 +60,18 @@ jobs:
           SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
           SHA: ${{ github.sha }}
         run: |
-          install -m 600 /dev/null key && printf '%s\n' "$KEY" > key
+          # `tr -d '\r'` is not defensive programming, it is the fix for a failure this deploy
+          # actually had: copying a multi-line key out of a Windows editor puts CRLF on the
+          # clipboard, so the stored secret has a carriage return at the end of every line and
+          # OpenSSH rejects it with `Load key "key": error in libcrypto` — an error that says
+          # nothing about newlines and sends you looking at the network instead.
+          install -m 600 /dev/null key
+          printf '%s\n' "$KEY" | tr -d '\r' > key
+          # Fail here, with a sentence, rather than three lines later with libcrypto's.
+          ssh-keygen -y -f key > /dev/null 2>&1 || {
+            echo "HOSTINGER_SSH_KEY is not a usable private key — re-paste it, whole, including the BEGIN/END lines." >&2
+            exit 1
+          }
           ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new"
           remote="$SSH_USER@$HOST"
           root="domains/chimeraagent.space"
