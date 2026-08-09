@@ -1,0 +1,73 @@
+@import "./tokens.generated.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./motion.css";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.28);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+}
+
+@layer components {
+  /* The app's three surface classes, verbatim in spirit: a panel is flat with a hairline, and a
+     shadow means "this floats above the page" — a drop shadow lies when nothing is in front. */
+  .surface {
+    @apply rounded-xl2 border border-hairline bg-card;
+  }
+
+  .floating {
+    @apply rounded-xl2 border border-hairline bg-card shadow-elev-lg;
+  }
+
+  /* The faint top-centre glow over the navy ground — the app's signature background. */
+  .ambient-wash {
+    background-image: radial-gradient(
+      120% 80% at 50% -10%,
+      hsl(var(--accent) / 0.1) 0%,
+      transparent 55%
+    );
+  }
+
+  .hairline-x {
+    @apply h-px w-full bg-hairline;
+  }
+
+  /* The silver fill of the wordmark in the logo: white at the top falling to a cool grey. Set as
+     type rather than scaled from the raster, so it stays sharp and re-themes with the page. */
+  .wordmark-fill {
+    background-image: linear-gradient(
+      to bottom,
+      hsl(var(--foreground)) 0%,
+      hsl(var(--muted-foreground)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* One focus ring, defined once. A component that invents its own is a component that will drift
+     from the rest by a pixel and a colour. */
+  .focus-ring {
+    @apply outline-none focus-visible:relative focus-visible:z-10 focus-visible:shadow-glow;
+  }
+}

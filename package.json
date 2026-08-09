@@ -1,0 +1,36 @@
+{
+  "name": "chimera-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "chimeraagent.space — the Chimera site, docs, blog and skill hub.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve out",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "sync:tokens": "tsx scripts/sync-tokens.ts",
+    "verify:tokens": "tsx scripts/sync-tokens.ts --check",
+    "sync:i18n": "tsx scripts/i18n-pending.ts",
+    "verify:i18n": "tsx scripts/i18n-pending.ts --check",
+    "verify": "npm run verify:tokens && npm run verify:i18n && npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  }
+}

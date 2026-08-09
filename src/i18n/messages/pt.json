@@ -1,0 +1,40 @@
+{
+  "common.skipToContent": "Ir para o conteúdo",
+  "common.copy": "Copiar",
+  "common.copied": "Copiado",
+  "common.readMore": "Ler mais",
+
+  "brand.name": "Chimera",
+  "brand.tagline": "O agente governado que evolui.",
+
+  "nav.agent": "Agente de terminal",
+  "nav.desktop": "Aplicativo",
+  "nav.docs": "Documentação",
+  "nav.blog": "Blog",
+  "nav.skills": "Skills",
+  "nav.download": "Baixar",
+  "nav.github": "GitHub",
+  "nav.discord": "Discord",
+  "nav.primary": "Principal",
+
+  "theme.label": "Tema",
+  "theme.system": "Sistema",
+  "theme.light": "Claro",
+  "theme.dark": "Escuro",
+
+  "lang.label": "Idioma",
+  "lang.alsoAvailable": "Esta página também existe em {language}.",
+  "lang.switch": "Ler em {language}",
+  "lang.dismiss": "Dispensar",
+
+  "footer.license": "Apache-2.0",
+  "footer.copyright": "Copyright {year} The Chimera Agent Authors",
+  "footer.alpha": "Alpha — sólido e muito testado, ainda não endurecido em produção.",
+  "footer.reddit": "Reddit",
+  "footer.donate": "Apoiar o projeto",
+  "footer.privacy": "Privacidade",
+  "footer.press": "Marca",
+  "footer.product": "Produto",
+  "footer.learn": "Aprender",
+  "footer.community": "Comunidade"
+}

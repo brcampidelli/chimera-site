@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify (drift · types · tests · build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # The site's colours, motion and language list belong to the product. Check it out so the
+      # drift gates below have something real to compare against — a gate that silently skips
+      # when the source is missing is not a gate.
+      - name: Check out chimera-agent
+        uses: actions/checkout@v4
+        with:
+          repository: brcampidelli/chimera-agent
+          ref: ${{ vars.CHIMERA_REF || 'main' }}
+          path: .content/chimera
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Copying rots because nobody notices. These two steps are the noticing.
+      - name: Design tokens are the app's tokens
+        run: npm run verify:tokens
+
+      - name: Translation debt is written down and capped
+        run: npm run verify:i18n
+
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
+      - name: Upload the static site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: out
+          retention-days: 7
