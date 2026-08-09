@@ -51,11 +51,6 @@ jobs:
       # verify:truth reads the built HTML, so it runs after the build, and it blocks.
       - run: npm run verify:truth
 
-      - name: Add the server configuration
-        run: |
-          cp deploy/htaccess out/.htaccess
-          cp deploy/htaccess-static out/_next/static/.htaccess
-
       - name: Ship it
         env:
           KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
@@ -99,7 +94,11 @@ jobs:
           # Against the server itself, by --resolve, not by DNS. A smoke test that resolves the
           # domain would pass by reaching whatever the domain currently points at, which during a
           # DNS change is precisely not the thing being tested.
-          for path in / /en/docs/ /pt/ /skills-index.json /sitemap.xml; do
+          #
+          # The unprefixed paths are here because the first version of this list was not: it checked
+          # /en/docs/ and /pt/, both of which worked, while /docs — the address a person types —
+          # 404'd for a day. Checking only the form the site links to tests the site's own links.
+          for path in / /docs /cli /blog /skills /download /en/docs/ /pt/ /skills-index.json /sitemap.xml; do
             code=$(curl -s -o /dev/null -L -w '%{http_code}' \
               --resolve "chimeraagent.space:443:$IP" \
               --resolve "chimeraagent.space:80:$IP" \

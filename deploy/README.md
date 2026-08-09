@@ -40,15 +40,19 @@ pages rather than the whole 80 MB.
 
 1. runs the same gates CI runs — including `verify:truth`, after the build, because it reads the
    rendered HTML;
-2. copies `deploy/htaccess` to the root and `deploy/htaccess-static` into `_next/static/`;
-3. rsyncs to a new release directory and moves the symlink;
-4. keeps five, deletes the rest;
-5. **checks five URLs against the server by `--resolve`**, not by DNS. A smoke test that resolves
+2. rsyncs to a new release directory and moves the symlink;
+3. keeps five, deletes the rest;
+4. **checks ten URLs against the server by `--resolve`**, not by DNS. A smoke test that resolves
    the domain would pass by reaching whatever the domain currently points at, which during a DNS
    change is precisely not the thing being tested.
 
 There is no pre-compression step. LiteSpeed compresses on the fly, so `.gz` files beside the
 originals would be dead weight in every release directory.
+
+The two `.htaccess` files are **not** copied here. `scripts/postbuild.ts` renders them into `out/`,
+because one of the rules has to name every language the site builds, and that list already exists in
+`src/i18n/locales.ts`. The template carries `@LOCALES@`; a build that leaves it unsubstituted throws
+rather than shipping a rewrite rule that matches a literal at-sign.
 
 ## Secrets it needs
 

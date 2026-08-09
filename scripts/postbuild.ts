@@ -9,10 +9,16 @@
  *
  * 2. **Search.** Pagefind indexes the rendered HTML after the fact, which is why the site ships no
  *    search bundle until somebody opens the search.
+ *
+ * 3. **The server configuration.** Copying the English home to `/` fixed the bare domain and
+ *    nothing else — `/docs` still had no route and 404'd, which is how it was found. The alias rule
+ *    that fixes that needs the language list, so the `.htaccess` is rendered here rather than
+ *    copied verbatim by the deploy.
  */
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeServerConfig } from "./server-config";
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "out");
 
@@ -36,6 +42,7 @@ function bareDomain(): void {
 
 function main(): void {
   bareDomain();
+  writeServerConfig(OUT);
 }
 
 main();

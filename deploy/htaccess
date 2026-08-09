@@ -19,13 +19,30 @@
 DirectoryIndex index.html
 Options -Indexes +FollowSymLinks
 
-# One address is canonical in the browser as well as in the markup. Without this, `www` serves the
-# same 1156 pages under a second hostname — which is what it did on the first deploy, and which the
-# canonical tags mitigate but do not fix.
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # One address is canonical in the browser as well as in the markup. Without this, `www` serves
+    # the same 1156 pages under a second hostname — which is what it did on the first deploy, and
+    # which the canonical tags mitigate but do not fix.
     RewriteCond %{HTTP_HOST} ^www\.chimeraagent\.space$ [NC]
     RewriteRule ^(.*)$ https://chimeraagent.space/$1 [R=301,L]
+
+    # Every page lives under a language prefix, because `<html lang>` has to be the page's real
+    # language and that puts the root layout under `[lang]`. Somebody who types /docs is not wrong;
+    # they just do not know that. So anything that does not exist on disk, and does not already
+    # begin with a language, is a permanent alias for the English page.
+    #
+    # `!-f` and `!-d` are what keep this away from /_next/, /_pagefind/, /brand/ and /404/ — those
+    # exist, so the rule never sees them. The language alternation is what stops /pt/typo from
+    # becoming /en/pt/typo: a 404 in the language you asked for is the honest answer.
+    #
+    # @LOCALES@ is substituted at build time from the same table the routes come from. Typing the
+    # nine codes here would mean a tenth language shipping with its own URLs quietly aliased away.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/(@LOCALES@)(/|$)
+    RewriteRule ^(.+)$ /en/$1 [R=301,L]
 </IfModule>
 
 # The 404 is a real page, in English. Next's export writes both `404.html` and `404/index.html`.
