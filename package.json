@@ -6,7 +6,7 @@
   "description": "chimeraagent.space — the Chimera site, docs, blog and skill hub.",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run fetch:releases && next build && pagefind --site out --output-subdir _pagefind && tsx scripts/postbuild.ts",
+    "build": "npm run fetch:releases && npm run brand:assets && npm run og && next build && pagefind --site out --output-subdir _pagefind && tsx scripts/postbuild.ts",
     "start": "npx serve out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -17,7 +17,10 @@
     "verify:i18n": "tsx scripts/i18n-pending.ts --check",
     "verify:truth": "tsx scripts/verify-truth.ts",
     "verify": "npm run verify:tokens && npm run verify:i18n && npm run verify:truth && npm run typecheck && npm run test",
-    "fetch:releases": "tsx scripts/fetch-releases.ts"
+    "fetch:releases": "tsx scripts/fetch-releases.ts",
+    "brand:assets": "tsx scripts/brand-assets.ts",
+    "brand:probe": "tsx scripts/brand-probe.ts",
+    "og": "tsx scripts/og-image.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

@@ -58,6 +58,66 @@
   animation-delay: var(--dur-2);
 }
 
+/* ── The hero ────────────────────────────────────────────────────────────────────────────────────
+   Four layers and a transform. The plate is permanent in both themes: extracting the mark from its
+   navy ground also took the dark facet lines inside the mane, which were the same colour and
+   connected to the outside, so the cut-out is right on a dark disc and moth-eaten on a light page.
+   ─────────────────────────────────────────────────────────────────────────────────────────────── */
+
+.hero-mark {
+  border-radius: 26%;
+  background:
+    radial-gradient(120% 120% at 50% 20%, hsl(var(--accent) / 0.22) 0%, transparent 62%),
+    hsl(222 45% 8%);
+  box-shadow: var(--elev-lg);
+}
+
+.hero-tilt {
+  transform-style: preserve-3d;
+  transition: transform var(--dur-3) var(--ease-out);
+  will-change: transform;
+}
+
+.hero-bloom {
+  filter: blur(22px) saturate(1.4);
+  opacity: 0.55;
+  transform: scale(1.06) translateZ(-40px);
+}
+
+/* A pupil coming up. Positioned by measurement, not by eye — see Hero.tsx. */
+.hero-eye {
+  position: absolute;
+  width: 12%;
+  height: 12%;
+  margin-left: -6%;
+  margin-top: -6%;
+  border-radius: 9999px;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    hsl(var(--accent2) / 0.85) 0%,
+    hsl(var(--accent2) / 0.35) 35%,
+    transparent 70%
+  );
+}
+
+.hero-eye[data-lit] {
+  animation: eye-open var(--dur-3) var(--ease-out) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+@keyframes eye-open {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

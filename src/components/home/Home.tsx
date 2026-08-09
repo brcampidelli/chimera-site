@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/BrandMark";
 import { Stat } from "@/components/evidence/Stat";
+import { Hero } from "@/components/home/Hero";
 import { Card, Cards, Section } from "@/components/ui/Section";
 import { Wordmark } from "@/components/Wordmark";
 import { evidenceAvailable } from "@/content/evidence";
@@ -20,7 +20,7 @@ export function Home({ locale }: Props) {
       <section className="ambient-wash relative overflow-hidden">
         <div className="mx-auto max-w-6xl px-4 pb-16 pt-20 sm:px-6 sm:pt-28">
           <div data-reveal="in" className="flex flex-col items-center text-center">
-            <BrandMark size={112} className="shadow-elev-lg" priority />
+            <Hero size={248} alt={t("brand.name")} />
             <Wordmark sub="Agent" className="mt-8 text-d1 leading-none" />
             <p className="mt-8 max-w-measure text-lead text-muted-foreground">{t("home.lead")}</p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">

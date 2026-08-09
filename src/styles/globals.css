@@ -53,6 +53,12 @@
     @apply h-px w-full bg-hairline;
   }
 
+  /* The navy the mark is drawn on, in both themes. It is part of the artwork, not a theme value —
+     which is why it is a named class rather than a colour typed into a page. */
+  .brand-ground {
+    background-color: hsl(222 45% 8%);
+  }
+
   /* The silver fill of the wordmark in the logo: white at the top falling to a cool grey. Set as
      type rather than scaled from the raster, so it stays sharp and re-themes with the page. */
   .wordmark-fill {

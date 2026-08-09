@@ -43,6 +43,17 @@ export async function generateMetadata({
     description:
       "An open-source agent for your terminal and a desktop app to work with it. Apache-2.0, alpha, and it publishes the benchmarks it lost.",
     icons: { icon: "/favicon.ico", apple: "/brand/chimera-icon.png" },
+    // One card for the whole site, composed at build time from the mark and the palette already in
+    // the repository. A per-route generator would need a renderer and a font file in the build, to
+    // produce a title the link preview already reads from `<title>`.
+    openGraph: {
+      type: "website",
+      siteName: SITE.name,
+      locale: localeOf(locale).bcp47,
+      url: `${SITE.url}${canonicalPath(locale, "/")}`,
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: SITE.name }],
+    },
+    twitter: { card: "summary_large_image", images: ["/og.png"] },
     alternates: {
       canonical: canonicalPath(locale, "/"),
       // Every language on every page. Someone who lands on the German page from a German search
