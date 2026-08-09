@@ -29,12 +29,30 @@ export interface Download {
   readonly bytes: number;
 }
 
+/**
+ * One published release, as the blog renders it.
+ *
+ * `body` is the release note exactly as written on GitHub. It is not rewritten into a post: the
+ * CHANGELOG and the release page already hold that text, and a third copy of one truth is three
+ * things to keep in step.
+ */
+export interface ReleaseNote {
+  readonly tag: string;
+  readonly version: string;
+  readonly name: string;
+  readonly published: string;
+  readonly url: string;
+  readonly body: string;
+  readonly prerelease: boolean;
+}
+
 export interface Releases {
   readonly tag: string;
   readonly version: string;
   readonly published: string;
   readonly url: string;
   readonly downloads: readonly Download[];
+  readonly history: readonly ReleaseNote[];
 }
 
 interface Asset {
@@ -117,17 +135,46 @@ async function main(): Promise<void> {
     }
   }
 
+  // The release notes the blog publishes. Prereleases are excluded: an `rc` is a test of the
+  // release machinery, not an announcement, and GitHub already keeps it off `releases/latest`.
+  const listed = (await (
+    await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers })
+  ).json()) as {
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    published_at: string;
+    html_url: string;
+    prerelease: boolean;
+    draft: boolean;
+  }[];
+
+  const history: ReleaseNote[] = listed
+    .filter((r) => !r.draft && !r.prerelease && (r.body ?? "").trim().length > 0)
+    .map((r) => ({
+      tag: r.tag_name,
+      version: r.tag_name.replace(/^v/, ""),
+      name: (r.name ?? r.tag_name).trim(),
+      published: r.published_at,
+      url: r.html_url,
+      body: (r.body ?? "").trim(),
+      prerelease: r.prerelease,
+    }));
+
   const payload: Releases = {
     tag: release.tag_name,
     version: release.tag_name.replace(/^v/, ""),
     published: release.published_at,
     url: release.html_url,
     downloads,
+    history,
   };
 
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, `${JSON.stringify(payload, null, 2)}\n`);
-  console.log(`releases: ${release.tag_name} — ${downloads.length} downloads`);
+  console.log(
+    `releases: ${release.tag_name} — ${downloads.length} downloads, ${history.length} release notes`,
+  );
 }
 
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("scripts/fetch-releases.ts")) {
