@@ -93,6 +93,62 @@ function PaperCard({ locale, post }: { locale: LocaleSegment; post: NonNullable<
   );
 }
 
+/**
+ * The items, rendered from frontmatter.
+ *
+ * Everything a reader can check — headline, outlet, date, link — comes from data, and the only
+ * prose is the comment, which is labelled and capped. A digest is assembled by an agent twice a day
+ * and merged with nobody reading it first; that is defensible only if the page cannot say more than
+ * its sources, and the way to guarantee it is to leave the writer nothing else to say.
+ */
+function DigestItems({
+  locale,
+  post,
+}: {
+  locale: LocaleSegment;
+  post: NonNullable<ReturnType<typeof postBySlug>>;
+}) {
+  const t = translator(locale);
+  const items = post.items ?? [];
+
+  return (
+    <section className="mt-8">
+      <p className="max-w-measure text-sm text-muted-foreground">{t("blog.digestCaveat")}</p>
+
+      <ol className="mt-5 grid gap-4">
+        {items.map((item) => (
+          <li key={item.url} className="surface p-5">
+            <h2 className="text-d3">
+              <a
+                href={item.url}
+                rel="noreferrer nofollow"
+                className="focus-ring rounded hover:text-accent2"
+              >
+                {item.headline}
+              </a>
+            </h2>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">
+              {item.outlet} · <time dateTime={item.published}>{item.published}</time>
+            </p>
+            <p className="mt-3 max-w-measure text-sm">
+              <span className="text-muted-foreground">{t("blog.digestComment")}: </span>
+              {item.comment}
+            </p>
+          </li>
+        ))}
+      </ol>
+
+      {/* What the run looked at and threw away. A digest that ships two items after reading nine
+          reads as "there were two" unless it says otherwise. */}
+      {post.dropped ? (
+        <p className="mt-4 max-w-measure text-xs text-muted-foreground">
+          {t("blog.digestDropped")}: {post.dropped}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
 export default async function PostPage({
   params,
 }: {
@@ -134,6 +190,7 @@ export default async function PostPage({
       <p className="mt-3 max-w-measure text-lead text-muted-foreground">{post.summary}</p>
 
       {post.category === "papers" ? <PaperCard locale={lang} post={post} /> : null}
+      {post.category === "digest" ? <DigestItems locale={lang} post={post} /> : null}
 
       <div className="md mt-8 max-w-measure" dangerouslySetInnerHTML={{ __html: rendered.html }} />
 
