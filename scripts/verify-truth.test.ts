@@ -1,5 +1,15 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { checkNoTypedFigures, textOf, unnegatedAssertions } from "./verify-truth";
+import { checkNoTypedFigures, textOf, uncaveatedNames } from "./verify-truth";
+
+const CAVEATS = join(import.meta.dirname, "..", "src", "i18n", "messages");
+const caveat = (lang: string) =>
+  (JSON.parse(readFileSync(join(CAVEATS, `${lang}.json`), "utf8")) as Record<string, string>)[
+    "caveat.easySlice"
+  ] ?? "";
+
+const page = (lang: string, body: string) => `<html lang="${lang}"><body>${body}</body></html>`;
 
 /**
  * A gate nobody has watched fail is not a gate.
@@ -9,28 +19,39 @@ import { checkNoTypedFigures, textOf, unnegatedAssertions } from "./verify-truth
  * what is forbidden, which is exactly the direction in which a gate can be quietly disarmed — so
  * the failing case is pinned here.
  */
-describe("truth gate — it catches the assertion and spares the warning", () => {
-  it("fails a page that asserts the slice is a SWE-bench Verified score", () => {
-    const html = "<p>Chimera reaches a SWE-bench Verified score of nearly half.</p>";
-    expect(unnegatedAssertions(html)).not.toEqual([]);
+describe("truth gate — the benchmark's name may only appear with its caveat", () => {
+  it("fails a page that names the benchmark and drops the qualification", () => {
+    expect(uncaveatedNames(page("en", "<p>Chimera reaches SWE-bench Verified results.</p>"))).not.toEqual(
+      [],
+    );
   });
 
-  it("allows the sentence that denies it", () => {
-    // The site's own caveat, and the product's documentation, both contain these words. Banning
-    // them outright would ban the warning along with the lie.
-    const html = "<p>This is not a SWE-bench Verified score — a real one needs the full 500.</p>";
-    expect(unnegatedAssertions(html)).toEqual([]);
+  it("passes when the registered caveat is on the page", () => {
+    const html = page("en", `<p>SWE-bench Verified</p><p>${caveat("en")}</p>`);
+    expect(uncaveatedNames(html)).toEqual([]);
   });
 
-  it("does not let markup separate the negation from the phrase", () => {
-    // "not <em>a</em> SWE-bench Verified score" is one sentence to a reader and two text nodes to
-    // a parser. The check reads the text, not the tags.
-    const html = "<p>It is <strong>not</strong> a <em>SWE-bench Verified score</em>.</p>";
-    expect(unnegatedAssertions(html)).toEqual([]);
+  it("checks the page in its own language, not in English", () => {
+    // The second version of this gate looked for an English phrase and a list of English
+    // negations. Every translation passed, because none of them contains the English words — the
+    // check reported success for eight of nine languages it was never examining.
+    const wrongLanguage = page("de", `<p>SWE-bench Verified</p><p>${caveat("en")}</p>`);
+    expect(uncaveatedNames(wrongLanguage)).not.toEqual([]);
+    const right = page("de", `<p>SWE-bench Verified</p><p>${caveat("de")}</p>`);
+    expect(uncaveatedNames(right)).toEqual([]);
+  });
+
+  it("survives an apostrophe", () => {
+    // React escapes `'` to `&#x27;`, so the French caveat never matched itself and exactly one of
+    // nine languages went red for a reason that had nothing to do with its content. A checker
+    // that fails on punctuation is a checker somebody weakens.
+    const escaped = caveat("fr").replace(/'/g, "&#x27;");
+    expect(escaped).not.toBe(caveat("fr"));
+    expect(uncaveatedNames(page("fr", `<p>SWE-bench Verified</p><p>${escaped}</p>`))).toEqual([]);
   });
 
   it("ignores words that only appear inside a script", () => {
-    const html = "<script>const s = 'SWE-bench Verified score'</script><p>Hello.</p>";
+    const html = "<script>const s = 'SWE-bench Verified'</script><p>Hello.</p>";
     expect(textOf(html)).not.toContain("SWE-bench");
   });
 

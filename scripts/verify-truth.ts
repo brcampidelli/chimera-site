@@ -56,49 +56,85 @@ const FORBIDDEN_PHRASES: { pattern: RegExp; why: string }[] = [
 ];
 
 /**
- * Phrases that are fine to write and forbidden to assert.
+ * Names that may only appear where their caveat appears.
  *
- * "SWE-bench Verified score" is the example, and this check earned its shape by failing on the
- * site's own caveat — the sentence "This is **not** a SWE-bench Verified score". Banning the
- * words outright would have banned the warning along with the lie, which is the same inversion
- * that made the documentation pages exempt above.
+ * This check has been wrong twice, and each version taught the next one.
  *
- * So each occurrence has to be negated nearby. The negation vocabulary is English-only today
- * because the caveats are; when the translations land, every language needs its negation here or
- * the check quietly stops covering eight of the nine. That is written down as a risk rather than
- * discovered later.
+ * v1 banned the string "SWE-bench Verified score" outright — and flagged `docs/benchmarks` in nine
+ * languages for the sentence "is NOT a SWE-bench Verified score". A gate that forbids the
+ * documentation from quoting its own warning has inverted itself.
+ *
+ * v2 required a negation within sixty characters. It passed, which was the problem: the negation
+ * vocabulary was English, and the caveat translations do not contain the English phrase at all. So
+ * eight of the nine languages were never checked, and the gate reported success for a hole it was
+ * not looking at. A check that cannot fail is not verifying anything.
+ *
+ * v3 is exact. The benchmark's name may appear on a page only if the *registered caveat for that
+ * page's language* appears on it too. No negation vocabulary, no per-language phrase list, and it
+ * enforces the actual design rather than approximating it: the figure travels with its
+ * qualification, or it does not travel.
  */
-const MUST_BE_NEGATED: { phrase: string; why: string }[] = [
+const CAVEATED_NAMES: { name: string; caveatKey: string; why: string }[] = [
   {
-    phrase: "SWE-bench Verified score",
+    name: "SWE-bench Verified",
+    caveatKey: "caveat.easySlice",
     why: "the slice is deliberately easy and single-repo; a real score needs the full 500 instances",
   },
 ];
 
-const NEGATIONS = /\b(not|isn't|is not|never)\b|\bnão\b|\bnicht\b|\bpas\b|\bnie\b|\bnon\b|不是|ではありません/i;
-
+/**
+ * The readable text of a page.
+ *
+ * Entities have to be decoded, and finding that out cost a false failure: React escapes an
+ * apostrophe to `&#x27;`, so the French caveat — "Ce n'est pas un score" — never matched the
+ * string it was compared against. Exactly one of nine languages went red, for the only reason
+ * that had nothing to do with its content. A checker that fails on the apostrophe is a checker
+ * somebody weakens.
+ */
 export function textOf(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
+    .replace(/&#x27;|&#39;|&apos;/gi, "'")
+    .replace(/&quot;|&#34;/gi, '"')
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#x2F;|&#47;/gi, "/")
+    .replace(/&amp;/gi, "&")
     .replace(/\s+/g, " ");
 }
 
-export function unnegatedAssertions(html: string): string[] {
+/** The nine dictionaries, so a caveat can be looked up in the page's own language. */
+function caveatFor(key: string, lang: string): string {
+  const file = join(SRC, "i18n", "messages", `${lang}.json`);
+  const english = JSON.parse(
+    readFileSync(join(SRC, "i18n", "messages", "en.json"), "utf8"),
+  ) as Record<string, string>;
+  if (!existsSync(file)) return english[key] ?? "";
+  const table = JSON.parse(readFileSync(file, "utf8")) as Record<string, string>;
+  // Missing translations fall back to English at render time, so the check follows the same rule.
+  return table[key] ?? english[key] ?? "";
+}
+
+/** `<html lang="pt-BR">` → `pt`, matching the message files. */
+function langOf(html: string): string {
+  const match = html.match(/<html[^>]*\blang="([a-zA-Z-]+)"/);
+  return (match?.[1] ?? "en").split("-")[0]!.toLowerCase();
+}
+
+export function uncaveatedNames(html: string): string[] {
   const text = textOf(html);
+  const lang = langOf(html);
   const failures: string[] = [];
-  for (const { phrase, why } of MUST_BE_NEGATED) {
-    let from = 0;
-    for (;;) {
-      const at = text.toLowerCase().indexOf(phrase.toLowerCase(), from);
-      if (at === -1) break;
-      const before = text.slice(Math.max(0, at - 60), at);
-      if (!NEGATIONS.test(before)) {
-        failures.push(`asserts "${phrase}" with no negation nearby — ${why}`);
-      }
-      from = at + phrase.length;
+  for (const { name, caveatKey, why } of CAVEATED_NAMES) {
+    if (!text.includes(name)) continue;
+    const caveat = caveatFor(caveatKey, lang);
+    if (caveat && !text.includes(caveat)) {
+      failures.push(
+        `names "${name}" (lang=${lang}) without the registered caveat on the page — ${why}`,
+      );
     }
   }
   return failures;
@@ -137,18 +173,26 @@ export function checkNoTypedFigures(): string[] {
 }
 
 /**
- * Documentation pages are exempt, and the first run of this check is why.
+ * Surfaces that render the product's own words verbatim, and are therefore exempt.
  *
- * It flagged `docs/benchmarks` in all nine languages — for a sentence that reads "48.3% is NOT a
- * SWE-bench Verified score". That is the project stating its own caveat, and a gate that forbids
- * the documentation from quoting its own warning has inverted itself. Those pages are the
- * product's words, rendered verbatim and reviewed in the repository that owns them; the site is
- * their renderer, not their editor.
+ * Three of them, each found by this check firing on it:
  *
- * What this check is actually for is site-authored copy, where a number can be lifted out of its
- * qualification by someone tightening a paragraph.
+ *   `/docs/`            — the documentation, flagged for the sentence "is NOT a SWE-bench Verified
+ *                         score". A gate that forbids the docs from quoting their own warning has
+ *                         inverted itself.
+ *   `/cli/`             — command help text. `swe-bench-compare` names the benchmark because that
+ *                         is what it compares; the string comes out of the CLI, not out of copy.
+ *   `/blog/releases/`   — release notes as published on GitHub, which nobody may author here.
+ *
+ * All three are reviewed in the repository that owns them. The site is their renderer, not their
+ * editor, and a check that edits them is a check that has changed job.
+ *
+ * **What this now lets through**, stated rather than discovered later: an overclaim written into a
+ * release note or a command's docstring reaches the site unchallenged. That text has a reviewer —
+ * it is just not this gate. What the gate still covers is every word the site itself writes, which
+ * is where a figure gets lifted out of its qualification by somebody tightening a paragraph.
  */
-const PRODUCT_RENDERED = /\/docs\//;
+const PRODUCT_RENDERED = /\/(docs|cli)\/|\/blog\/releases\//;
 
 function checkNoForbiddenPhrases(): string[] {
   if (!existsSync(OUT)) return [];
@@ -161,7 +205,7 @@ function checkNoForbiddenPhrases(): string[] {
     for (const { pattern, why } of FORBIDDEN_PHRASES) {
       if (pattern.test(html)) failures.push(`${rel}: ${pattern} — ${why}`);
     }
-    for (const failure of unnegatedAssertions(html)) failures.push(`${rel}: ${failure}`);
+    for (const failure of uncaveatedNames(html)) failures.push(`${rel}: ${failure}`);
     // "GA" may appear only where the page also says the product is alpha. The maturity snapshot
     // says `"level": "GA"`, and that verdict standing alone is the one accurate number in this
     // repository that would mislead every reader.

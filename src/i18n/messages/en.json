@@ -3,10 +3,8 @@
   "common.copy": "Copy",
   "common.copied": "Copied",
   "common.readMore": "Read more",
-
   "brand.name": "Chimera",
   "brand.tagline": "The governed, self-evolving agent.",
-
   "nav.agent": "Terminal agent",
   "nav.desktop": "Desktop app",
   "nav.docs": "Docs",
@@ -16,7 +14,6 @@
   "nav.github": "GitHub",
   "nav.discord": "Discord",
   "nav.primary": "Primary",
-
   "home.lead": "A terminal agent that does real work on its own, and a desktop app to work with it. Open source, runs on your machine, and publishes the benchmarks where it lost.",
   "home.panelHeading": "Many minds, one answer",
   "home.panelBody": "The lion, the goat, the dragon and the snake were on the logo before they were an argument. A panel of models answers, a judge names where they agree and where they do not, and a synthesiser writes the result — but only when the question is hard enough to be worth it. Fusion itself is not unique; wiring it into the agent loop behind a cost-aware router, and measuring it, is.",
@@ -34,7 +31,6 @@
   "home.desktopBlurb": "The app: conversation that edits code, a board that dispatches to your agents, and every setting the agent has — on Windows, macOS and Linux.",
   "home.alphaHeading": "It is alpha, and it says so",
   "home.alphaBody": "Solid and heavily tested, not yet battle-hardened in production. The installers are not signed by a certificate authority, so Windows and macOS warn on first run. Both of those are on the download page too, before the button.",
-
   "agent.title": "Chimera Agent",
   "agent.lead": "An agent that lives in your terminal and does the work — not a chat window that describes it.",
   "agent.whatHeading": "What it does",
@@ -52,7 +48,6 @@
   "agent.modelsBody": "One OpenRouter key reaches a hundred models. Native keys for OpenAI, Anthropic, Gemini and DeepSeek work directly, several keys per provider rotate on rate limits, and a local model through Ollama needs no key at all. Any OpenAI-compatible endpoint works by pointing one setting at it.",
   "agent.modelsCta": "How to connect a model",
   "agent.commandsCta": "Every command",
-
   "desktop.title": "Chimera Desktop",
   "desktop.lead": "The app you work in: conversation that edits code, a board that dispatches to your agents, and the settings that actually apply.",
   "desktop.screensHeading": "What is in it",
@@ -68,13 +63,11 @@
   "desktop.screen5Body": "Models, memory, autonomy, tools and your agent's own name, language and standing instructions. Each one says when it takes effect.",
   "desktop.installHeading": "Install it",
   "desktop.installBody": "Native installers for Windows, macOS and Linux. No Python needed — the backend is bundled.",
-
   "caveat.internalSuite": "Measured on our own Docker-free suite, graded by pytest — one model, small self-contained Python tasks. This is not SWE-bench, and it does not generalise to real repositories.",
   "caveat.easySlice": "A deliberately easy, single-repo slice of SWE-bench Verified. This is not a SWE-bench Verified score — a real one needs the full 500 instances. The delta is not significant on its own.",
   "caveat.publishedNegative": "The scaffold did not help here, and the run is published as measured. Both arms sit near the floor and the difference is not significant.",
   "caveat.alphaNotGa": "Internal surface coverage — how much of the codebase is proven by real tests. It is not a statement about the product, which is alpha.",
   "caveat.retracted": "Retracted. Seven pre-registered runs; the one positive result did not survive a higher-powered replication, so the claim was withdrawn rather than kept.",
-
   "skills.title": "Skills",
   "skills.subtitle": "Short cards that tell the agent how to approach a recurring kind of task. Data, never code — nothing here is executed.",
   "skills.positioning": "Fewer cards, each with a name behind it. Every card here was reviewed by a maintainer before it merged, carries the provenance that review conferred, and is served with a hash of the exact bytes on this page. That is the part a catalogue of ninety thousand entries cannot offer.",
@@ -104,7 +97,6 @@
   "skills.sectionRisk": "Risk",
   "skills.emphasis": "Avoid and Check are where the value usually is. Do is the section everybody writes.",
   "skills.indexLink": "The machine-readable index",
-
   "blog.title": "Blog",
   "blog.subtitle": "What changed in the products, and what is worth reading in the field.",
   "blog.all": "Everything",
@@ -137,7 +129,6 @@
   "blog.verdictSkip": "skip",
   "blog.paperRelevance": "What it changes here",
   "blog.paperCaveat": "Said before the summary, not after it: a summary of a paper nobody finished is worth exactly as much as the part that was read.",
-
   "download.title": "Download",
   "download.subtitle": "Native installers for Windows, macOS and Linux, plus the terminal agent from PyPI.",
   "download.version": "Version {version}, released {date}",
@@ -163,7 +154,6 @@
   "download.alphaHeading": "It is alpha",
   "download.alphaBody": "Solid and heavily tested, without production mileage. Start with low-stakes work, and keep the sandbox in mind for anything that touches real systems.",
   "download.report": "Report what failed",
-
   "cli.title": "Command reference",
   "cli.subtitle": "Every command the agent has, read from the CLI itself.",
   "cli.intro": "Generated from the product's own command surface and regenerated by its CI, so a renamed flag cannot survive here. The help text is the text you get from --help — it is the code's own words and is deliberately not translated.",
@@ -186,7 +176,6 @@
   "cli.noOptions": "This command takes no options.",
   "cli.back": "All commands",
   "cli.commandCount": "{count} commands",
-
   "evidence.title": "Evidence",
   "evidence.subtitle": "Every number this project publishes, including the ones where it lost.",
   "evidence.intro": "These figures are read from the snapshots the product generates and stamps at each release. Nothing on this page is typed by hand, which is also why none of it can quietly age.",
@@ -203,29 +192,24 @@
   "evidence.retracted": "Retracted claim",
   "evidence.maturityHeading": "Surface coverage",
   "evidence.provenOf": "{proven} of {total} criteria proven",
-
   "search.open": "Search",
   "search.placeholder": "Search the site…",
   "search.empty": "Nothing matched.",
   "search.unavailable": "Search is built with the site, so it is not available in development.",
   "search.close": "Close",
-
   "docs.onThisPage": "On this page",
   "docs.editOnGitHub": "Edit this page on GitHub",
   "docs.untranslated": "This page has not been translated yet, so you are reading the English original.",
   "docs.title": "Documentation",
   "docs.subtitle": "Install it, connect it to a model, and do something real with it.",
-
   "theme.label": "Theme",
   "theme.system": "System",
   "theme.light": "Light",
   "theme.dark": "Dark",
-
   "lang.label": "Language",
   "lang.alsoAvailable": "This page is also available in {language}.",
   "lang.switch": "Read in {language}",
   "lang.dismiss": "Dismiss",
-
   "footer.license": "Apache-2.0",
   "footer.copyright": "Copyright {year} The Chimera Agent Authors",
   "footer.alpha": "Alpha — solid and heavily tested, not yet battle-hardened in production.",
@@ -235,5 +219,13 @@
   "footer.press": "Brand",
   "footer.product": "Product",
   "footer.learn": "Learn",
-  "footer.community": "Community"
+  "footer.community": "Community",
+  "coverage.title": "Translation coverage",
+  "coverage.subtitle": "What nine languages actually means here, measured rather than claimed.",
+  "coverage.body": "Tier 1 is everything a visitor reads before deciding whether to stay — navigation, the home page, the product pages, downloads, and every caveat. It is complete in all nine languages, and CI refuses a build where it is not. Tier 2 is the reference material: the command list, the evidence page furniture, the blog and the skills hub. Those fall back to English behind a notice that says so.",
+  "coverage.ratchet": "The English column is the key set. A machine-translated technical reference that has drifted out of date is not accessibility — it is a confident lie with an accent, and it is why the second tier is allowed to wait.",
+  "coverage.language": "Language",
+  "coverage.tier1": "Tier 1",
+  "coverage.everything": "All strings",
+  "coverage.cap": "{pending} Tier 2 strings outstanding, cap {cap}"
 }

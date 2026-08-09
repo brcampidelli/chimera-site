@@ -99,6 +99,11 @@ export function Footer({ locale }: Props) {
             <Link href={to("/press")} className="focus-ring rounded hover:text-foreground">
               {t("footer.press")}
             </Link>
+            {" · "}
+            {/* A site claiming nine languages owes a straight answer about what that means. */}
+            <Link href={to("/coverage")} className="focus-ring rounded hover:text-foreground">
+              {t("coverage.title")}
+            </Link>
           </p>
           <p className="sr-only">{SITE.domain}</p>
         </div>

@@ -22,10 +22,40 @@ const MESSAGES = join(SITE_ROOT, "src", "i18n", "messages");
 const PENDING = join(MESSAGES, "_pending.json");
 
 export interface Pending {
-  /** The cap. Lower it as translations land; raising it should feel like a decision. */
+  /** The cap on Tier 2 debt. Lower it as translations land; raising it is a decision. */
   maxPending: number;
   /** `"<locale>:<key>"`, sorted. Derived — do not edit by hand. */
   keys: string[];
+}
+
+/**
+ * Tier 1: the strings a visitor reads before deciding whether to stay, plus every caveat.
+ *
+ * These are not allowed to be missing in any language — no cap, no allowance. Everything else is
+ * Tier 2 and may sit in English behind a notice that says so, because a machine-translated,
+ * out-of-date technical reference is not accessibility. It is a confident lie with an accent.
+ *
+ * The split is mechanical on purpose. "Marketing gets translated, docs do not" is a policy
+ * somebody interprets; a prefix list is a rule that fails the build.
+ */
+export const TIER1_PREFIXES = [
+  "common.",
+  "brand.",
+  "nav.",
+  "theme.",
+  "lang.",
+  "footer.",
+  "home.",
+  "agent.",
+  "desktop.",
+  "download.",
+  "caveat.",
+  "search.",
+  "docs.",
+] as const;
+
+export function isTier1(key: string): boolean {
+  return TIER1_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
 
 const read = (file: string): Record<string, string> =>
@@ -69,14 +99,25 @@ function main(): void {
       console.error("i18n: _pending.json is stale. Run `npm run sync:i18n` and commit it.");
       process.exit(1);
     }
+
+    // Tier 1 has no allowance. A missing caveat or a half-English home page is not debt to be
+    // tracked — it is the site failing at the thing it claims to do in nine languages.
+    const tier1 = keys.filter((entry) => isTier1(entry.split(":")[1] ?? ""));
+    if (tier1.length > 0) {
+      console.error(`i18n: ${tier1.length} Tier 1 strings are untranslated. There is no cap on these.`);
+      for (const entry of tier1.slice(0, 20)) console.error(`  ${entry}`);
+      if (tier1.length > 20) console.error(`  … and ${tier1.length - 20} more`);
+      process.exit(1);
+    }
+
     if (keys.length > next.maxPending) {
       console.error(
-        `i18n: ${keys.length} untranslated strings, cap is ${next.maxPending}.\n` +
+        `i18n: ${keys.length} untranslated Tier 2 strings, cap is ${next.maxPending}.\n` +
           "Translate them, or raise the cap in a commit that says why.",
       );
       process.exit(1);
     }
-    console.log(`i18n: ${keys.length}/${next.maxPending} pending`);
+    console.log(`i18n: Tier 1 complete · ${keys.length}/${next.maxPending} Tier 2 pending`);
     return;
   }
 
