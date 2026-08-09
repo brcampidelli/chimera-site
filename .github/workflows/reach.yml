@@ -1,0 +1,38 @@
+# A throwaway diagnostic, run by hand.
+#
+# The deploy fails at `Ship it` with "connection timed out" — not "refused", not an auth error, so
+# packets are being dropped somewhere between GitHub's runners and the hosting. The same port is
+# open from a residential line and from a Hostinger VPS, which narrows it but does not settle it.
+#
+# Redesigning the deploy on a hunch about which ports a runner can reach would be guessing. This
+# asks. Delete it once the answer is in the commit message that acts on it.
+name: Reach
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: What can this runner actually reach
+        env:
+          HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+        run: |
+          echo "runner egress: $(curl -s --max-time 10 https://api.ipify.org || echo unknown)"
+          echo
+          # 65002 ssh · 22 ssh (default) · 21 ftp · 990 ftps · 443 https · 80 http
+          for port in 65002 22 21 990 443 80; do
+            start=$(date +%s)
+            if timeout 20 bash -c "cat < /dev/null > /dev/tcp/$HOST/$port" 2>/dev/null; then
+              echo "port $port: OPEN ($(( $(date +%s) - start ))s)"
+            else
+              echo "port $port: closed or dropped ($(( $(date +%s) - start ))s)"
+            fi
+          done
+          echo
+          # A timeout at 20s is a silent drop; a fast failure is a refusal. The difference is the
+          # difference between a firewall and a service that is simply not listening.
+          echo "--- ssh banner on 65002, if anything answers ---"
+          timeout 20 bash -c "exec 3<>/dev/tcp/$HOST/65002 && head -c 60 <&3" || echo "(nothing)"
