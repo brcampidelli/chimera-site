@@ -82,6 +82,10 @@ jobs:
               echo "  longest body line:                $(sed '1d;$d' key | awk '{ if (length($0) > m) m = length($0) } END { print m+0 }')"
               echo
               echo "A healthy ed25519 key here is 8 lines, 432 bytes, header yes, footer yes, public no."
+              # The case this guard was built for, named so the numbers above read as a diagnosis.
+              echo "Header NO + footer NO + exactly 70 bytes short = the copy took the body and left"
+              echo "the BEGIN/END lines behind. Copy the whole file instead of selecting it:"
+              echo "  Get-Content -Raw \$HOME\\.chimera-site-deploy-key\\id_ed25519 | Set-Clipboard"
               echo "ssh-keygen's own words:"
               ssh-keygen -y -f key 2>&1 | sed 's/^/  /'
             } >&2
