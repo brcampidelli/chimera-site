@@ -11,45 +11,46 @@
  * link in the one place a reader is most likely to trust.
  */
 export interface DocsSection {
-  /** Translation key for the group heading. Untranslated groups fall back to English. */
+  /** Translation key for the group heading (`docs.nav*`). */
   readonly heading: string;
+  /** Each item's `label` is a translation key too, not the text. */
   readonly items: readonly { readonly slug: string; readonly label: string }[];
 }
 
 export const DOCS_NAV: readonly DocsSection[] = [
   {
-    heading: "Home",
-    items: [{ slug: "index", label: "Overview" }],
+    heading: "docs.navHome",
+    items: [{ slug: "index", label: "docs.navOverview" }],
   },
   {
-    heading: "Get started",
-    items: [{ slug: "usage", label: "Install & first run" }],
+    heading: "docs.navGetStarted",
+    items: [{ slug: "usage", label: "docs.navInstall" }],
   },
   {
-    heading: "Do something real",
-    items: [{ slug: "recipes", label: "Recipes overview" }],
+    heading: "docs.navDoSomethingReal",
+    items: [{ slug: "recipes", label: "docs.navRecipes" }],
   },
   {
-    heading: "Connect",
-    items: [{ slug: "mcp", label: "MCP servers" }],
+    heading: "docs.navConnect",
+    items: [{ slug: "mcp", label: "docs.navMcp" }],
   },
   {
-    heading: "Extend",
-    items: [{ slug: "extending", label: "Add a tool, skill, or recipe" }],
+    heading: "docs.navExtend",
+    items: [{ slug: "extending", label: "docs.navExtending" }],
   },
   {
-    heading: "Operate",
+    heading: "docs.navOperate",
     items: [
-      { slug: "deploy", label: "Deploy (Docker / systemd)" },
-      { slug: "security", label: "Security & safeguards" },
+      { slug: "deploy", label: "docs.navDeploy" },
+      { slug: "security", label: "docs.navSecurity" },
     ],
   },
   {
-    heading: "Understand",
+    heading: "docs.navUnderstand",
     items: [
-      { slug: "architecture", label: "Architecture" },
-      { slug: "fusion-receipts", label: "Fusion receipts" },
-      { slug: "benchmarks", label: "Benchmarks" },
+      { slug: "architecture", label: "docs.navArchitecture" },
+      { slug: "fusion-receipts", label: "docs.navFusionReceipts" },
+      { slug: "benchmarks", label: "docs.navBenchmarks" },
     ],
   },
 ];

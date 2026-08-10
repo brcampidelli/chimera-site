@@ -27,7 +27,7 @@ export function DocsShell({ locale, slug, title, headings, html, untranslated }:
           {DOCS_NAV.map((section) => (
             <li key={section.heading}>
               <h2 className="text-xs uppercase tracking-widest text-muted-foreground">
-                {section.heading}
+                {t(section.heading)}
               </h2>
               <ul className="mt-2 space-y-0.5">
                 {section.items.map((item) => (
@@ -42,9 +42,11 @@ export function DocsShell({ locale, slug, title, headings, html, untranslated }:
                           : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
                       ].join(" ")}
                     >
-                      {/* The label is the curated one; the file's own H1 is the fallback, so a
-                          renamed page never shows a stale name from this list. */}
-                      {item.label || titles[item.slug] || item.slug}
+                      {/* The label is the curated one, as a translation key; the file's own H1 is
+                          the fallback, so a renamed page never shows a stale name from this list.
+                          `t()` falls through locale → English → the key itself, so a missing
+                          translation degrades to English rather than to a visible `docs.nav*`. */}
+                      {(item.label && t(item.label)) || titles[item.slug] || item.slug}
                     </Link>
                   </li>
                 ))}
