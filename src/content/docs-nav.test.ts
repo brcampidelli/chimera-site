@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { docSlugs, docsAvailable, linkResolver } from "./docs";
 import { DOCS_NAV, NAV_SLUGS } from "./docs-nav";
-import { expandAdmonitions, splitTitle } from "./markdown";
+import { expandAdmonitions, splitTitle, stripMaterialSyntax } from "./markdown";
 
 /**
  * The navigation used to live in `mkdocs.yml`, which this change retires. These assertions are
@@ -81,6 +81,26 @@ describe("markdown — MkDocs constructs survive the move", () => {
   it("leaves ordinary prose alone", () => {
     const prose = "Just a paragraph with an exclamation!\n";
     expect(expandAdmonitions(prose)).toBe(prose);
+  });
+
+  it("drops a Material icon instead of publishing its source", () => {
+    // Six of these were live on /docs/ in all nine languages, as the first thing on the page.
+    const out = stripMaterialSyntax("- **:material-rocket-launch: Get started**\n");
+    expect(out).toBe("- **Get started**\n");
+    expect(out).not.toContain("material-");
+  });
+
+  it("lets a card grid render as a list rather than an inert div", () => {
+    // `markdown="1"` is a Python-Markdown attribute; nothing here reads it, so the list inside
+    // stayed unparsed. The class survives because the stylesheet is what it is for.
+    const out = stripMaterialSyntax('<div class="grid cards" markdown>\n\n- One\n\n</div>\n');
+    expect(out).toContain('<div class="grid cards">');
+    expect(out).not.toContain("markdown>");
+  });
+
+  it("leaves a colon that is not an icon alone", () => {
+    const prose = "Run it: the ratio is 3:1 and the flag is `--fuse`.\n";
+    expect(stripMaterialSyntax(prose)).toBe(prose);
   });
 
   it("lifts the H1 out of the body so it is not rendered twice", () => {
