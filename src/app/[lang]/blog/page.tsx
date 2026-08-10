@@ -5,6 +5,7 @@ import { CATEGORIES, categoryHref, type Category } from "@/content/blog";
 import { entries } from "@/content/blog-feed";
 import { SEGMENTS, alternatesFor, isLocaleSegment, localePath, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
+import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
 
 export function generateStaticParams() {
   return SEGMENTS.map((lang) => ({ lang }));
@@ -84,6 +85,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("blog.title")}</h1>
+      <UntranslatedNotice locale={lang} />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">{t("blog.subtitle")}</p>
 
       {/* Only categories that have something. An empty category page is a promise the site is not
