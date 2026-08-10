@@ -27,14 +27,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const locale: LocaleSegment = isLocaleSegment(lang) ? lang : "en";
+  // The title and description a search result and a shared link actually show, in the language of
+  // the page they belong to. They were English literals, so all eight translated homes — and every
+  // page that inherits this description — announced themselves in English to Google and to anyone
+  // pasting the link into a chat. Nothing new had to be written: `brand.tagline` and `home.lead` are
+  // Tier 1 and have been translated into all nine languages the whole time.
+  const t = translator(locale);
+  const tagline = t("brand.tagline").replace(/[.。]$/, "");
   return {
     metadataBase: new URL(SITE.url),
     title: {
-      default: "Chimera — the governed, self-evolving agent",
-      template: "%s · Chimera",
+      default: `${t("brand.name")} — ${tagline}`,
+      template: `%s · ${t("brand.name")}`,
     },
-    description:
-      "An open-source agent for your terminal and a desktop app to work with it. Apache-2.0, alpha, and it publishes the benchmarks it lost.",
+    description: t("home.lead"),
     icons: { icon: "/favicon.ico", apple: "/brand/chimera-icon.png" },
     // One card for the whole site, composed at build time from the mark and the palette already in
     // the repository. A per-route generator would need a renderer and a font file in the build, to
