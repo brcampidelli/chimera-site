@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Snippet } from "@/components/ui/Snippet";
+import { evidenceAvailable } from "@/content/evidence";
 import {
   downloadFor,
   formatBytes,
   releases,
   type Download,
 } from "@/content/releases";
-import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, alternatesFor, isLocaleSegment, localePath } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
 
@@ -160,6 +162,21 @@ export default async function DownloadPage({ params }: { params: Promise<{ lang:
         <p className="mt-2 max-w-measure text-sm text-muted-foreground">
           {t("download.alphaBody")}
         </p>
+        {/* The second way in to the evidence, and the right moment for it: this is the paragraph
+            where someone decides whether to believe the claim, and until now the only link to the
+            numbers was one line in the middle of the home page — inside a section that disappears
+            entirely when the benchmark snapshot is missing, taking the only route with it.
+            `home.evidenceCta` is already translated into all nine languages, so this costs none. */}
+        {evidenceAvailable() ? (
+          <p className="mt-4">
+            <Link
+              href={localePath(lang, "/evidence")}
+              className="focus-ring rounded text-sm text-accent hover:underline"
+            >
+              {t("home.evidenceCta")} →
+            </Link>
+          </p>
+        ) : null}
       </section>
     </div>
   );

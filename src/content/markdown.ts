@@ -50,6 +50,26 @@ export function expandAdmonitions(source: string): string {
   });
 }
 
+const MATERIAL_ICON = /:material-[a-z0-9-]+:\s*/g;
+const GRID_CARDS = /<div class="grid cards" markdown>/g;
+
+/**
+ * The two MkDocs Material extensions this site does not implement, removed rather than printed.
+ *
+ * The docs are authored for MkDocs and rendered here, so anything that depends on a Material plugin
+ * arrives as literal source. `:material-rocket-launch:` is pymdownx.emoji and was being published,
+ * verbatim and in all nine languages, as the first thing on `/docs/`. The icon is decoration — the
+ * link text beside it already carries the meaning — so dropping it loses nothing, where printing it
+ * costs the first impression of the documentation.
+ *
+ * `<div class="grid cards" markdown>` is the other half: `markdown="1"` is a Python-Markdown
+ * attribute, ignored here, so the list inside rendered as a plain list wrapped in an inert div.
+ * Dropping the attribute lets the list render and leaves the class for the stylesheet.
+ */
+export function stripMaterialSyntax(source: string): string {
+  return source.replace(MATERIAL_ICON, "").replace(GRID_CARDS, '<div class="grid cards">');
+}
+
 /** The first `# ` line is the page title; it is rendered as the page heading, not in the body. */
 export function splitTitle(source: string): { title: string; body: string } {
   const match = source.match(/^#\s+(.+)$/m);
@@ -128,7 +148,7 @@ export async function renderMarkdown(source: string, resolve: LinkResolver): Pro
     .use(rehypeHighlight, { detect: true, ignoreMissing: true })
     .use(rewriteLinks(resolve))
     .use(rehypeStringify, { allowDangerousHtml: true })
-    .process(expandAdmonitions(body));
+    .process(stripMaterialSyntax(expandAdmonitions(body)));
 
   return { html: String(file), title, headings };
 }

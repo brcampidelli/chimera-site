@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
+import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
 
 export function generateStaticParams() {
   return SEGMENTS.map((lang) => ({ lang }));
@@ -37,6 +38,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("privacy.title")}</h1>
+      <UntranslatedNotice locale={lang} />
       <p className="mt-6 max-w-measure text-prose text-muted-foreground">{t("privacy.body")}</p>
       <p className="mt-4 max-w-measure text-prose text-muted-foreground">
         {t("privacy.downloads")}

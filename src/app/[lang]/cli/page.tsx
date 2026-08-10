@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CLI_THEMES, cli, cliAvailable, cliHref, commandByName } from "@/content/cli";
 import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
+import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
 
 export function generateStaticParams() {
   return SEGMENTS.map((lang) => ({ lang }));
@@ -39,6 +40,7 @@ export default async function CliIndex({ params }: { params: Promise<{ lang: str
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("cli.title")}</h1>
+      <UntranslatedNotice locale={lang} />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">{t("cli.subtitle")}</p>
       <p className="mt-4 max-w-measure text-sm text-muted-foreground">{t("cli.intro")}</p>
       <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">

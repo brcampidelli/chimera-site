@@ -13,6 +13,7 @@ import {
 import { SEGMENTS, alternatesFor, isLocaleSegment, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
+import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
 
 export function generateStaticParams() {
   return SEGMENTS.map((lang) => ({ lang }));
@@ -112,6 +113,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ lang:
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("evidence.title")}</h1>
+      <UntranslatedNotice locale={lang} />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">
         {t("evidence.subtitle")}
       </p>

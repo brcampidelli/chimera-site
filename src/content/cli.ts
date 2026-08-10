@@ -69,6 +69,10 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
       key: "cli.themeWork",
       commands: [
         "chat",
+        // Shipped with the persistent terminal conversation and never listed here, so the command
+        // reference described a CLI that had one fewer command than the CLI does. The gate that
+        // catches this has been red since that release.
+        "sessions",
         "tui",
         "assist",
         "run",
