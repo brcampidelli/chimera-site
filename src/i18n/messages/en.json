@@ -129,6 +129,7 @@
   "docs.onThisPage": "On this page",
   "docs.subtitle": "Install it, connect it to a model, and do something real with it.",
   "docs.title": "Documentation",
+  "docs.translationStale": "This page has a translation, but the English original has changed since it was made — so you are reading the English.",
   "docs.untranslated": "This page has not been translated yet, so you are reading the English original.",
   "download.allReleases": "All releases, and every artefact",
   "download.alphaBody": "Solid and heavily tested, without production mileage. Start with low-stakes work, and keep the sandbox in mind for anything that touches real systems.",

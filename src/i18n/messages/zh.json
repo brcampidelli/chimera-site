@@ -63,6 +63,7 @@
   "docs.onThisPage": "本页目录",
   "docs.subtitle": "安装它、接上一个模型，然后用它做点真事。",
   "docs.title": "文档",
+  "docs.translationStale": "本页有译文，但英文原文此后已经改动——因此你看到的是英文。",
   "docs.untranslated": "本页尚未翻译，您正在阅读英文原文。",
   "download.allReleases": "全部版本及每个构件",
   "download.alphaBody": "扎实且经过大量测试，但没有生产里程。请从低风险的工作开始，凡是触及真实系统的事情都记得用沙箱。",

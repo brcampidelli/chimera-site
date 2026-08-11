@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import matter from "gray-matter";
 import { resolveProductRoot } from "../../scripts/sync-tokens";
 import { DOCS_INDEX_SLUG, NAV_SLUGS } from "./docs-nav";
 import { renderMarkdown, type Rendered } from "./markdown";
@@ -38,6 +40,51 @@ export function docSource(slug: string): string {
   return readFileSync(join(DOCS_DIR, `${slug}.md`), "utf8");
 }
 
+/**
+ * Translations live beside the English they mirror, in the product repository.
+ *
+ * `docs/i18n/<locale>/<slug>.md`, and the location is the argument this file already makes about
+ * itself: documentation kept away from the thing it documents diverges by construction. A change to
+ * `usage.md` shows its eight translations in the same diff, or it does not show them at all.
+ *
+ * A subdirectory rather than a `usage.pt.md` sibling, because `docSlugs()` lists `DOCS_DIR` and
+ * would otherwise invent a slug called `usage.pt` — and `docs-nav.test.ts` would then fail for the
+ * right reason about the wrong thing.
+ */
+const TRANSLATIONS_DIR = join(DOCS_DIR, "i18n");
+
+/** The SHA-256 a translation must declare to be considered current. */
+export function docSourceHash(slug: string): string {
+  return createHash("sha256").update(docSource(slug), "utf8").digest("hex");
+}
+
+export interface DocTranslation {
+  readonly body: string;
+  /** True when the English has changed since this translation was made. */
+  readonly stale: boolean;
+}
+
+/**
+ * The translation for a locale, or null when there is none.
+ *
+ * Every translation declares `source_sha256` — the hash of the English it was made from. This is
+ * the whole mechanism: nine copies of a document that changes every release is nine ways to be
+ * quietly wrong, and the only defence that survives contact with a busy week is one a build can
+ * check. A stale translation is not rendered; the reader gets the English original and a notice
+ * saying why, which is the behaviour this site already had for "not translated at all".
+ *
+ * A translation with no `source_sha256` is treated as stale rather than trusted: an undeclared
+ * provenance is exactly the claim we have no way to verify.
+ */
+export function docTranslation(locale: LocaleSegment, slug: string): DocTranslation | null {
+  if (locale === "en") return null;
+  const path = join(TRANSLATIONS_DIR, locale, `${slug}.md`);
+  if (!existsSync(path)) return null;
+  const { data, content } = matter(readFileSync(path, "utf8"));
+  const declared = typeof data.source_sha256 === "string" ? data.source_sha256 : "";
+  return { body: content, stale: declared !== docSourceHash(slug) };
+}
+
 /** Where a doc slug lives on this site. `index` is the section landing page. */
 export function docHref(locale: LocaleSegment, slug: string): string {
   return slug === DOCS_INDEX_SLUG
@@ -73,8 +120,21 @@ export function linkResolver(locale: LocaleSegment, from: string) {
   };
 }
 
-export async function loadDoc(locale: LocaleSegment, slug: string): Promise<Rendered> {
-  return renderMarkdown(docSource(slug), linkResolver(locale, slug));
+/** What the page got, and why — so the notice can say "not translated" or "translated, but stale". */
+export interface LoadedDoc extends Rendered {
+  readonly state: "english" | "translated" | "stale";
+}
+
+export async function loadDoc(locale: LocaleSegment, slug: string): Promise<LoadedDoc> {
+  const resolve = linkResolver(locale, slug);
+  const translation = docTranslation(locale, slug);
+  if (translation && !translation.stale) {
+    return { ...(await renderMarkdown(translation.body, resolve)), state: "translated" };
+  }
+  // Stale falls back to English on purpose. A translation that has drifted is worse than no
+  // translation: the reader cannot tell which sentences still hold, and neither can we.
+  const state = translation ? "stale" : locale === "en" ? "translated" : "english";
+  return { ...(await renderMarkdown(docSource(slug), resolve)), state };
 }
 
 /** Titles for the nav, read from each file's `# ` heading rather than restated in the nav. */

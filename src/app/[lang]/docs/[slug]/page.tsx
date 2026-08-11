@@ -46,7 +46,7 @@ export default async function DocPage({
       html={doc.html}
       // Documentation is English-only for now, and the site says so on the page rather than
       // pretending nine translations exist. Tier 1 (marketing) is the part that gets all nine.
-      untranslated={lang !== "en"}
+      state={doc.state}
     />
   );
 }
