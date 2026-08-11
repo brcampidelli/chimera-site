@@ -21,6 +21,44 @@ import { LINKS } from "@/lib/site";
  */
 const SKILLS_DIR = join(resolveProductRoot(), "skills");
 
+/**
+ * Translated card DESCRIPTIONS, and deliberately nothing else.
+ *
+ * The body of a card is not prose about the product. It is the payload the agent reads at runtime
+ * (`card_context()` injects it into the prompt), the bytes the published SHA-256 attests to, and
+ * the text the CLI imports by path. Translating it breaks all three at once: the page would show a
+ * hash that does not match what the reader is reading, and the translation would never reach the
+ * agent anyway, because the CLI only ever imports `skills/`.
+ *
+ * So the description travels in a sidecar that leaves `SKILL.md` byte-identical — the hash on the
+ * page keeps meaning what it says. Each entry declares the hash of the English description it was
+ * made from, exactly like the documentation translations, so a description that has drifted falls
+ * back to English instead of paraphrasing a sentence that no longer exists.
+ */
+const SKILLS_I18N_DIR = join(SKILLS_DIR, "i18n");
+
+export interface LocalisedDescription {
+  readonly text: string;
+  /** False when the reader is getting the English original — no translation, or a stale one. */
+  readonly translated: boolean;
+}
+
+export function describeSkill(locale: LocaleSegment, skill: Skill): LocalisedDescription {
+  const english = { text: skill.description, translated: false };
+  if (locale === "en") return english;
+  const path = join(SKILLS_I18N_DIR, `${locale}.json`);
+  if (!existsSync(path)) return english;
+  try {
+    const entry = JSON.parse(readFileSync(path, "utf8"))?.descriptions?.[skill.slug];
+    if (typeof entry?.text !== "string") return english;
+    const current = createHash("sha256").update(skill.description, "utf8").digest("hex");
+    return entry.source_sha256 === current ? { text: entry.text, translated: true } : english;
+  } catch {
+    // A malformed sidecar must not take the page down. English is always a correct answer here.
+    return english;
+  }
+}
+
 /** The five sections a card must have, in order. Mirrors `_CARD_SECTIONS` in the product. */
 export const SECTIONS = ["Trigger", "Do", "Avoid", "Check", "Risk"] as const;
 export type SectionName = (typeof SECTIONS)[number];

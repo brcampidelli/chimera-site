@@ -139,6 +139,7 @@
   "skills.contribute": "Eine Karte beitragen",
   "skills.contributeBody": "Öffnen Sie einen Pull Request auf skills/ im Produkt-Repository. Kein Issue nötig — es ist ein offener Bereich, und eine Karte zu prüfen heißt, eine Seite zu lesen, nicht einen Diff zu auditieren.",
   "skills.count": "{count} Karten",
+  "skills.descriptionTranslated": "Die Zusammenfassung oben ist eine Übersetzung. Die Karte selbst ist das englische Original — sie ist das, was der Agent liest und was der Hash unten bezeugt.",
   "skills.emphasis": "In Vermeiden und Prüfen steckt meist der Wert. Tun ist der Abschnitt, den alle schreiben.",
   "skills.filterAll": "Alle",
   "skills.filterAntiPattern": "Anti-Muster",

@@ -139,6 +139,7 @@
   "skills.contribute": "Proposer une fiche",
   "skills.contributeBody": "Ouvrez une pull request sur skills/ dans le dépôt du produit. Pas besoin d'issue — c'est un espace ouvert, et relire une fiche revient à lire une page plutôt qu'à auditer un diff.",
   "skills.count": "{count} fiches",
+  "skills.descriptionTranslated": "Le résumé ci-dessus est une traduction. La fiche elle-même est l'original anglais — c'est ce que lit l'agent et ce que l'empreinte ci-dessous atteste.",
   "skills.emphasis": "C'est dans À éviter et Vérifier que se trouve d'ordinaire la valeur. À faire est la section que tout le monde écrit.",
   "skills.filterAll": "Toutes",
   "skills.filterAntiPattern": "Anti-patron",

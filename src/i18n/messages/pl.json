@@ -139,6 +139,7 @@
   "skills.contribute": "Dodaj kartę",
   "skills.contributeBody": "Otwórz pull request na skills/ w repozytorium produktu. Zgłoszenie nie jest potrzebne — to obszar otwarty, a recenzja karty to lektura strony, nie audyt diffa.",
   "skills.count": "{count} kart",
+  "skills.descriptionTranslated": "Powyższe streszczenie to tłumaczenie. Sama karta jest angielskim oryginałem — to ją czyta agent i to jej dotyczy hasz poniżej.",
   "skills.emphasis": "Wartość zwykle kryje się w Unikaj i Sprawdź. Rób to sekcja, którą pisze każdy.",
   "skills.filterAll": "Wszystkie",
   "skills.filterAntiPattern": "Antywzorzec",

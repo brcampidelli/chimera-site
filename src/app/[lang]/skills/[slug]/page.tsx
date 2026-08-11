@@ -6,6 +6,7 @@ import { renderMarkdown } from "@/content/markdown";
 import {
   SECTIONS,
   cliImportsFromUrl,
+  describeSkill,
   skillBySlug,
   skillHref,
   skillSourceUrl,
@@ -76,7 +77,20 @@ export default async function SkillPage({
       </p>
 
       <h1 className="mt-4 font-mono text-d2">{skill.name}</h1>
-      <p className="mt-3 max-w-measure text-lead text-muted-foreground">{skill.description}</p>
+      {(() => {
+        const described = describeSkill(lang, skill);
+        return (
+          <>
+            <p className="mt-3 max-w-measure text-lead text-muted-foreground">{described.text}</p>
+            {/* Said only when it is true. The body below stays English — it is the text the agent
+                reads and the bytes the hash attests to — so a reader who sees a translated summary
+                above an English card is owed the reason rather than left to guess. */}
+            {described.translated ? (
+              <p className="mt-1 text-xs text-muted-foreground">{t("skills.descriptionTranslated")}</p>
+            ) : null}
+          </>
+        );
+      })()}
 
       <div className="mt-5 flex flex-wrap gap-2 text-xs">
         <span className="rounded-chip bg-surface-2 px-2.5 py-1 text-muted-foreground">
