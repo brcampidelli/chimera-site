@@ -23,11 +23,11 @@ Die Entwicklung der KI wird zunehmend von zwei kritischen Faktoren bestimmt: Eff
 
 ## Effizienz steht im Mittelpunkt
 
-Nvidias Nemotron 3.5 Lightning [3](https://the-decoder.com/nvidias-open-weight-nemotron-3-5-lightning-prioritizes-speed-over-maximum-intelligence/) verkörpert den Trend hin zu effizienteren KI-Modellen. Mit nur 3,6 Milliarden aktiven Parametern erreicht es die Leistung wesentlich größerer Modelle bei bisher unerreichter Geschwindigkeit. Dieser Ansatz priorisiert praktischen Nutzen gegenüber reiner Rechenleistung – ein Trend, der Entwickler anspricht, die Agenten in realen Szenarien einsetzen müssen. Effizienz ist keine Nebensache mehr; sie ist eine Kernanforderung für den Aufbau skalierbarer und reaktionsschneller KI-Systeme.
+Nvidias Nemotron 3.5 Lightning [[3]](https://the-decoder.com/nvidias-open-weight-nemotron-3-5-lightning-prioritizes-speed-over-maximum-intelligence/) verkörpert den Trend hin zu effizienteren KI-Modellen. Mit nur 3,6 Milliarden aktiven Parametern erreicht es die Leistung wesentlich größerer Modelle bei bisher unerreichter Geschwindigkeit. Dieser Ansatz priorisiert praktischen Nutzen gegenüber reiner Rechenleistung – ein Trend, der Entwickler anspricht, die Agenten in realen Szenarien einsetzen müssen. Effizienz ist keine Nebensache mehr; sie ist eine Kernanforderung für den Aufbau skalierbarer und reaktionsschneller KI-Systeme.
 
 ## Governance als grundlegendes Element
 
-Gleichzeitig gewinnt die Diskussion um KI-Governance an Dringlichkeit, wie das Treffen des brasilianischen Obersten Wahlgerichts zur Regulierung von Deepfake-Technologie in Wahlen zeigt [1](https://www.infomoney.com.br/politica/tse-se-reune-na-quinta-para-discutir-ia-de-bolsonaro-e-uso-de-deepfake-nas-eleicoes/). Es geht nicht nur darum, Missbrauch zu verhindern, sondern auch darum, Rahmenbedingungen zu schaffen, die sicherstellen, dass KI-Agenten transparent und ethisch arbeiten. Entwickler müssen Governance nun als grundlegendes Element ihrer Arbeit betrachten und Mechanismen für Verantwortung und Fairness in ihre Designs integrieren.
+Gleichzeitig gewinnt die Diskussion um KI-Governance an Dringlichkeit, wie das Treffen des brasilianischen Obersten Wahlgerichts zur Regulierung von Deepfake-Technologie in Wahlen zeigt [[1]](https://www.infomoney.com.br/politica/tse-se-reune-na-quinta-para-discutir-ia-de-bolsonaro-e-uso-de-deepfake-nas-eleicoes/). Es geht nicht nur darum, Missbrauch zu verhindern, sondern auch darum, Rahmenbedingungen zu schaffen, die sicherstellen, dass KI-Agenten transparent und ethisch arbeiten. Entwickler müssen Governance nun als grundlegendes Element ihrer Arbeit betrachten und Mechanismen für Verantwortung und Fairness in ihre Designs integrieren.
 
 ## Praktische Auswirkungen für Entwickler
 
