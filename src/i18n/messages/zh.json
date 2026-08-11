@@ -136,6 +136,7 @@
   "search.open": "搜索",
   "search.placeholder": "搜索本站…",
   "search.unavailable": "搜索索引与站点一起构建，因此在开发模式下不存在。",
+  "skills.bodyTranslated": "上面的卡片正文是译文。英文原文才是 CLI 导入的内容、智能体运行时读取的内容，也是下方哈希所证明的内容。",
   "skills.contribute": "贡献一张卡片",
   "skills.contributeBody": "在产品仓库的 skills/ 目录发起一个 pull request。不需要先开 issue——这是开放区域，评审一张卡片是读一页文字，而不是审一份 diff。",
   "skills.count": "{count} 张卡片",

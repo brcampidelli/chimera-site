@@ -136,6 +136,7 @@
   "search.open": "Suchen",
   "search.placeholder": "Website durchsuchen…",
   "search.unavailable": "Die Suche wird zusammen mit der Website gebaut und existiert deshalb in der Entwicklung nicht.",
+  "skills.bodyTranslated": "Der Kartentext oben ist eine Übersetzung. Das englische Original ist das, was die CLI importiert, was der Agent zur Laufzeit liest und was der Hash unten bezeugt.",
   "skills.contribute": "Eine Karte beitragen",
   "skills.contributeBody": "Öffnen Sie einen Pull Request auf skills/ im Produkt-Repository. Kein Issue nötig — es ist ein offener Bereich, und eine Karte zu prüfen heißt, eine Seite zu lesen, nicht einen Diff zu auditieren.",
   "skills.count": "{count} Karten",

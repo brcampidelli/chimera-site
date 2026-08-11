@@ -136,6 +136,7 @@
   "search.open": "Szukaj",
   "search.placeholder": "Szukaj w serwisie…",
   "search.unavailable": "Wyszukiwarka powstaje razem z serwisem, więc nie istnieje w trybie deweloperskim.",
+  "skills.bodyTranslated": "Treść karty powyżej to tłumaczenie. Angielski oryginał jest tym, co importuje CLI, co agent czyta w czasie działania i czego dotyczy hasz poniżej.",
   "skills.contribute": "Dodaj kartę",
   "skills.contributeBody": "Otwórz pull request na skills/ w repozytorium produktu. Zgłoszenie nie jest potrzebne — to obszar otwarty, a recenzja karty to lektura strony, nie audyt diffa.",
   "skills.count": "{count} kart",
