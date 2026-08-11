@@ -117,19 +117,26 @@ function Sources({
       <h2 className="text-xs uppercase tracking-widest text-muted-foreground">
         {t("blog.sourcesHeading")}
       </h2>
+      {/* Numerada, e a numeração é visível. The body cites `[1]`, `[3]`, and a reader who cannot
+          see which entry is which is holding a pointer to nothing. Gaps are normal and honest:
+          this list is what the piece was written from, not a reference list, so a story that was
+          read and not cited still belongs here. */}
       <ol className="mt-4 grid gap-3">
-        {sources.map((item) => (
-          <li key={item.url} className="surface p-4">
-            <a
-              href={item.url}
-              rel="noreferrer nofollow"
-              className="focus-ring rounded text-sm hover:text-accent2"
-            >
-              {item.headline}
-            </a>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {item.outlet} · <time dateTime={item.published}>{item.published}</time>
-            </p>
+        {sources.map((item, i) => (
+          <li key={item.url} className="surface flex gap-3 p-4">
+            <span className="shrink-0 font-mono text-sm text-muted-foreground">{i + 1}</span>
+            <div>
+              <a
+                href={item.url}
+                rel="noreferrer nofollow"
+                className="focus-ring rounded text-sm hover:text-accent2"
+              >
+                {item.headline}
+              </a>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                {item.outlet} · <time dateTime={item.published}>{item.published}</time>
+              </p>
+            </div>
           </li>
         ))}
       </ol>

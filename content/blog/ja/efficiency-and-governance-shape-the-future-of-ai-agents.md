@@ -23,11 +23,11 @@ AI開発の軌跡は、効率性とガバナンスという2つの重要な要�
 
 ## 効率性が中心舞台に
 
-NvidiaのNemotron 3.5 Lightning [Nvidia's open-weight Nemotron 3.5 Lightning prioritizes speed over maximum intelligence](https://the-decoder.com/nvidias-open-weight-nemotron-3-5-lightning-prioritizes-speed-over-maximum-intelligence/)は、AIモデルにおける効率性への移行を象徴しています。わずか36億のアクティブパラメーターで、はるかに大きなモデルの性能を匹敵させながら、前例のない速度を達成しています。このアプローチは、生の計算力よりも実用的な有用性を優先しており、現実世界のシナリオでエージェントを展開する必要がある開発者にとって共感を呼ぶトレンドです。効率性はもはや二次的な考慮事項ではなく、スケーラブルで応答性の高いAIシステムを構築するためのコア要件となっています。
+NvidiaのNemotron 3.5 Lightning [3](https://the-decoder.com/nvidias-open-weight-nemotron-3-5-lightning-prioritizes-speed-over-maximum-intelligence/)は、AIモデルにおける効率性への移行を象徴しています。わずか36億のアクティブパラメーターで、はるかに大きなモデルの性能を匹敵させながら、前例のない速度を達成しています。このアプローチは、生の計算力よりも実用的な有用性を優先しており、現実世界のシナリオでエージェントを展開する必要がある開発者にとって共感を呼ぶトレンドです。効率性はもはや二次的な考慮事項ではなく、スケーラブルで応答性の高いAIシステムを構築するためのコア要件となっています。
 
 ## ガバナンスの基盤的要素
 
-一方、AIガバナンスに関する議論は緊急性を増しており、ブラジルの高等選挙裁判所が選挙におけるディープフェイク技術に対処するための会議を開催したことがその例です [TSE se reune na quinta para discutir IA de Bolsonaro e uso de “deepfake” nas eleições](https://www.infomoney.com.br/politica/tse-se-reune-na-quinta-para-discutir-ia-de-bolsonaro-e-uso-de-deepfake-nas-eleicoes/)。これは単に誤用を規制するだけでなく、AIエージェントが透明かつ倫理的に動作するためのフレームワークを確立することです。開発者は今や、ガバナンスを仕事の基盤的要素として考慮し、説明責任と公平性を設計に組み込む必要があります。
+一方、AIガバナンスに関する議論は緊急性を増しており、ブラジルの高等選挙裁判所が選挙におけるディープフェイク技術に対処するための会議を開催したことがその例です [1](https://www.infomoney.com.br/politica/tse-se-reune-na-quinta-para-discutir-ia-de-bolsonaro-e-uso-de-deepfake-nas-eleicoes/)。これは単に誤用を規制するだけでなく、AIエージェントが透明かつ倫理的に動作するためのフレームワークを確立することです。開発者は今や、ガバナンスを仕事の基盤的要素として考慮し、説明責任と公平性を設計に組み込む必要があります。
 
 ## 開発者への実践的な影響
 
