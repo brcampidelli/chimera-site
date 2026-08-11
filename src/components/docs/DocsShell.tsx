@@ -13,10 +13,11 @@ interface Props {
   headings: readonly Heading[];
   html: string;
   /** True when this locale has no translation and the reader is getting English. */
-  untranslated: boolean;
+  /** Why the reader is looking at English: never translated, or translated and since drifted. */
+  state: "english" | "translated" | "stale";
 }
 
-export function DocsShell({ locale, slug, title, headings, html, untranslated }: Props) {
+export function DocsShell({ locale, slug, title, headings, html, state }: Props) {
   const t = translator(locale);
   const titles = docTitles();
 
@@ -58,14 +59,17 @@ export function DocsShell({ locale, slug, title, headings, html, untranslated }:
 
       <article className="min-w-0">
         <h1 className="text-d2">{title}</h1>
-        {untranslated ? (
+        {state !== "translated" ? (
           /*
             Said before the content, not after. A reader who works out for themselves that the
             page is in the wrong language has already spent the confusion this notice exists to
             prevent — and the site should never quietly pass English off as a translation.
           */
           <p className="surface mt-5 border-l-2 border-l-warn p-3 text-sm text-muted-foreground">
-            {t("docs.untranslated")}
+            {/* Two different admissions, and conflating them would be the dishonest one: "we have
+                not translated this" is a gap, "we translated it and the original has changed since"
+                is a translation the reader must not trust sentence by sentence. */}
+            {t(state === "stale" ? "docs.translationStale" : "docs.untranslated")}
           </p>
         ) : null}
         <div className="md mt-6 max-w-measure" dangerouslySetInnerHTML={{ __html: html }} />

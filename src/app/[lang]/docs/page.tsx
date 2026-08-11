@@ -38,7 +38,7 @@ export default async function DocsIndex({ params }: { params: Promise<{ lang: st
       title={doc.title}
       headings={doc.headings}
       html={doc.html}
-      untranslated={lang !== "en"}
+      state={doc.state}
     />
   );
 }

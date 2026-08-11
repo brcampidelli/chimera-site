@@ -63,6 +63,7 @@
   "docs.onThisPage": "In questa pagina",
   "docs.subtitle": "Installarlo, collegarlo a un modello, e farci qualcosa di reale.",
   "docs.title": "Documentazione",
+  "docs.translationStale": "Questa pagina ha una traduzione, ma l'originale inglese è cambiato da allora — quindi stai leggendo l'inglese.",
   "docs.untranslated": "Questa pagina non è ancora tradotta, quindi stai leggendo l'originale in inglese.",
   "download.allReleases": "Tutte le versioni, e ogni artefatto",
   "download.alphaBody": "Solido e testato a fondo, senza chilometraggio in produzione. Comincia con lavori a basso rischio, e tieni presente il sandbox per qualunque cosa tocchi sistemi reali.",
