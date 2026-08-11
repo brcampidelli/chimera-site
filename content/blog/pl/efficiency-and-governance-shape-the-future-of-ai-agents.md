@@ -23,11 +23,11 @@ Rozwój sztucznej inteligencji jest coraz bardziej definiowany przez dwa kluczow
 
 ## Efektywność na pierwszym planie
 
-Model Nemotron 3.5 Lightning firmy Nvidia [3](https://the-decoder.com/nvidias-open-weight-nemotron-3-5-lightning-prioritizes-speed-over-maximum-intelligence/) jest przykładem dążenia do efektywności w modelach AI. Dzięki zaledwie 3,6 miliarda aktywnych parametrów dorównuje wydajności znacznie większym modelom, osiągając przy tym niespotykaną szybkość. To podejście stawia praktyczną użyteczność ponad surową moc obliczeniową, co jest trendem bliskim programistom wdrażającym agentów w rzeczywistych scenariuszach. Efektywność nie jest już drugorzędną kwestią – to podstawowy wymóg budowania skalowalnych i responsywnych systemów AI.
+Model Nemotron 3.5 Lightning firmy Nvidia [[3]](https://the-decoder.com/nvidias-open-weight-nemotron-3-5-lightning-prioritizes-speed-over-maximum-intelligence/) jest przykładem dążenia do efektywności w modelach AI. Dzięki zaledwie 3,6 miliarda aktywnych parametrów dorównuje wydajności znacznie większym modelom, osiągając przy tym niespotykaną szybkość. To podejście stawia praktyczną użyteczność ponad surową moc obliczeniową, co jest trendem bliskim programistom wdrażającym agentów w rzeczywistych scenariuszach. Efektywność nie jest już drugorzędną kwestią – to podstawowy wymóg budowania skalowalnych i responsywnych systemów AI.
 
 ## Zarządzanie jako element podstawowy
 
-Tymczasem dyskusja na temat zarządzania AI zyskuje na pilności, co podkreśla spotkanie Brazylijskiego Wyższego Sądu Wyborczego w sprawie technologii deepfake w wyborach [1](https://www.infomoney.com.br/politica/tse-se-reune-na-quinta-para-discutir-ia-de-bolsonaro-e-uso-de-deepfake-nas-eleicoes/). Nie chodzi tylko o regulację nadużyć, ale o stworzenie ram zapewniających przejrzyste i etyczne działanie agentów AI. Programiści muszą teraz traktować zarządzanie jako podstawowy element swojej pracy, wbudowując mechanizmy odpowiedzialności i uczciwości w swoje projekty.
+Tymczasem dyskusja na temat zarządzania AI zyskuje na pilności, co podkreśla spotkanie Brazylijskiego Wyższego Sądu Wyborczego w sprawie technologii deepfake w wyborach [[1]](https://www.infomoney.com.br/politica/tse-se-reune-na-quinta-para-discutir-ia-de-bolsonaro-e-uso-de-deepfake-nas-eleicoes/). Nie chodzi tylko o regulację nadużyć, ale o stworzenie ram zapewniających przejrzyste i etyczne działanie agentów AI. Programiści muszą teraz traktować zarządzanie jako podstawowy element swojej pracy, wbudowując mechanizmy odpowiedzialności i uczciwości w swoje projekty.
 
 ## Praktyczne implikacje dla programistów
 
