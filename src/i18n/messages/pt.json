@@ -200,6 +200,7 @@
   "search.open": "Buscar",
   "search.placeholder": "Buscar no site…",
   "search.unavailable": "A busca é construída junto com o site, então não existe em desenvolvimento.",
+  "skills.bodyTranslated": "O corpo do cartão acima é uma tradução. O original em inglês é o que a CLI importa, o que o agente lê em execução e o que o hash abaixo atesta.",
   "skills.contribute": "Contribua com um cartão",
   "skills.contributeBody": "Abra um pull request em skills/ no repositório do produto. Não precisa de issue — é uma área aberta, e revisar um cartão é ler uma página, não auditar um diff.",
   "skills.count": "{count} cartões",

@@ -238,6 +238,7 @@
   "search.open": "Search",
   "search.placeholder": "Search the site…",
   "search.unavailable": "Search is built with the site, so it is not available in development.",
+  "skills.bodyTranslated": "The card body above is a translation. The English original is what the CLI imports, what the agent reads at runtime, and what the hash below attests to.",
   "skills.contribute": "Contribute a card",
   "skills.contributeBody": "Open a pull request against skills/ in the product repository. No issue needed — it is an open area, and reviewing a card is reading a page rather than auditing a diff.",
   "skills.count": "{count} cards",

@@ -43,6 +43,47 @@ export interface LocalisedDescription {
   readonly translated: boolean;
 }
 
+/**
+ * The five sections in the reader's language, when a current translation exists.
+ *
+ * This is a DISPLAY artifact and never the payload. `SKILL.md` stays byte-identical, so the hash on
+ * the page still attests to the bytes the CLI imports and the agent reads at runtime — the three
+ * guarantees survive because the translation lives beside the card rather than replacing it.
+ *
+ * What the page owes the reader in exchange is to say so, loudly: the sections they are reading are
+ * a translation, and the hash below covers the English. A translated page under an untranslated
+ * hash, with no note, would be the one arrangement worse than not translating at all.
+ */
+export function localiseSections(
+  locale: LocaleSegment,
+  skill: Skill,
+): { sections: Record<SectionName, string>; translated: boolean } {
+  const english = { sections: { ...skill.sections }, translated: false };
+  if (locale === "en") return english;
+  const path = join(SKILLS_I18N_DIR, `${locale}.json`);
+  if (!existsSync(path)) return english;
+  try {
+    const entry = JSON.parse(readFileSync(path, "utf8"))?.sections?.[skill.slug];
+    if (!entry || typeof entry.source_sha256 !== "string") return english;
+    // The hash is of the whole English body, so a change to any one section retires all five
+    // together. Five sections drifting independently would let a page mix a current Trigger with a
+    // stale Avoid, and the reader could not tell which was which.
+    const body = SECTIONS.map((s) => skill.sections[s]).join("\n\n");
+    if (entry.source_sha256 !== createHash("sha256").update(body, "utf8").digest("hex")) {
+      return english;
+    }
+    const out = {} as Record<SectionName, string>;
+    for (const name of SECTIONS) {
+      const text = entry[name];
+      if (typeof text !== "string" || !text.trim()) return english; // all five, or none
+      out[name] = text;
+    }
+    return { sections: out, translated: true };
+  } catch {
+    return english;
+  }
+}
+
 export function describeSkill(locale: LocaleSegment, skill: Skill): LocalisedDescription {
   const english = { text: skill.description, translated: false };
   if (locale === "en") return english;

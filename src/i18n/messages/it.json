@@ -136,6 +136,7 @@
   "search.open": "Cerca",
   "search.placeholder": "Cerca nel sito…",
   "search.unavailable": "La ricerca viene costruita insieme al sito, quindi non esiste in sviluppo.",
+  "skills.bodyTranslated": "Il corpo della scheda qui sopra è una traduzione. L'originale inglese è ciò che la CLI importa, ciò che l'agente legge in esecuzione e ciò che l'hash qui sotto attesta.",
   "skills.contribute": "Contribuisci con una scheda",
   "skills.contributeBody": "Apri una pull request su skills/ nel repository del prodotto. Non serve una issue — è un'area aperta, e revisionare una scheda significa leggere una pagina, non controllare un diff.",
   "skills.count": "{count} schede",

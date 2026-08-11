@@ -7,6 +7,7 @@ import {
   SECTIONS,
   cliImportsFromUrl,
   describeSkill,
+  localiseSections,
   skillBySlug,
   skillHref,
   skillSourceUrl,
@@ -61,10 +62,14 @@ export default async function SkillPage({
   if (!skill) notFound();
 
   const t = translator(lang);
+  // A display translation. `SKILL.md` is untouched, so the hash further down still attests to the
+  // bytes the CLI imports and the agent reads — which is exactly why the page has to say that the
+  // words above it are not those bytes.
+  const localised = localiseSections(lang, skill);
   const rendered = await Promise.all(
     SECTIONS.map(async (section) => ({
       section,
-      html: (await renderMarkdown(skill.sections[section], (target) => target)).html,
+      html: (await renderMarkdown(localised.sections[section], (target) => target)).html,
     })),
   );
 
@@ -82,10 +87,10 @@ export default async function SkillPage({
         return (
           <>
             <p className="mt-3 max-w-measure text-lead text-muted-foreground">{described.text}</p>
-            {/* Said only when it is true. The body below stays English — it is the text the agent
-                reads and the bytes the hash attests to — so a reader who sees a translated summary
-                above an English card is owed the reason rather than left to guess. */}
-            {described.translated ? (
+            {/* Only when the body below is still English. Once the sections are translated too,
+                the notice above the sections covers the whole card and saying it twice would just
+                be noise. */}
+            {described.translated && !localised.translated ? (
               <p className="mt-1 text-xs text-muted-foreground">{t("skills.descriptionTranslated")}</p>
             ) : null}
           </>
@@ -130,6 +135,16 @@ export default async function SkillPage({
       </section>
 
       <p className="mt-8 max-w-measure text-sm text-muted-foreground">{t("skills.emphasis")}</p>
+
+      {/* The price of translating the body, paid where it is charged. The hash further down still
+          covers the English, so the reader has to be told that what follows is not the bytes it
+          attests to — a translated page under an untranslated hash, said nowhere, would be worse
+          than not translating at all. */}
+      {localised.translated ? (
+        <p className="mt-3 max-w-measure border-l-2 border-l-warn pl-3 text-sm text-muted-foreground">
+          {t("skills.bodyTranslated")}
+        </p>
+      ) : null}
 
       <div className="mt-4 grid gap-4">
         {rendered.map(({ section, html }) => (
