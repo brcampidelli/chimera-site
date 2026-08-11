@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL } from "@/app/[lang]/blog/page";
-import { blogHref, postBySlug, posts, translationsOf } from "@/content/blog";
+import { blogHref, postBySlug, posts, releaseTagUrl, translationsOf } from "@/content/blog";
 import { renderMarkdown } from "@/content/markdown";
 import {
   SEGMENTS,
@@ -94,14 +94,14 @@ function PaperCard({ locale, post }: { locale: LocaleSegment; post: NonNullable<
 }
 
 /**
- * The items, rendered from frontmatter.
+ * The articles the piece was written from, rendered from frontmatter.
  *
- * Everything a reader can check — headline, outlet, date, link — comes from data, and the only
- * prose is the comment, which is labelled and capped. A digest is assembled by an agent twice a day
- * and merged with nobody reading it first; that is defensible only if the page cannot say more than
- * its sources, and the way to guarantee it is to leave the writer nothing else to say.
+ * The body above is ours, which is the whole point of the format and also its risk: an agent wrote
+ * it and merged it with nobody reading it first. So what a reader can check — headline, outlet,
+ * date, link — stays in data, below the argument, where it can be compared against what the
+ * argument claimed. Prose cannot contradict these fields because prose is not where they live.
  */
-function DigestItems({
+function Sources({
   locale,
   post,
 }: {
@@ -109,40 +109,36 @@ function DigestItems({
   post: NonNullable<ReturnType<typeof postBySlug>>;
 }) {
   const t = translator(locale);
-  const items = post.items ?? [];
+  const sources = post.sources ?? [];
+  if (sources.length === 0) return null;
 
   return (
-    <section className="mt-8">
-      <p className="max-w-measure text-sm text-muted-foreground">{t("blog.digestCaveat")}</p>
-
-      <ol className="mt-5 grid gap-4">
-        {items.map((item) => (
-          <li key={item.url} className="surface p-5">
-            <h2 className="text-d3">
-              <a
-                href={item.url}
-                rel="noreferrer nofollow"
-                className="focus-ring rounded hover:text-accent2"
-              >
-                {item.headline}
-              </a>
-            </h2>
+    <section className="mt-12 border-t border-hairline pt-6">
+      <h2 className="text-xs uppercase tracking-widest text-muted-foreground">
+        {t("blog.sourcesHeading")}
+      </h2>
+      <ol className="mt-4 grid gap-3">
+        {sources.map((item) => (
+          <li key={item.url} className="surface p-4">
+            <a
+              href={item.url}
+              rel="noreferrer nofollow"
+              className="focus-ring rounded text-sm hover:text-accent2"
+            >
+              {item.headline}
+            </a>
             <p className="mt-1 font-mono text-xs text-muted-foreground">
               {item.outlet} · <time dateTime={item.published}>{item.published}</time>
-            </p>
-            <p className="mt-3 max-w-measure text-sm">
-              <span className="text-muted-foreground">{t("blog.digestComment")}: </span>
-              {item.comment}
             </p>
           </li>
         ))}
       </ol>
 
-      {/* What the run looked at and threw away. A digest that ships two items after reading nine
-          reads as "there were two" unless it says otherwise. */}
+      {/* What the run looked at and threw away. A run that ships one piece after reading forty
+          reads as "there was one story today" unless it says otherwise. */}
       {post.dropped ? (
         <p className="mt-4 max-w-measure text-xs text-muted-foreground">
-          {t("blog.digestDropped")}: {post.dropped}
+          {t("blog.dropped")}: {post.dropped}
         </p>
       ) : null}
     </section>
@@ -190,9 +186,31 @@ export default async function PostPage({
       <p className="mt-3 max-w-measure text-lead text-muted-foreground">{post.summary}</p>
 
       {post.category === "papers" ? <PaperCard locale={lang} post={post} /> : null}
-      {post.category === "digest" ? <DigestItems locale={lang} post={post} /> : null}
+
+      {/* Said before the piece, not after it. A reader who is three paragraphs in has already
+          decided how to read them, and finding out then that this is our reading of someone
+          else's reporting is finding out too late. */}
+      {post.category === "analysis" ? (
+        <p className="mt-4 max-w-measure border-l-2 border-l-accent pl-3 text-sm text-muted-foreground">
+          {t("blog.analysisCaveat")}
+        </p>
+      ) : null}
+      {post.category === "update" && post.version ? (
+        <p className="mt-4 max-w-measure border-l-2 border-l-accent pl-3 text-sm text-muted-foreground">
+          {t("blog.updateCaveat")}{" "}
+          <a
+            href={releaseTagUrl(post.version)}
+            rel="noreferrer"
+            className="focus-ring rounded text-accent2 hover:text-accent"
+          >
+            {t("blog.readingSource")} →
+          </a>
+        </p>
+      ) : null}
 
       <div className="md mt-8 max-w-measure" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+
+      {post.category === "analysis" ? <Sources locale={lang} post={post} /> : null}
 
       <p className="sr-only">{SITE.url}</p>
     </article>

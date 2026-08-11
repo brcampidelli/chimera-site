@@ -2,23 +2,29 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
-import { localePath, type LocaleSegment } from "@/i18n/locales";
+import { SEGMENTS, localePath, type LocaleSegment } from "@/i18n/locales";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const BLOG_DIR = join(ROOT, "content", "blog");
 
 /**
- * The blog has two natures and they need opposite treatment.
+ * The blog has three natures and they need different treatment.
  *
  * `release` is **generated** from the GitHub release body. The CHANGELOG already holds thousands
  * of lines of carefully written notes and every release already has an authored body; rewriting
  * that into a post would create a third version of the same truth, and three versions of one
  * truth diverge. So no one may author a `release` post — `blog.test.ts` enforces it.
  *
- * The other six are editorial and hand-written. They are also the largest fabrication surface on
- * this site: "AI news" written with a model's help is a plausible-invention generator. The defence
- * is cheap and absolute — every factual post must link a primary source, and a paper post must
- * declare how much of the paper was actually read.
+ * `terminal`, `desktop`, `ai`, `llms`, `agents` and `papers` are editorial and hand-written. They
+ * are the largest fabrication surface on this site: "AI news" written with a model's help is a
+ * plausible-invention generator. The defence is cheap and absolute — every factual post must link
+ * a primary source, and a paper post must declare how much of the paper was actually read.
+ *
+ * `analysis` and `update` are **written by an agent and merged without a human reading them**,
+ * which is a different problem again. It replaced a digest format whose whole defence was leaving
+ * the writer almost nothing to say: headline, outlet, date and link lived in frontmatter and the
+ * only prose was one capped comment. That defence does not survive an article, so `articleProblems`
+ * below is its replacement, and every rule there is one a fluent, confident, wrong run trips over.
  */
 export const CATEGORIES = [
   "release",
@@ -28,7 +34,8 @@ export const CATEGORIES = [
   "llms",
   "agents",
   "papers",
-  "digest",
+  "analysis",
+  "update",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
@@ -37,41 +44,65 @@ export type Category = (typeof CATEGORIES)[number];
 export const GENERATED_CATEGORIES: readonly Category[] = ["release"];
 
 /** Categories that report on the outside world, and therefore owe a source. */
-export const NEWS_CATEGORIES: readonly Category[] = ["ai", "llms", "agents", "papers", "digest"];
+export const NEWS_CATEGORIES: readonly Category[] = ["ai", "llms", "agents", "papers", "analysis"];
+
+/**
+ * The two categories an agent writes, in nine languages, in one run.
+ *
+ * Grouped because the rules that matter apply to both: the whole run publishes or none of it does,
+ * and a translation that silently fell back to English is a failure the reader cannot see.
+ */
+export const AUTHORED_BY_AGENT: readonly Category[] = ["analysis", "update"];
 
 export type ReadDepth = "full" | "partial" | "abstract-only";
 export type Verdict = "adopt" | "adapt" | "park" | "skip";
 
 /**
- * One item in a digest, as data rather than as prose.
+ * One article the piece was written from, as data rather than as prose.
  *
- * This is the whole defence. A digest is assembled twice a day by an agent reading the feeds, and
- * the failure mode of that arrangement is not a missing link — it is a post that links a real
- * article and then describes, fluently and at length, something the article does not say. A link
- * was already required and would not have caught it.
+ * The headline, the outlet, the date and the URL live here and the page renders them from these
+ * fields, so the reader can always see what was actually read — the one property of the old digest
+ * format worth keeping. Prose cannot contradict them because prose is not where they are.
  *
- * So the headline, the outlet, the date and the URL live here, in frontmatter, and the page renders
- * them from these fields. Prose cannot contradict them because prose is not where they are. What is
- * left for the writer is `comment` — ours, labelled as ours, and short enough that it cannot smuggle
- * a paragraph of invented fact past a reader who came for the headline.
+ * What changed is everything else: the body is now ours. So the rules moved from "the writer has
+ * almost nothing to say" to "whatever the writer says, it cannot cite a source it did not declare
+ * and it cannot put words in anyone's mouth". See `articleProblems`.
  */
-export interface DigestItem {
+export interface Source {
   /** The headline as the outlet published it. Not a rewrite, not a translation. */
   readonly headline: string;
   readonly url: string;
   readonly outlet: string;
   /** The article's own publication date, not ours. */
   readonly published: string;
-  /** Our commentary. Rendered as commentary, capped, and never confusable with reporting. */
-  readonly comment: string;
 }
 
-/** How many items a single digest may carry. Three is the cadence Bruno asked for; the cap is what
- * stops a bad run from emptying a feed reader onto the site. */
-export const DIGEST_MAX_ITEMS = 3;
+/** How many articles one piece may declare. Past this it is a reading list, not a thesis. */
+export const SOURCES_MAX = 4;
 
-/** Two sentences of opinion. Past this it stops being commentary and starts being reporting. */
-export const DIGEST_COMMENT_MAX = 400;
+/** An English article shorter than this is a comment with a headline on it. */
+export const ARTICLE_MIN_WORDS = 250;
+
+/** And longer than this is reporting we did not do. */
+export const ARTICLE_MAX_WORDS = 1400;
+
+/**
+ * How far a translation may sit from the English, measured in characters.
+ *
+ * Not style policing — a truncation detector. A run where the model returned one paragraph instead
+ * of eight produces a page that reads fine and is missing most of the argument, and nobody reads
+ * nine languages before merging. Chinese runs near half the character count of English and German
+ * somewhat over it, so the band is wide enough to never fire on a real translation.
+ */
+export const TRANSLATION_LENGTH_BAND = { min: 0.35, max: 2.6 } as const;
+
+/**
+ * Links to our own things, which need no declared source because they are not claims about others.
+ *
+ * Anything else in the body has to be a URL the post declared in `sources` — an article that cites
+ * a page it never listed is the exact shape of an invented citation.
+ */
+const OURS = /^https:\/\/(chimeraagent\.space|github\.com\/brcampidelli|pypi\.org\/project\/chimera-agent)/;
 
 export interface PostMeta {
   readonly slug: string;
@@ -87,13 +118,15 @@ export interface PostMeta {
   readonly coverage?: string;
   readonly verdict?: Verdict;
   readonly relevance?: string;
-  /** Digests only. */
-  readonly items?: readonly DigestItem[];
+  /** Analysis only — the articles the piece was written from. */
+  readonly sources?: readonly Source[];
+  /** Updates only — the version this post is about, so the page can link the release it names. */
+  readonly version?: string;
   /**
    * Candidates the run gathered and threw away, and why.
    *
-   * A digest that silently ships two items when it looked at nine reads as "there were two". The
-   * run knows the difference and the page says it.
+   * A run that ships one piece after reading forty reads as "there was one story today" unless it
+   * says otherwise. The run knows the difference and the page says it.
    */
   readonly dropped?: string;
 }
@@ -115,15 +148,14 @@ function isoDate(value: unknown): string {
   return String(value ?? "");
 }
 
-/** One frontmatter item, with every field coerced to a string so a malformed one fails the gate
+/** One frontmatter source, with every field coerced to a string so a malformed one fails the gate
  * with a message about the field rather than crashing the build with a message about `undefined`. */
-function digestItem(raw: Record<string, unknown>): DigestItem {
+function source(raw: Record<string, unknown>): Source {
   return {
     headline: String(raw?.headline ?? ""),
     url: String(raw?.url ?? ""),
     outlet: String(raw?.outlet ?? ""),
     published: isoDate(raw?.published),
-    comment: String(raw?.comment ?? ""),
   };
 }
 
@@ -161,9 +193,10 @@ export function posts(): Post[] {
         coverage: data.coverage ? String(data.coverage) : undefined,
         verdict: data.verdict ? (String(data.verdict) as Verdict) : undefined,
         relevance: data.relevance ? String(data.relevance) : undefined,
-        items: Array.isArray(data.items)
-          ? (data.items as unknown[]).map((raw) => digestItem(raw as Record<string, unknown>))
+        sources: Array.isArray(data.sources)
+          ? (data.sources as unknown[]).map((raw) => source(raw as Record<string, unknown>))
           : undefined,
+        version: data.version ? String(data.version) : undefined,
         dropped: data.dropped ? String(data.dropped) : undefined,
         body: parsed.content,
       });
@@ -189,34 +222,76 @@ export function translationsOf(slug: string): LocaleSegment[] {
 
 const EXTERNAL_LINK = /\]\(https?:\/\//;
 
+/** Code, removed before any rule looks at prose. A shell one-liner is not a quotation. */
+function prose(body: string): string {
+  return body.replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ");
+}
+
+const URL_IN_BODY = /https?:\/\/[^\s)<>"'\]]+/g;
+
 /**
- * Everything wrong with one digest.
+ * A quotation long enough to be words in someone's mouth.
  *
- * These rules exist because a digest is written by a machine twice a day and merged without anyone
- * reading it first. That is the arrangement Bruno chose, and it is defensible only if the format
- * itself refuses the failure — so every rule here is one a fluent, confident, wrong run would trip
- * over.
+ * Of everything a confident model invents, this is the one that does real damage to someone else:
+ * a plausible sentence attributed to a named person who never said it. Short quotes — a phrase from
+ * a headline, a product name — are how normal prose works and stay legal. Written with explicit
+ * code points so the CJK and European quote marks survive any editor that touches this file.
  */
-export function digestProblems(id: string, post: Post): string[] {
+const LONG_QUOTE = new RegExp(
+  [
+    '"[^"\\n]{60,}"',
+    "“[^”\\n]{60,}”",
+    "«[^»\\n]{60,}»",
+    "「[^」\\n]{30,}」",
+    "„[^“”\\n]{60,}[“”]",
+  ].join("|"),
+);
+
+export const releaseTagUrl = (version: string) =>
+  `https://github.com/brcampidelli/chimera-agent/releases/tag/v${version}`;
+
+/**
+ * Everything wrong with one agent-written article.
+ *
+ * These rules exist because an agent writes this text and it merges without anyone reading it
+ * first. That is the arrangement Bruno chose, and it is defensible only if the format itself
+ * refuses the failure. The old digest format bought that by leaving the writer one capped field;
+ * an article cannot be defended that way, so the defence moved to what a wrong run would do:
+ * cite a page it never read, quote someone who never spoke, and — the quiet one — return the
+ * English text again for a language it failed to translate.
+ *
+ * `english` is the same post in English, when there is one. Pass it and the translation rules
+ * apply; omit it and only the single-post rules do.
+ */
+export function articleProblems(id: string, post: Post, english?: Post): string[] {
   const problems: string[] = [];
-  const items = post.items ?? [];
+  const sources = post.sources ?? [];
+  const body = prose(post.body);
 
-  if (items.length === 0) {
-    problems.push(`${id}: a digest with no items is an empty page with a date on it`);
-  }
-  if (items.length > DIGEST_MAX_ITEMS) {
-    problems.push(`${id}: ${items.length} items, and a digest carries at most ${DIGEST_MAX_ITEMS}`);
-  }
-
-  // Links belong in `items`, where they are checked. A link loose in the body is prose that got
-  // its own source, which is exactly the structure this format replaced.
-  if (EXTERNAL_LINK.test(post.body) || /https?:\/\//.test(post.body)) {
-    problems.push(`${id}: a digest keeps its links in items, not in the body`);
+  if (post.category === "analysis") {
+    if (sources.length === 0) {
+      problems.push(`${id}: an analysis with no sources is an opinion with a dateline`);
+    }
+    if (sources.length > SOURCES_MAX) {
+      problems.push(`${id}: ${sources.length} sources, and a piece declares at most ${SOURCES_MAX}`);
+    }
   }
 
-  const seen = new Set<string>();
-  items.forEach((item, i) => {
-    const at = `${id}: item ${i + 1}`;
+  if (post.category === "update") {
+    if (!/^\d+\.\d+\.\d+$/.test(post.version ?? "")) {
+      problems.push(`${id}: an update names the version it is about, got "${post.version ?? ""}"`);
+    } else if (!post.body.includes(releaseTagUrl(post.version as string))) {
+      problems.push(
+        `${id}: an update about ${post.version} must link its own release, ` +
+          `${releaseTagUrl(post.version as string)}. A version nobody can open is an announcement ` +
+          "the reader has to take on faith.",
+      );
+    }
+  }
+
+  const declared = new Set<string>();
+  sources.forEach((item, i) => {
+    const at = `${id}: source ${i + 1}`;
     if (!item.headline) problems.push(`${at} has no headline`);
     if (!item.outlet) problems.push(`${at} does not say which outlet published it`);
     if (!/^https:\/\//.test(item.url)) {
@@ -225,18 +300,58 @@ export function digestProblems(id: string, post: Post): string[] {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(item.published)) {
       problems.push(`${at} needs the article's own date as YYYY-MM-DD, got "${item.published}"`);
     }
-    if (!item.comment) {
-      problems.push(`${at} has no comment — a headline with no reading is a bookmark, not a post`);
+    if (declared.has(item.url)) problems.push(`${at} repeats a url already declared`);
+    declared.add(item.url);
+  });
+
+  // A citation to something the post never declared. This is what an invented source looks like:
+  // a real-looking URL, in a sentence that reads like it was checked.
+  for (const url of body.match(URL_IN_BODY) ?? []) {
+    const clean = url.replace(/[.,;:]+$/, "");
+    if (!declared.has(clean) && !OURS.test(clean)) {
+      problems.push(`${id}: the body cites ${clean}, which is not one of its declared sources`);
     }
-    if (item.comment.length > DIGEST_COMMENT_MAX) {
+  }
+
+  // And the opposite failure: sources listed as decoration under a piece that never used them.
+  if (post.category === "analysis" && sources.length > 0) {
+    if (![...declared].some((url) => post.body.includes(url))) {
       problems.push(
-        `${at}: comment is ${item.comment.length} characters and the cap is ${DIGEST_COMMENT_MAX}. ` +
-          "Past that it stops being commentary and starts being reporting we did not do.",
+        `${id}: the body links none of its sources — a reader cannot check a claim against a list`,
       );
     }
-    if (seen.has(item.url)) problems.push(`${at} repeats a url already in this digest`);
-    seen.add(item.url);
-  });
+  }
+
+  if (LONG_QUOTE.test(body)) {
+    problems.push(
+      `${id}: a long quotation. Words in a named person's mouth are the one invention that ` +
+        "damages someone outside this project, so the format does not carry them.",
+    );
+  }
+
+  if (post.lang === "en") {
+    const words = body.split(/\s+/).filter(Boolean).length;
+    if (words < ARTICLE_MIN_WORDS) {
+      problems.push(`${id}: ${words} words, and an article starts at ${ARTICLE_MIN_WORDS}`);
+    }
+    if (words > ARTICLE_MAX_WORDS) {
+      problems.push(`${id}: ${words} words, and ${ARTICLE_MAX_WORDS} is where analysis becomes reporting`);
+    }
+  } else if (english) {
+    if (post.body.trim() === english.body.trim()) {
+      problems.push(
+        `${id}: the body is the English text. A translation run that fell back is invisible to ` +
+          "the reader and has to be visible here.",
+      );
+    }
+    const ratio = post.body.length / Math.max(english.body.length, 1);
+    if (ratio < TRANSLATION_LENGTH_BAND.min || ratio > TRANSLATION_LENGTH_BAND.max) {
+      problems.push(
+        `${id}: ${Math.round(ratio * 100)}% the length of the English. A translation that came ` +
+          "back as one paragraph reads fine and is missing the argument.",
+      );
+    }
+  }
 
   return problems;
 }
@@ -249,7 +364,8 @@ export function digestProblems(id: string, post: Post): string[] {
  */
 export function postProblems(): string[] {
   const problems: string[] = [];
-  for (const post of posts()) {
+  const all = posts();
+  for (const post of all) {
     const id = `${post.lang}/${post.slug}`;
 
     if (!post.title) problems.push(`${id}: no title`);
@@ -271,18 +387,18 @@ export function postProblems(): string[] {
     }
 
     // News owes a source. A post about the outside world with no link out is an assertion the
-    // reader cannot check, which is the shape every fabricated claim takes. A digest carries its
-    // sources as data instead, and is checked field by field below.
-    if ((NEWS_CATEGORIES as readonly string[]).includes(post.category) && post.category !== "digest") {
+    // reader cannot check, which is the shape every fabricated claim takes. An analysis declares
+    // its sources as data instead, and is checked field by field below.
+    if ((NEWS_CATEGORIES as readonly string[]).includes(post.category) && post.category !== "analysis") {
       if (!EXTERNAL_LINK.test(post.body)) {
         problems.push(`${id}: a ${post.category} post must link at least one primary source`);
       }
     }
 
-    if (post.category === "digest") {
-      problems.push(...digestProblems(id, post));
-    } else if (post.items || post.dropped) {
-      problems.push(`${id}: items/dropped belong to a digest`);
+    if ((AUTHORED_BY_AGENT as readonly string[]).includes(post.category)) {
+      problems.push(...articleProblems(id, post, all.find((p) => p.slug === post.slug && p.lang === "en")));
+    } else if (post.sources || post.version || post.dropped) {
+      problems.push(`${id}: sources/version/dropped belong to an agent-written post`);
     }
 
     if (post.category === "papers") {
@@ -300,6 +416,26 @@ export function postProblems(): string[] {
       problems.push(`${id}: arxiv/read/verdict belong to a papers post`);
     }
   }
+
+  // An agent-written piece publishes in nine languages or not at all.
+  //
+  // Not a nicety. The reason this format exists is that the reader gets our text in their own
+  // language; a run that wrote five and dropped four leaves a site that looks deliberate — four
+  // quiet 404s, or worse, a language whose blog simply has less in it. The hand-written categories
+  // are exempt: the blog is Tier 2 and a post written in one language is not pretending otherwise.
+  const byLang = new Map<string, Set<string>>();
+  for (const post of all) {
+    if (!(AUTHORED_BY_AGENT as readonly string[]).includes(post.category)) continue;
+    if (!byLang.has(post.slug)) byLang.set(post.slug, new Set());
+    byLang.get(post.slug)?.add(post.lang);
+  }
+  for (const [slug, langs] of byLang) {
+    const missing = SEGMENTS.filter((seg) => !langs.has(seg));
+    if (missing.length) {
+      problems.push(`${slug}: written in ${langs.size} of ${SEGMENTS.length} languages, missing ${missing.join(", ")}`);
+    }
+  }
+
   return problems;
 }
 

@@ -37,7 +37,8 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   llms: "blog.catLlms",
   agents: "blog.catAgents",
   papers: "blog.catPapers",
-  digest: "blog.catDigest",
+  analysis: "blog.catAnalysis",
+  update: "blog.catUpdate",
 };
 
 export function EntryList({ locale }: { locale: LocaleSegment }) {
