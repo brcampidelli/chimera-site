@@ -139,6 +139,7 @@
   "skills.contribute": "Contribuisci con una scheda",
   "skills.contributeBody": "Apri una pull request su skills/ nel repository del prodotto. Non serve una issue — è un'area aperta, e revisionare una scheda significa leggere una pagina, non controllare un diff.",
   "skills.count": "{count} schede",
+  "skills.descriptionTranslated": "Il riassunto qui sopra è una traduzione. La scheda in sé è l'originale inglese: è ciò che legge l'agente e ciò che l'hash qui sotto attesta.",
   "skills.emphasis": "Il valore di solito sta in Evita e Verifica. Fai è la sezione che scrivono tutti.",
   "skills.filterAll": "Tutte",
   "skills.filterAntiPattern": "Anti-pattern",

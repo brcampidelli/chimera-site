@@ -139,6 +139,7 @@
   "skills.contribute": "カードを寄稿する",
   "skills.contributeBody": "プロダクトのリポジトリの skills/ に対してプルリクエストを開いてください。イシューは不要です。オープンな領域であり、カードのレビューは差分の監査ではなく、一枚のページを読むことだからです。",
   "skills.count": "{count} 枚のカード",
+  "skills.descriptionTranslated": "上の要約は翻訳です。カード本体は英語の原文であり、エージェントが読むのも、下のハッシュが証明するのもそちらです。",
   "skills.emphasis": "価値はたいてい「回避」と「確認」にあります。「実施」は誰でも書ける節です。",
   "skills.filterAll": "すべて",
   "skills.filterAntiPattern": "アンチパターン",

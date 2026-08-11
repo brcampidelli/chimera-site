@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SkillFilter } from "@/components/skills/SkillFilter";
-import { skillHref, skills, skillsAvailable } from "@/content/skills";
+import { describeSkill, skillHref, skills, skillsAvailable } from "@/content/skills";
 import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { LINKS } from "@/lib/site";
@@ -36,7 +36,9 @@ export default async function SkillsIndex({ params }: { params: Promise<{ lang: 
     slug: skill.slug,
     href: skillHref(lang, skill.slug),
     name: skill.name,
-    description: skill.description,
+    // The description is the one part of a card that can be translated without breaking the hash,
+    // the CLI import or what the agent reads at runtime. Everything else stays English by design.
+    description: describeSkill(lang, skill).text,
     kind: skill.kind,
     triggers: [...skill.triggers],
     provenance: skill.provenance,

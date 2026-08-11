@@ -203,6 +203,7 @@
   "skills.contribute": "Contribua com um cartão",
   "skills.contributeBody": "Abra um pull request em skills/ no repositório do produto. Não precisa de issue — é uma área aberta, e revisar um cartão é ler uma página, não auditar um diff.",
   "skills.count": "{count} cartões",
+  "skills.descriptionTranslated": "O resumo acima é uma tradução. O cartão em si é o original em inglês — é o que o agente lê e o que o hash abaixo atesta.",
   "skills.emphasis": "Evite e Verifique são onde costuma estar o valor. Faça é a seção que todo mundo escreve.",
   "skills.filterAll": "Todos",
   "skills.filterAntiPattern": "Antipadrão",

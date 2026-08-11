@@ -139,6 +139,7 @@
   "skills.contribute": "贡献一张卡片",
   "skills.contributeBody": "在产品仓库的 skills/ 目录发起一个 pull request。不需要先开 issue——这是开放区域，评审一张卡片是读一页文字，而不是审一份 diff。",
   "skills.count": "{count} 张卡片",
+  "skills.descriptionTranslated": "上面的摘要是译文。卡片本身是英文原文——那是智能体读取的内容，也是下方哈希所证明的内容。",
   "skills.emphasis": "价值通常在「避免」和「检查」里。「该做」是人人都会写的那一节。",
   "skills.filterAll": "全部",
   "skills.filterAntiPattern": "反模式",

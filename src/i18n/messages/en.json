@@ -241,6 +241,7 @@
   "skills.contribute": "Contribute a card",
   "skills.contributeBody": "Open a pull request against skills/ in the product repository. No issue needed — it is an open area, and reviewing a card is reading a page rather than auditing a diff.",
   "skills.count": "{count} cards",
+  "skills.descriptionTranslated": "The summary above is a translation. The card itself is the English original — it is what the agent reads and what the hash below attests to.",
   "skills.emphasis": "Avoid and Check are where the value usually is. Do is the section everybody writes.",
   "skills.filterAll": "All",
   "skills.filterAntiPattern": "Anti-pattern",
