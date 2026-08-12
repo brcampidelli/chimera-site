@@ -48,6 +48,28 @@ export function Header({ locale }: Props) {
                 </Link>
               </li>
             ))}
+            {/*
+              Beside Skills, and deliberately not competing with Download.
+
+              An outlined chip rather than the filled gradient: this project has exactly one primary
+              action per page and it is the one that gets the product into someone's hands. A second
+              filled button next to it makes both read as equally urgent, and asking for money at the
+              same volume as "try it" is the wrong order to put those in.
+
+              A plain link, not Stripe's `buy-button` embed. The header is on all 1181 pages, so the
+              embed would load a third-party script on every one of them — for a button most visitors
+              never press — and hand Stripe a view of the whole site's traffic. The payment link opens
+              the same Stripe-hosted checkout with none of that.
+            */}
+            <li>
+              <a
+                href={LINKS.donate}
+                rel="noreferrer"
+                className="focus-ring rounded-chip border border-hairline px-3 py-1.5 text-sm text-accent2 transition duration-1 ease-out hover:bg-surface-hover hover:text-accent"
+              >
+                {t("nav.donate")}
+              </a>
+            </li>
           </ul>
         </nav>
 
