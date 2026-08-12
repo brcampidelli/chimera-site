@@ -95,23 +95,70 @@ export function pick(assets: readonly Asset[]): { downloads: Download[]; missing
   return { downloads, missing };
 }
 
+/**
+ * Fetch JSON, or fail saying what actually happened.
+ *
+ * The status check existed here, on the first of three calls, and the other two parsed whatever came
+ * back. On 2026-08-12 the asset CDN answered `503 Service Unavailable` with an HTML page and the
+ * build died on:
+ *
+ *     SyntaxError: Unexpected token '<', "<html><bod"... is not valid JSON
+ *
+ * which is true and useless. It names the shape of the reply and hides the only fact worth having —
+ * an upstream was down — and it sends whoever reads it looking for a parsing bug that does not
+ * exist. Every network hop in this file goes through here now, because a guard written once and not
+ * given to its siblings is the same guard being absent.
+ *
+ * `what` is not decoration: the three calls fail for different reasons (rate limit, a missing asset,
+ * a CDN blip) and the message has to say which one you are looking at.
+ */
+export async function getJson<T>(
+  url: string,
+  what: string,
+  headers?: Record<string, string>,
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(url, headers ? { headers } : undefined);
+  } catch (cause) {
+    // A DNS failure or a dropped connection never reaches the status check at all.
+    console.error(`releases: could not reach ${what} — ${(cause as Error).message}`);
+    console.error(`  ${url}`);
+    process.exit(1);
+  }
+  if (!response.ok) {
+    console.error(`releases: ${what} answered ${response.status} ${response.statusText}`);
+    console.error(`  ${url}`);
+    // 5xx is theirs and retrying works; 4xx is ours and retrying does not. Saying which saves the
+    // next person from re-running a build that cannot succeed.
+    console.error(
+      response.status >= 500
+        ? "  An upstream outage, not a change here. Re-run the build."
+        : "  This will not fix itself on a re-run — check the token, the repo, and the rate limit.",
+    );
+    process.exit(1);
+  }
+  try {
+    return (await response.json()) as T;
+  } catch (cause) {
+    console.error(`releases: ${what} returned 200 but not JSON — ${(cause as Error).message}`);
+    console.error(`  ${url}`);
+    process.exit(1);
+  }
+}
+
 async function main(): Promise<void> {
   const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
   // A token lifts the anonymous rate limit. It is optional and never required — a build that only
   // works for people holding a credential is a build nobody else can reproduce.
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 
-  const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers });
-  if (!response.ok) {
-    console.error(`releases: GitHub answered ${response.status} ${response.statusText}`);
-    process.exit(1);
-  }
-  const release = (await response.json()) as {
+  const release = await getJson<{
     tag_name: string;
     published_at: string;
     html_url: string;
     assets: Asset[];
-  };
+  }>(`https://api.github.com/repos/${REPO}/releases/latest`, "the latest release", headers);
 
   const { downloads, missing } = pick(release.assets);
   if (missing.length > 0) {
@@ -122,9 +169,11 @@ async function main(): Promise<void> {
 
   const manifest = release.assets.find((a) => a.name === "latest.json");
   if (manifest) {
-    const latest = (await (await fetch(manifest.browser_download_url)).json()) as {
-      version: string;
-    };
+    // This is the one that fell over: not the API, the asset CDN.
+    const latest = await getJson<{ version: string }>(
+      manifest.browser_download_url,
+      "the updater manifest (latest.json)",
+    );
     const expected = release.tag_name.replace(/^v/, "");
     if (latest.version !== expected) {
       console.error(
@@ -137,17 +186,21 @@ async function main(): Promise<void> {
 
   // The release notes the blog publishes. Prereleases are excluded: an `rc` is a test of the
   // release machinery, not an announcement, and GitHub already keeps it off `releases/latest`.
-  const listed = (await (
-    await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers })
-  ).json()) as {
-    tag_name: string;
-    name: string | null;
-    body: string | null;
-    published_at: string;
-    html_url: string;
-    prerelease: boolean;
-    draft: boolean;
-  }[];
+  const listed = await getJson<
+    {
+      tag_name: string;
+      name: string | null;
+      body: string | null;
+      published_at: string;
+      html_url: string;
+      prerelease: boolean;
+      draft: boolean;
+    }[]
+  >(
+    `https://api.github.com/repos/${REPO}/releases?per_page=30`,
+    "the release list",
+    headers,
+  );
 
   const history: ReleaseNote[] = listed
     .filter((r) => !r.draft && !r.prerelease && (r.body ?? "").trim().length > 0)
