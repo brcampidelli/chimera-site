@@ -46,6 +46,18 @@ jobs:
       - run: npm run test
       - run: npm run build
 
+      # The only check here that starts a browser, and the only one that can see layout. It runs
+      # after the build because it measures `out/`, not the source: a translation that breaks the
+      # header does so in pixels, and no amount of reading the JSON reveals it.
+      #
+      # Chromium only — the failures this catches are box geometry, which does not differ enough
+      # between engines to pay for two more downloads on every run.
+      - name: Install Chromium for the layout gate
+        run: npx playwright install --with-deps chromium
+
+      - name: The header survives every language
+        run: npm run verify:layout
+
       - name: Upload the static site
         uses: actions/upload-artifact@v4
         with:

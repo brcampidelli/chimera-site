@@ -87,7 +87,16 @@ export function Header({ locale }: Props) {
           </ul>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        {/*
+          `whitespace-nowrap` on the container, because `white-space` inherits and the alternative is
+          the same class in four component files that will drift apart.
+
+          The nav got this earlier and this side did not, which is how Japanese shipped with 「システム」
+          split across two lines and 「🌐日本語」 stacked across three — both rendering outside a bar
+          with a fixed height. CJK has no spaces to break on, so a container even slightly too narrow
+          breaks between any two characters; the text does not have to be long, only the box tight.
+        */}
+        <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
           <Search
             labels={{
               open: t("search.open"),
@@ -106,7 +115,18 @@ export function Header({ locale }: Props) {
           <a
             href={LINKS.github}
             rel="noreferrer"
-            className="focus-ring hidden rounded-chip px-3 py-1.5 text-sm text-muted-foreground transition duration-1 ease-out hover:text-foreground sm:block"
+            // Appears at 1330px, not at a named breakpoint. With nothing in the bar allowed to wrap
+            // any more, Japanese with this link showing needs 1303px, so the honest threshold is
+            // "just above what it measured" rather than the nearest round number. `xl` is 1280 and
+            // fails at exactly 1280 — `min-width` matches there, and whether the page then fits
+            // depends on the user's scrollbar: a classic one leaves 1270 and hides this, an overlay
+            // one leaves 1280 and shows it. Half the users would have seen a sideways-scrolling
+            // page. `2xl` (1536) would work and costs the link on every ordinary laptop.
+            //
+            // The link is the cheapest thing here to give up: secondary action, and the footer
+            // carries it on all 1181 pages. Measured alternatives, all of which also clear it and
+            // each of which costs more: the wordmark (79px), the theme toggle (180px), search (48px).
+            className="focus-ring hidden rounded-chip px-3 py-1.5 text-sm text-muted-foreground transition duration-1 ease-out hover:text-foreground min-[1330px]:block"
           >
             {t("nav.github")}
           </a>
