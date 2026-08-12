@@ -112,44 +112,84 @@ export function pick(assets: readonly Asset[]): { downloads: Download[]; missing
  * `what` is not decoration: the three calls fail for different reasons (rate limit, a missing asset,
  * a CDN blip) and the message has to say which one you are looking at.
  */
+/**
+ * How long to wait between attempts, and therefore how many there are.
+ *
+ * Three, spaced out. On 2026-08-12 this one request — the updater manifest, off the release CDN —
+ * failed five times in a day, each time taking a whole build with it and each time succeeding on a
+ * manual re-run seconds later. Written down as data because the right number is an observation, not
+ * a preference: if the failures ever stop clustering like that, the number should change.
+ *
+ * Exported so the tests can pass zeros. A unit test that genuinely waits thirteen seconds is a unit
+ * test people start skipping.
+ */
+export const RETRY_WAITS_MS = [1_000, 3_000, 9_000];
+
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
 export async function getJson<T>(
   url: string,
   what: string,
   headers?: Record<string, string>,
+  waits: readonly number[] = RETRY_WAITS_MS,
 ): Promise<T> {
-  let response: Response;
-  try {
-    response = await fetch(url, headers ? { headers } : undefined);
-  } catch (cause) {
-    // A DNS failure or a dropped connection never reaches the status check at all.
-    console.error(`releases: could not reach ${what} — ${(cause as Error).message}`);
-    console.error(`  ${url}`);
-    // The advice belongs here too. The status branch below distinguishes "theirs, re-run" from
-    // "ours, do not" and this one said nothing — so the branch that fires on a dropped connection,
-    // the most transient failure of the three, was the one leaving the reader with no idea whether
-    // to retry. Same shape as the bug this file was rewritten for: written once, not given to its
-    // sibling. A real outage found it the same day it shipped.
-    console.error("  A connection that never completed is almost always transient. Re-run the build.");
-    process.exit(1);
-  }
-  if (!response.ok) {
-    console.error(`releases: ${what} answered ${response.status} ${response.statusText}`);
-    console.error(`  ${url}`);
-    // 5xx is theirs and retrying works; 4xx is ours and retrying does not. Saying which saves the
-    // next person from re-running a build that cannot succeed.
-    console.error(
-      response.status >= 500
-        ? "  An upstream outage, not a change here. Re-run the build."
-        : "  This will not fix itself on a re-run — check the token, the repo, and the rate limit.",
-    );
-    process.exit(1);
-  }
-  try {
-    return (await response.json()) as T;
-  } catch (cause) {
-    console.error(`releases: ${what} returned 200 but not JSON — ${(cause as Error).message}`);
-    console.error(`  ${url}`);
-    process.exit(1);
+  // Only the transient classes are retried: a connection that never completed, and a 5xx. A 4xx is
+  // a wrong token, a wrong repo or a rate limit — waiting nine seconds to be told the same thing
+  // three times is worse than being told once, and it is the same misjudgement as telling someone
+  // to re-run a build that cannot pass. A 200 that is not JSON is not retried either: that is
+  // either an upstream serving something strange or an API that changed shape, and the second one
+  // deserves to be looked at rather than slept through.
+  for (let attempt = 0; ; attempt++) {
+    // Read the wait first and let its absence be what defines "last". `attempt >= waits.length`
+    // says the same thing, but only to a reader — the compiler still has to be told that indexing
+    // an array can miss, and deriving the flag from the lookup means the two can never disagree.
+    const wait = waits[attempt];
+    const last = wait === undefined;
+    const again = async (why: string): Promise<void> => {
+      if (wait === undefined) return;
+      console.error(`releases: ${what} — ${why}; retrying in ${wait / 1000}s`);
+      await sleep(wait);
+    };
+
+    let response: Response;
+    try {
+      response = await fetch(url, headers ? { headers } : undefined);
+    } catch (cause) {
+      // A DNS failure or a dropped connection never reaches the status check at all.
+      if (!last) {
+        await again((cause as Error).message);
+        continue;
+      }
+      console.error(`releases: could not reach ${what} — ${(cause as Error).message}`);
+      console.error(`  ${url}`);
+      console.error(`  Gave up after ${waits.length + 1} attempts. Usually transient — re-run the build.`);
+      process.exit(1);
+    }
+
+    if (!response.ok) {
+      // 5xx is theirs and retrying works; 4xx is ours and retrying does not. Saying which saves the
+      // next person from re-running a build that cannot succeed.
+      if (response.status >= 500 && !last) {
+        await again(`${response.status} ${response.statusText}`);
+        continue;
+      }
+      console.error(`releases: ${what} answered ${response.status} ${response.statusText}`);
+      console.error(`  ${url}`);
+      console.error(
+        response.status >= 500
+          ? `  An upstream outage, not a change here. Gave up after ${waits.length + 1} attempts — re-run the build.`
+          : "  This will not fix itself on a re-run — check the token, the repo, and the rate limit.",
+      );
+      process.exit(1);
+    }
+
+    try {
+      return (await response.json()) as T;
+    } catch (cause) {
+      console.error(`releases: ${what} returned 200 but not JSON — ${(cause as Error).message}`);
+      console.error(`  ${url}`);
+      process.exit(1);
+    }
   }
 }
 

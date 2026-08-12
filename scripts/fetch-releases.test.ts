@@ -31,6 +31,20 @@ function harness() {
   return { said, out: () => said.join("\n") };
 }
 
+/** Fails the first `times` calls the given way, then answers normally. Counts the attempts. */
+function failingThenOk(times: number, how: "connection" | 503 | 404) {
+  const calls = { n: 0 };
+  vi.stubGlobal("fetch", async () => {
+    calls.n += 1;
+    if (calls.n <= times) {
+      if (how === "connection") throw new Error("socket hang up");
+      return new Response("<html>upstream</html>", { status: how });
+    }
+    return new Response(JSON.stringify({ version: "0.44.0" }), { status: 200 });
+  });
+  return calls;
+}
+
 function answering(init: { status: number; body?: string; json?: unknown }) {
   vi.stubGlobal("fetch", async () =>
     init.json !== undefined
@@ -42,6 +56,54 @@ function answering(init: { status: number; body?: string; json?: unknown }) {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+describe("getJson — retrying the failures that are worth retrying", () => {
+  const NOW = [0, 0, 0];
+
+  it("survives a dropped connection that succeeds on the second try", async () => {
+    // The actual production failure, five times on 2026-08-12: the connection to the release CDN
+    // never completed, and a manual re-run seconds later worked. This is that, automated.
+    const calls = failingThenOk(1, "connection");
+    await expect(getJson("https://x/y", "the manifest", undefined, NOW)).resolves.toEqual({
+      version: "0.44.0",
+    });
+    expect(calls.n).toBe(2);
+  });
+
+  it("survives a 5xx, and keeps trying to the end of the schedule", async () => {
+    const calls = failingThenOk(3, 503);
+    await expect(getJson("https://x/y", "the manifest", undefined, NOW)).resolves.toBeTruthy();
+    expect(calls.n).toBe(4); // three failures, then the attempt that worked
+  });
+
+  it("does NOT retry a 404, because waiting cannot turn a wrong token into a right one", async () => {
+    const { out } = harness();
+    const calls = failingThenOk(99, 404);
+
+    await expect(getJson("https://x/y", "the release list", undefined, NOW)).rejects.toBeInstanceOf(
+      Exited,
+    );
+
+    // One attempt. Sleeping three times to be told the same thing is worse than being told once,
+    // and it is the same misjudgement as advising a re-run that cannot pass.
+    expect(calls.n).toBe(1);
+    expect(out().toLowerCase()).not.toContain("re-run the build");
+  });
+
+  it("gives up eventually rather than retrying for ever", async () => {
+    const { out } = harness();
+    const calls = failingThenOk(99, "connection");
+
+    await expect(getJson("https://x/y", "the manifest", undefined, NOW)).rejects.toBeInstanceOf(
+      Exited,
+    );
+
+    expect(calls.n).toBe(NOW.length + 1);
+    // And it says how many, because "re-run the build" after three silent retries would be advice
+    // to repeat something that already happened.
+    expect(out()).toContain(`${NOW.length + 1} attempts`);
+  });
 });
 
 describe("getJson — the message a failed build leaves behind", () => {
@@ -57,7 +119,7 @@ describe("getJson — the message a failed build leaves behind", () => {
     answering({ status: 503, body: "<html><body><h1>503 Service Unavailable</h1>" });
 
     await expect(
-      getJson("https://cdn.example/latest.json", "the updater manifest (latest.json)"),
+      getJson("https://cdn.example/latest.json", "the updater manifest (latest.json)", undefined, []),
     ).rejects.toBeInstanceOf(Exited);
 
     // The three facts. Without the first, "the build failed" says nothing about where.
@@ -71,14 +133,14 @@ describe("getJson — the message a failed build leaves behind", () => {
   it("separates an outage from our own mistake, because only one is worth re-running", async () => {
     const upstream = harness();
     answering({ status: 502, body: "nope" });
-    await expect(getJson("https://x/y", "the release list")).rejects.toBeInstanceOf(Exited);
+    await expect(getJson("https://x/y", "the release list", undefined, [])).rejects.toBeInstanceOf(Exited);
     expect(upstream.out().toLowerCase()).toContain("re-run");
 
     vi.restoreAllMocks();
 
     const ours = harness();
     answering({ status: 404, body: "nope" });
-    await expect(getJson("https://x/y", "the release list")).rejects.toBeInstanceOf(Exited);
+    await expect(getJson("https://x/y", "the release list", undefined, [])).rejects.toBeInstanceOf(Exited);
     // A 404 is a wrong repo or a dead token. Telling someone to re-run would send them to wait for
     // a recovery that is never coming.
     expect(ours.out().toLowerCase()).not.toContain("re-run the build");
@@ -88,7 +150,7 @@ describe("getJson — the message a failed build leaves behind", () => {
     const { out } = harness();
     answering({ status: 200, body: "<html><body>hi" });
 
-    await expect(getJson("https://x/y", "the latest release")).rejects.toBeInstanceOf(Exited);
+    await expect(getJson("https://x/y", "the latest release", undefined, [])).rejects.toBeInstanceOf(Exited);
 
     expect(out()).toContain("200");
     expect(out()).toContain("not JSON");
@@ -101,7 +163,7 @@ describe("getJson — the message a failed build leaves behind", () => {
       throw new Error("getaddrinfo ENOTFOUND api.github.com");
     });
 
-    await expect(getJson("https://x/y", "the latest release")).rejects.toBeInstanceOf(Exited);
+    await expect(getJson("https://x/y", "the latest release", undefined, [])).rejects.toBeInstanceOf(Exited);
 
     // No status exists here, so the status branch must not be the one that runs.
     expect(out()).toContain("could not reach");
