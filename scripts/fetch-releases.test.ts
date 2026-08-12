@@ -106,5 +106,9 @@ describe("getJson — the message a failed build leaves behind", () => {
     // No status exists here, so the status branch must not be the one that runs.
     expect(out()).toContain("could not reach");
     expect(out()).toContain("ENOTFOUND");
+    // And it must still answer the question the reader actually has. This branch fires on the most
+    // transient failure of the three and was the one saying nothing about whether to retry — it
+    // shipped that way and a real outage found it the same day.
+    expect(out().toLowerCase()).toContain("re-run");
   });
 });

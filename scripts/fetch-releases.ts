@@ -124,6 +124,12 @@ export async function getJson<T>(
     // A DNS failure or a dropped connection never reaches the status check at all.
     console.error(`releases: could not reach ${what} — ${(cause as Error).message}`);
     console.error(`  ${url}`);
+    // The advice belongs here too. The status branch below distinguishes "theirs, re-run" from
+    // "ours, do not" and this one said nothing — so the branch that fires on a dropped connection,
+    // the most transient failure of the three, was the one leaving the reader with no idea whether
+    // to retry. Same shape as the bug this file was rewritten for: written once, not given to its
+    // sibling. A real outage found it the same day it shipped.
+    console.error("  A connection that never completed is almost always transient. Re-run the build.");
     process.exit(1);
   }
   if (!response.ok) {
