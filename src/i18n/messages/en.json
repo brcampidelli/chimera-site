@@ -208,6 +208,7 @@
   "lang.switch": "Read in {language}",
   "llms.note": "Machine-readable summary of this site.",
   "nav.agent": "Terminal agent",
+  "nav.agentShort": "Agent",
   "nav.blog": "Blog",
   "nav.desktop": "Desktop app",
   "nav.discord": "Discord",

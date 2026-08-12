@@ -161,6 +161,7 @@
   "lang.label": "言語",
   "lang.switch": "{language}で読む",
   "nav.agent": "ターミナルエージェント",
+  "nav.agentShort": "エージェント",
   "nav.blog": "ブログ",
   "nav.desktop": "デスクトップアプリ",
   "nav.discord": "Discord",

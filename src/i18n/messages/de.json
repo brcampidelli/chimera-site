@@ -161,6 +161,7 @@
   "lang.label": "Sprache",
   "lang.switch": "Auf {language} lesen",
   "nav.agent": "Terminal-Agent",
+  "nav.agentShort": "Agent",
   "nav.blog": "Blog",
   "nav.desktop": "Anwendung",
   "nav.discord": "Discord",
