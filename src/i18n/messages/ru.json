@@ -208,6 +208,7 @@
   "lang.switch": "Читать на языке {language}",
   "llms.note": "Машиночитаемое описание этого сайта.",
   "nav.agent": "Агент в терминале",
+  "nav.agentShort": "Агент",
   "nav.blog": "Блог",
   "nav.desktop": "Приложение",
   "nav.discord": "Discord",

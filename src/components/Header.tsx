@@ -16,8 +16,14 @@ export function Header({ locale }: Props) {
   const t = translator(locale);
   const to = (path: string) => localePath(locale, path);
 
+  // `nav.agentShort` here and `nav.agent` everywhere else, on purpose. The header is a fixed-height
+  // row with five items, a search box, a download button and two toggles; "Agente da terminale" is
+  // nineteen characters and "ターミナルエージェント" is eleven wide ones, and neither fits. The home
+  // page's product card and the footer keep the full name, because there the contrast between the
+  // terminal one and the desktop one IS the information — the constraint is this row's width, not
+  // what the product is called.
   const nav = [
-    { href: to("/agent"), label: t("nav.agent") },
+    { href: to("/agent"), label: t("nav.agentShort") },
     { href: to("/desktop"), label: t("nav.desktop") },
     { href: to("/docs"), label: t("nav.docs") },
     { href: to("/blog"), label: t("nav.blog") },
@@ -36,13 +42,21 @@ export function Header({ locale }: Props) {
           <Wordmark className="text-lg leading-none" />
         </Link>
 
+        {/*
+          `whitespace-nowrap` is load-bearing, and its absence is what made a long label ugly in a
+          specific way rather than merely wide. The row is `h-14` with `items-center`: a label that
+          wraps makes its `<li>` taller than the row, and the overflow is centred, so it renders
+          ABOVE and BELOW the header — outside the bar, over the page. Spanish and French shipped
+          like that. Shortening the label fixes those two; this fixes the class, so the next long
+          word overflows sideways (visible, ordinary) instead of escaping the container.
+        */}
         <nav aria-label={t("nav.primary")} className="hidden md:block">
           <ul className="flex items-center gap-1">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="focus-ring rounded-chip px-3 py-1.5 text-sm text-muted-foreground transition duration-1 ease-out hover:bg-surface-hover hover:text-foreground"
+                  className="focus-ring whitespace-nowrap rounded-chip px-3 py-1.5 text-sm text-muted-foreground transition duration-1 ease-out hover:bg-surface-hover hover:text-foreground"
                 >
                   {item.label}
                 </Link>
@@ -65,7 +79,7 @@ export function Header({ locale }: Props) {
               <a
                 href={LINKS.donate}
                 rel="noreferrer"
-                className="focus-ring rounded-chip border border-hairline px-3 py-1.5 text-sm text-accent2 transition duration-1 ease-out hover:bg-surface-hover hover:text-accent"
+                className="focus-ring whitespace-nowrap rounded-chip border border-hairline px-3 py-1.5 text-sm text-accent2 transition duration-1 ease-out hover:bg-surface-hover hover:text-accent"
               >
                 {t("nav.donate")}
               </a>

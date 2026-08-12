@@ -170,6 +170,7 @@
   "lang.switch": "Ler em {language}",
   "llms.note": "Resumo legível por máquina deste site.",
   "nav.agent": "Agente de terminal",
+  "nav.agentShort": "Agente",
   "nav.blog": "Blog",
   "nav.desktop": "Aplicativo",
   "nav.discord": "Discord",

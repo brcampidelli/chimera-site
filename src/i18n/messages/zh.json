@@ -161,6 +161,7 @@
   "lang.label": "语言",
   "lang.switch": "用{language}阅读",
   "nav.agent": "终端智能体",
+  "nav.agentShort": "智能体",
   "nav.blog": "博客",
   "nav.desktop": "桌面应用",
   "nav.discord": "Discord",
