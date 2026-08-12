@@ -61,7 +61,7 @@ export default async function PressPage({ params }: { params: Promise<{ lang: st
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("press.title")}</h1>
-      <UntranslatedNotice locale={lang} />
+      <UntranslatedNotice locale={lang} prefix="press." />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">{t("press.subtitle")}</p>
 
       <section className="mt-10">

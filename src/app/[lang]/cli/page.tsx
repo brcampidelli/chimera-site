@@ -40,7 +40,7 @@ export default async function CliIndex({ params }: { params: Promise<{ lang: str
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("cli.title")}</h1>
-      <UntranslatedNotice locale={lang} />
+      <UntranslatedNotice locale={lang} prefix="cli." />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">{t("cli.subtitle")}</p>
       <p className="mt-4 max-w-measure text-sm text-muted-foreground">{t("cli.intro")}</p>
       <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">

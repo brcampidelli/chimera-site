@@ -113,7 +113,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ lang:
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("evidence.title")}</h1>
-      <UntranslatedNotice locale={lang} />
+      <UntranslatedNotice locale={lang} prefix="evidence." />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">
         {t("evidence.subtitle")}
       </p>
