@@ -28,7 +28,7 @@ export const LINKS = {
   pypi: "https://pypi.org/project/chimera-agent/",
   discord: "https://discord.gg/ACvBbrmguV",
   reddit: "https://www.reddit.com/r/ChimeraAgent/",
-  donate: "https://donate.stripe.com/9B63cofM491m4SBfe177O00",
+  donate: "https://buy.stripe.com/9B6aEQ57q91m1Gp7Lz77O01",
 } as const;
 
 export const REPO = { owner: "brcampidelli", name: "chimera-agent" } as const;
