@@ -10,7 +10,7 @@
  * localStorage — so someone who reads the site in Portuguese and opens the app gets Portuguese
  * without being asked twice. Everything else is derived from this table, never re-guessed.
  */
-export type LocaleSegment = "en" | "pt" | "es" | "fr" | "de" | "it" | "pl" | "zh" | "ja";
+export type LocaleSegment = "en" | "pt" | "es" | "fr" | "de" | "it" | "pl" | "zh" | "ja" | "ru";
 
 export interface Locale {
   /** The URL segment, and the app's `chimera.lang` value. */
@@ -35,6 +35,7 @@ export const LOCALES: readonly Locale[] = [
   { segment: "pl", bcp47: "pl", endonym: "Polski", readme: "README.pl.md" },
   { segment: "zh", bcp47: "zh-Hans", endonym: "中文", readme: "README.zh-CN.md" },
   { segment: "ja", bcp47: "ja", endonym: "日本語", readme: "README.ja.md" },
+  { segment: "ru", bcp47: "ru", endonym: "Русский", readme: "README.ru.md" },
 ] as const;
 
 export const DEFAULT_LOCALE: LocaleSegment = "en";
