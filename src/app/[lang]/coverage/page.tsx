@@ -4,6 +4,7 @@ import pending from "@/i18n/messages/_pending.json";
 import { LOCALES, SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { KEYS, dictionaries } from "@/i18n/messages";
 import { translator } from "@/i18n/messages";
+import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
 import { TIER1_PREFIXES } from "../../../../scripts/i18n-pending";
 
 export function generateStaticParams() {
@@ -53,6 +54,8 @@ export default async function CoveragePage({ params }: { params: Promise<{ lang:
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("coverage.title")}</h1>
+      {/* A página que descreve a política de tradução era a única sem o aviso que a política promete. */}
+      <UntranslatedNotice locale={lang} prefix="coverage." />
       <p className="mt-4 max-w-measure text-lead text-muted-foreground">{t("coverage.subtitle")}</p>
       <p className="mt-4 max-w-measure text-sm text-muted-foreground">{t("coverage.body")}</p>
       <p className="mt-4 max-w-measure text-sm text-muted-foreground">{t("coverage.ratchet")}</p>

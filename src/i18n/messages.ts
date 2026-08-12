@@ -42,6 +42,26 @@ export function dictionaries(): Record<LocaleSegment, Messages> {
   return DICTS;
 }
 
+/**
+ * The keys of one page that this language does not have, and therefore reads in English.
+ *
+ * Same definition the ratchet uses in `scripts/i18n-pending.ts`: a key absent from the locale's
+ * table falls back to English at render time. Derived from the dictionaries rather than read from
+ * `_pending.json`, because the dictionaries are the source and that file is generated from them —
+ * a page that decides what to disclose should ask the thing itself, not its summary.
+ *
+ * This exists so `UntranslatedNotice` can *check* instead of *assert*. It used to render for every
+ * non-English locale, which was true on the day it was written and became a lie the moment the
+ * blog and the skills pages were translated: nine languages reading Portuguese under a banner
+ * saying they were reading English. A notice that is wrong is worse than no notice, because the
+ * reader who believes it stops trusting the ones that are right.
+ */
+export function untranslatedKeys(segment: LocaleSegment, prefix: string): string[] {
+  if (segment === "en") return [];
+  const table = DICTS[segment];
+  return KEYS.filter((key) => key.startsWith(prefix) && !(key in table));
+}
+
 function interpolate(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template;
   return template.replace(/\{(\w+)\}/g, (whole, name: string) =>

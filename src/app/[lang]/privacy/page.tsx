@@ -38,7 +38,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <h1 className="text-d1">{t("privacy.title")}</h1>
-      <UntranslatedNotice locale={lang} />
+      <UntranslatedNotice locale={lang} prefix="privacy." />
       <p className="mt-6 max-w-measure text-prose text-muted-foreground">{t("privacy.body")}</p>
       <p className="mt-4 max-w-measure text-prose text-muted-foreground">
         {t("privacy.downloads")}
