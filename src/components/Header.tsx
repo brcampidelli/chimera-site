@@ -32,7 +32,21 @@ export function Header({ locale }: Props) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+      {/*
+        `gap-4` and, below, `gap-1.5` in the cluster — about 26px bought back without removing
+        anything from the bar.
+
+        Needed because the fonts are not the same everywhere. The stack is `system-ui`, so Cyrillic
+        renders in Segoe UI on Windows and in something wider on Linux, and Russian fits on one and
+        overflows on the other. It passed here, it passed on the live site read from this machine,
+        and CI — which renders with Linux fonts, like every Linux reader — measured it 10px over at
+        1280 and 7px over at 1440. A layout verified on one operating system is verified for the
+        people using that operating system.
+
+        Tightening the gaps rather than dropping another element: nothing leaves the bar, and it is
+        one revert away if it reads too cramped.
+      */}
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link
           href={to("/")}
           className="focus-ring flex shrink-0 items-center gap-2 rounded-lg"
@@ -96,7 +110,7 @@ export function Header({ locale }: Props) {
           with a fixed height. CJK has no spaces to break on, so a container even slightly too narrow
           breaks between any two characters; the text does not have to be long, only the box tight.
         */}
-        <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
+        <div className="ml-auto flex items-center gap-1.5 whitespace-nowrap">
           <Search
             labels={{
               open: t("search.open"),
