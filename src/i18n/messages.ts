@@ -7,6 +7,7 @@ import it from "./messages/it.json";
 import ja from "./messages/ja.json";
 import pl from "./messages/pl.json";
 import pt from "./messages/pt.json";
+import ru from "./messages/ru.json";
 import zh from "./messages/zh.json";
 
 /**
@@ -30,6 +31,7 @@ const DICTS: Record<LocaleSegment, Messages> = {
   pl,
   zh,
   ja,
+  ru,
 };
 
 export const KEYS: readonly string[] = Object.keys(en);
