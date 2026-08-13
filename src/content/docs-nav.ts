@@ -32,7 +32,12 @@ export const DOCS_NAV: readonly DocsSection[] = [
   },
   {
     heading: "docs.navConnect",
-    items: [{ slug: "mcp", label: "docs.navMcp" }],
+    items: [
+      { slug: "mcp", label: "docs.navMcp" },
+      // A whole agent rather than a tool, but the reader arrives with the same question — "how do
+      // I connect the thing I already use?" — and this grouping is the one that answers it.
+      { slug: "external-agents", label: "docs.navExternalAgents" },
+    ],
   },
   {
     heading: "docs.navExtend",
