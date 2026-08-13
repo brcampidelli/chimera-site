@@ -14,6 +14,7 @@ import { resolveProductRoot } from "../../scripts/sync-tokens";
  */
 export const MANUAL_SCREENS = [
   "code",
+  "edit",
   "work",
   "knowledge",
   "automation",

@@ -54,6 +54,7 @@ export default async function DesktopPage({ params }: { params: Promise<{ lang: 
           <Card index={2} title={t("desktop.screen3")} body={t("desktop.screen3Body")} />
           <Card index={3} title={t("desktop.screen4")} body={t("desktop.screen4Body")} />
           <Card index={4} title={t("desktop.screen5")} body={t("desktop.screen5Body")} />
+          <Card index={5} title={t("desktop.screen6")} body={t("desktop.screen6Body")} />
         </Cards>
       </Section>
 
