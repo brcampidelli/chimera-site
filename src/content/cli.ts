@@ -118,7 +118,9 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
     },
     {
       key: "cli.themeServe",
-      commands: ["serve", "app", "mcp", "a2a-card"],
+      // `acp` is the agent side of the Agent Client Protocol — the mirror of the client half the
+      // Code screen uses. It belongs beside the other ways something outside reaches the agent.
+      commands: ["serve", "app", "mcp", "a2a-card", "acp"],
     },
     {
       key: "cli.themeSafety",
@@ -141,6 +143,7 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
         "transfer-gate",
         "evoclaw",
         "rubric-grade",
+        "context-curve",
       ],
     },
     { key: "cli.themeFun", commands: ["pet"] },
