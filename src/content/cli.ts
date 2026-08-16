@@ -139,6 +139,7 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
         "schema-bench",
         "sandbox-bench",
         "memory-bench",
+        "memory-poison",
         "probe-select",
         "transfer-gate",
         "evoclaw",
