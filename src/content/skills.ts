@@ -84,6 +84,40 @@ export function localiseSections(
   }
 }
 
+/**
+ * The trigger chips in the reader's language.
+ *
+ * These are the last English left on a translated card page, and they were English because nothing
+ * ever carried them — not a decision, an absence, the same one the card sections had until the
+ * sidecar grew a `sections` block.
+ *
+ * Hashed as ONE list rather than per phrase, for the same reason the five sections share a hash:
+ * a card that gained a trigger would otherwise show four translated chips beside one English one,
+ * and the reader would have no way to tell which of the five was current. All or nothing.
+ *
+ * Count first, then hash. A translation with the wrong number of chips cannot be zipped back onto
+ * the English list, and quietly rendering a short list would drop a trigger the card declares.
+ */
+export function localiseTriggers(
+  locale: LocaleSegment,
+  skill: Skill,
+): { triggers: readonly string[]; translated: boolean } {
+  const english = { triggers: skill.triggers, translated: false };
+  if (locale === "en" || skill.triggers.length === 0) return english;
+  const path = join(SKILLS_I18N_DIR, `${locale}.json`);
+  if (!existsSync(path)) return english;
+  try {
+    const entry = JSON.parse(readFileSync(path, "utf8"))?.triggers?.[skill.slug];
+    if (!Array.isArray(entry?.text) || entry.text.length !== skill.triggers.length) return english;
+    const current = createHash("sha256").update(skill.triggers.join("\n"), "utf8").digest("hex");
+    if (entry.source_sha256 !== current) return english;
+    const out = entry.text.map(String);
+    return out.every((t: string) => t.trim()) ? { triggers: out, translated: true } : english;
+  } catch {
+    return english;
+  }
+}
+
 export function describeSkill(locale: LocaleSegment, skill: Skill): LocalisedDescription {
   const english = { text: skill.description, translated: false };
   if (locale === "en") return english;
