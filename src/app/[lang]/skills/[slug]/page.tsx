@@ -8,6 +8,7 @@ import {
   cliImportsFromUrl,
   describeSkill,
   localiseSections,
+  localiseTriggers,
   skillBySlug,
   skillHref,
   skillSourceUrl,
@@ -66,6 +67,7 @@ export default async function SkillPage({
   // bytes the CLI imports and the agent reads — which is exactly why the page has to say that the
   // words above it are not those bytes.
   const localised = localiseSections(lang, skill);
+  const chips = localiseTriggers(lang, skill);
   const rendered = await Promise.all(
     SECTIONS.map(async (section) => ({
       section,
@@ -123,7 +125,7 @@ export default async function SkillPage({
           {t("skills.triggers")}
         </h2>
         <ul className="mt-2 flex flex-wrap gap-2">
-          {skill.triggers.map((trigger) => (
+          {chips.triggers.map((trigger) => (
             <li
               key={trigger}
               className="rounded-chip border border-hairline px-3 py-1 text-sm text-muted-foreground"
