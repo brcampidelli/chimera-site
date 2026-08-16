@@ -110,6 +110,20 @@ export interface Skill {
   readonly description: string;
   readonly version: string;
   readonly kind: "pattern" | "anti_pattern";
+  /**
+   * Where in a piece of work the card applies, and what it is about.
+   *
+   * The hub groups by `stage` and renders only the groups that have members. A rival index shows
+   * thirty-four categories over ninety thousand cards with eighty-two thousand of them in "Other";
+   * declaring a taxonomy is cheap and empty drawers advertise absence, so this page declares the
+   * whole vocabulary in the product and shows what exists. As contributions arrive, the unused
+   * names light up on their own.
+   *
+   * `topic` is deliberately NOT translated: it is the ecosystem's vocabulary, and a reader arriving
+   * from an aggregator should see the same word they searched for.
+   */
+  readonly stage: string;
+  readonly topic: string;
   readonly triggers: readonly string[];
   /** `clean` is conferred by review. A card claiming it about itself proves nothing. */
   readonly provenance: "clean" | "tainted";
@@ -167,6 +181,8 @@ export function skills(): Skill[] {
       description: String(data.description ?? ""),
       version: String(data.version ?? ""),
       kind: (String(data.kind ?? "pattern") as Skill["kind"]),
+      stage: String(data.stage ?? ""),
+      topic: String(data.topic ?? ""),
       triggers: Array.isArray(data.triggers) ? data.triggers.map(String) : [],
       provenance: (String(data.provenance ?? "tainted") as Skill["provenance"]),
       status: (String(data.status ?? "pending") as Skill["status"]),

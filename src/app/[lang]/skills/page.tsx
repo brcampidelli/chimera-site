@@ -40,6 +40,8 @@ export default async function SkillsIndex({ params }: { params: Promise<{ lang: 
     // the CLI import or what the agent reads at runtime. Everything else stays English by design.
     description: describeSkill(lang, skill).text,
     kind: skill.kind,
+    stage: skill.stage,
+    topic: skill.topic,
     triggers: [...skill.triggers],
     provenance: skill.provenance,
     status: skill.status,
@@ -70,6 +72,13 @@ export default async function SkillsIndex({ params }: { params: Promise<{ lang: 
             pattern: t("skills.filterPattern"),
             antiPattern: t("skills.filterAntiPattern"),
             noMatch: t("skills.noMatch"),
+            stages: {
+              define: t("skills.stage.define"),
+              build: t("skills.stage.build"),
+              verify: t("skills.stage.verify"),
+              review: t("skills.stage.review"),
+              ship: t("skills.stage.ship"),
+            },
           }}
         />
       </div>
