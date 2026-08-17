@@ -14,12 +14,15 @@
  *
  *   npm run fetch:releases
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, ".content", "releases.json");
+// The last known good release notes, tracked in the repository. `.content/` is a build
+// artefact and gitignored; this one has to survive a clone.
+const SNAPSHOT = join(ROOT, "content", "releases-snapshot.json");
 const REPO = "brcampidelli/chimera-agent";
 
 export interface Download {
@@ -59,6 +62,17 @@ interface Asset {
   name: string;
   browser_download_url: string;
   size: number;
+}
+
+/** A release as the list endpoint returns it — and as `releases/tags/<tag>` returns it too. */
+interface ListedRelease {
+  tag_name: string;
+  name: string | null;
+  body: string | null;
+  published_at: string;
+  html_url: string;
+  prerelease: boolean;
+  draft: boolean;
 }
 
 /**
@@ -126,6 +140,30 @@ export function pick(assets: readonly Asset[]): { downloads: Download[]; missing
 export const RETRY_WAITS_MS = [1_000, 3_000, 9_000];
 
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
+/**
+ * A read whose failure is not fatal, because the caller has somewhere else to go.
+ *
+ * `getJson` ends the process, which is right for the installer asset and for `latest.json` — they
+ * have no second route. The release history has three, so its reads report and step aside instead.
+ */
+async function tryJson<T>(
+  url: string,
+  what: string,
+  headers: Record<string, string>,
+): Promise<T | null> {
+  try {
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      console.warn(`releases: ${what} answered ${response.status} ${response.statusText}.`);
+      return null;
+    }
+    return (await response.json()) as T;
+  } catch (cause) {
+    console.warn(`releases: could not reach ${what} — ${(cause as Error).message}`);
+    return null;
+  }
+}
 
 export async function getJson<T>(
   url: string,
@@ -232,21 +270,62 @@ async function main(): Promise<void> {
 
   // The release notes the blog publishes. Prereleases are excluded: an `rc` is a test of the
   // release machinery, not an announcement, and GitHub already keeps it off `releases/latest`.
-  const listed = await getJson<
-    {
-      tag_name: string;
-      name: string | null;
-      body: string | null;
-      published_at: string;
-      html_url: string;
-      prerelease: boolean;
-      draft: boolean;
-    }[]
-  >(
-    `https://api.github.com/repos/${REPO}/releases?per_page=30`,
-    "the release list",
-    headers,
-  );
+  // Three routes to the release notes, tried in order, because on 2026-08-17 the first two went
+  // down together: the index answered 200-with-an-empty-array from one network and 504 from the CI
+  // runner, and `/releases/tags/<tag>` answered 504 as well. With no route, the build cannot pass —
+  // and it fails on `generateStaticParams`, which names the wrong cause entirely.
+  //
+  // Every live read here is best-effort. `getJson` is kept for the installer asset and the updater
+  // manifest, which have no second route and are meant to take the build down.
+  let listed: ListedRelease[] =
+    (await tryJson<ListedRelease[]>(
+      `https://api.github.com/repos/${REPO}/releases?per_page=30`,
+      "the release list",
+      headers,
+    )) ?? [];
+
+  if (listed.length === 0) {
+    console.warn("releases: no releases from the index — trying tags.");
+    const tags =
+      (await tryJson<{ name: string }[]>(
+        `https://api.github.com/repos/${REPO}/tags?per_page=30`,
+        "the tag list",
+        headers,
+      )) ?? [];
+    const recovered: ListedRelease[] = [];
+    for (const tag of tags.filter((candidate) => /^v?\d+\.\d+\.\d+$/.test(candidate.name))) {
+      const one = await tryJson<ListedRelease>(
+        `https://api.github.com/repos/${REPO}/releases/tags/${tag.name}`,
+        `the release ${tag.name}`,
+        headers,
+      );
+      if (one) recovered.push(one);
+    }
+    if (recovered.length > 0) {
+      listed = recovered;
+      console.warn(`  Recovered ${recovered.length} releases by tag.`);
+    }
+  }
+
+  // Last resort: the copy in the repository. Release notes a day old are a blog missing its newest
+  // release post — it self-heals on the next good build. That is a different class of wrong from a
+  // stale download link, which is why the downloads above are never served from here.
+  if (listed.length === 0 && existsSync(SNAPSHOT)) {
+    const cached = JSON.parse(readFileSync(SNAPSHOT, "utf8")) as ReleaseNote[];
+    if (cached.length > 0) {
+      console.warn(`releases: the API gave nothing — using the committed snapshot.`);
+      console.warn(`  ${cached.length} notes, newest ${cached[0]?.tag}. Refresh it when the API is back.`);
+      listed = cached.map((note) => ({
+        tag_name: note.tag,
+        name: note.name,
+        body: note.body,
+        published_at: note.published,
+        html_url: note.url,
+        prerelease: note.prerelease,
+        draft: false,
+      }));
+    }
+  }
 
   const history: ReleaseNote[] = listed
     .filter((r) => !r.draft && !r.prerelease && (r.body ?? "").trim().length > 0)
@@ -259,6 +338,17 @@ async function main(): Promise<void> {
       body: (r.body ?? "").trim(),
       prerelease: r.prerelease,
     }));
+
+  // Empty history is not a degraded site, it is a broken build with a misleading message. The
+  // rest of this file already fails rather than ship a dead download card; the same applies to a
+  // blog whose release pages have no tags to generate.
+  if (history.length === 0) {
+    console.error("releases: no release notes from the index or from tags.");
+    console.error(`  https://api.github.com/repos/${REPO}/releases?per_page=30`);
+    console.error("  Both routes empty means an upstream problem, not a change here — re-run the");
+    console.error("  build. Publishing with no release pages would look like a deliberate edit.");
+    process.exit(1);
+  }
 
   const payload: Releases = {
     tag: release.tag_name,
