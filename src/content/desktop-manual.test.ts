@@ -3,9 +3,9 @@ import { MANUAL_SCREENS, railAvailable, railDestinations } from "./desktop-manua
 import en from "../i18n/messages/en.json";
 
 /**
- * The app has five destinations and the site describes five. Keeping those two numbers equal by
- * remembering to is how a manual ends up describing a version of the product that shipped a year
- * ago.
+ * The app has six destinations — five in the rail plus Settings in its footer — and the site
+ * describes six. Keeping those two numbers equal by remembering to is how a manual ends up
+ * describing a version of the product that shipped a year ago.
  */
 describe("desktop manual — the site describes the app that exists", () => {
   it("covers every destination in the app's rail", () => {

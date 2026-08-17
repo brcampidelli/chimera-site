@@ -4,6 +4,7 @@ import { Hero } from "@/components/home/Hero";
 import { Card, Cards, Section } from "@/components/ui/Section";
 import { Wordmark } from "@/components/Wordmark";
 import { evidenceAvailable } from "@/content/evidence";
+import { skillsAvailable } from "@/content/skills";
 import { localePath, type LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 
@@ -68,12 +69,20 @@ export function Home({ locale }: Props) {
             Deliberately not animated counters: a number climbing to its final value is the screen
             performing a claim.
           */}
-          <div data-reveal="in" className="grid gap-8 sm:grid-cols-2">
+          <div data-reveal="in" className="grid gap-8 sm:grid-cols-3">
             <div>
               <Stat locale={locale} claim="weak-lift" path="internal_lift.delta" as="delta" />
             </div>
             <div>
               <Stat locale={locale} claim="swe-bench" path="external[0].delta" as="delta" />
+            </div>
+            {/* The third figure is the loss. The pillar directly above this section is titled
+                "Benchmarks published, including the losses", and until now this grid showed only
+                the two wins — a page asserting a practice in one paragraph and not exercising it
+                three paragraphs later. Terminal-Bench is already measured, already registered as a
+                claim, and its caveat is already translated; showing it costs no new copy. */}
+            <div>
+              <Stat locale={locale} claim="terminal-bench" path="external[1].delta" as="delta" />
             </div>
           </div>
           <p data-reveal="in" className="mt-8">
@@ -108,6 +117,34 @@ export function Home({ locale }: Props) {
           ))}
         </Cards>
       </Section>
+
+      {/*
+        The skill library, on the page rather than only in the header.
+
+        It was reachable from the nav and from nowhere else, so a reader who scrolled the whole
+        home page left without knowing it exists — and it is the part of this project that a
+        catalogue with ninety thousand cards cannot copy, because what is on offer is provenance
+        rather than volume.
+
+        Guarded exactly like the evidence section: `/skills` calls `notFound()` when the product
+        repository is not resolvable, and a home page linking to a 404 is worse than one that says
+        nothing.
+      */}
+      {skillsAvailable() ? (
+        <Section heading={t("home.skillsHeading")}>
+          <p data-reveal="in" className="max-w-measure text-prose text-muted-foreground">
+            {t("home.skillsBody")}
+          </p>
+          <p data-reveal="in" className="mt-8">
+            <Link
+              href={to("/skills")}
+              className="focus-ring rounded-chip border border-hairline bg-surface-2 px-5 py-2.5 text-sm transition duration-1 ease-out hover:bg-surface-hover"
+            >
+              {t("nav.skills")} →
+            </Link>
+          </p>
+        </Section>
+      ) : null}
 
       <Section heading={t("home.alphaHeading")}>
         {/* Said on the home page, not buried in a footer. The README insists on it in four places
