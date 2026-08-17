@@ -61,6 +61,17 @@ interface Asset {
   size: number;
 }
 
+/** A release as the list endpoint returns it — and as `releases/tags/<tag>` returns it too. */
+interface ListedRelease {
+  tag_name: string;
+  name: string | null;
+  body: string | null;
+  published_at: string;
+  html_url: string;
+  prerelease: boolean;
+  draft: boolean;
+}
+
 /**
  * Which asset belongs to which platform.
  *
@@ -232,21 +243,39 @@ async function main(): Promise<void> {
 
   // The release notes the blog publishes. Prereleases are excluded: an `rc` is a test of the
   // release machinery, not an announcement, and GitHub already keeps it off `releases/latest`.
-  const listed = await getJson<
-    {
-      tag_name: string;
-      name: string | null;
-      body: string | null;
-      published_at: string;
-      html_url: string;
-      prerelease: boolean;
-      draft: boolean;
-    }[]
-  >(
+  let listed = await getJson<ListedRelease[]>(
     `https://api.github.com/repos/${REPO}/releases?per_page=30`,
     "the release list",
     headers,
   );
+
+  // The index sometimes answers 200 with an empty array while every other release route keeps
+  // working — measured 2026-08-17 with 4988/5000 of the rate limit left, so not throttling.
+  // `getJson` guards 4xx, 5xx, DNS and non-JSON; a 200 carrying nothing walks past all of it, and
+  // the failure surfaces much later as `next build` complaining that
+  // `/[lang]/blog/releases/[tag]` is missing `generateStaticParams()` — a message that names the
+  // wrong thing. Tags answer during the same glitch, so they are the way back in.
+  if (listed.length === 0) {
+    console.warn("releases: the release index answered 200 with an empty list.");
+    console.warn("  Falling back to tags — the index is the only route that goes quiet like this.");
+    const tags = await getJson<{ name: string }[]>(
+      `https://api.github.com/repos/${REPO}/tags?per_page=30`,
+      "the tag list",
+      headers,
+    );
+    const recovered: ListedRelease[] = [];
+    for (const tag of tags.filter((candidate) => /^v?\d+\.\d+\.\d+$/.test(candidate.name))) {
+      recovered.push(
+        await getJson<ListedRelease>(
+          `https://api.github.com/repos/${REPO}/releases/tags/${tag.name}`,
+          `the release ${tag.name}`,
+          headers,
+        ),
+      );
+    }
+    listed = recovered;
+    console.warn(`  Recovered ${recovered.length} releases by tag.`);
+  }
 
   const history: ReleaseNote[] = listed
     .filter((r) => !r.draft && !r.prerelease && (r.body ?? "").trim().length > 0)
@@ -259,6 +288,17 @@ async function main(): Promise<void> {
       body: (r.body ?? "").trim(),
       prerelease: r.prerelease,
     }));
+
+  // Empty history is not a degraded site, it is a broken build with a misleading message. The
+  // rest of this file already fails rather than ship a dead download card; the same applies to a
+  // blog whose release pages have no tags to generate.
+  if (history.length === 0) {
+    console.error("releases: no release notes from the index or from tags.");
+    console.error(`  https://api.github.com/repos/${REPO}/releases?per_page=30`);
+    console.error("  Both routes empty means an upstream problem, not a change here — re-run the");
+    console.error("  build. Publishing with no release pages would look like a deliberate edit.");
+    process.exit(1);
+  }
 
   const payload: Releases = {
     tag: release.tag_name,
