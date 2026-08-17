@@ -243,21 +243,32 @@ async function main(): Promise<void> {
 
   // The release notes the blog publishes. Prereleases are excluded: an `rc` is a test of the
   // release machinery, not an announcement, and GitHub already keeps it off `releases/latest`.
-  let listed = await getJson<ListedRelease[]>(
-    `https://api.github.com/repos/${REPO}/releases?per_page=30`,
-    "the release list",
-    headers,
-  );
-
-  // The index sometimes answers 200 with an empty array while every other release route keeps
-  // working — measured 2026-08-17 with 4988/5000 of the rate limit left, so not throttling.
-  // `getJson` guards 4xx, 5xx, DNS and non-JSON; a 200 carrying nothing walks past all of it, and
-  // the failure surfaces much later as `next build` complaining that
-  // `/[lang]/blog/releases/[tag]` is missing `generateStaticParams()` — a message that names the
-  // wrong thing. Tags answer during the same glitch, so they are the way back in.
+  // The release index is read best-effort, and it is the only call here that is. Measured on
+  // 2026-08-17, during one GitHub incident, it failed two different ways at once: 200 with an
+  // empty array from one network, 504 Gateway Timeout from the CI runner. Neither reaches the
+  // build as itself — an empty history surfaces much later as `next build` complaining that
+  // `/[lang]/blog/releases/[tag]` is missing `generateStaticParams()`, which names the wrong
+  // thing entirely.
+  //
+  // `getJson` is not used for this one call because it ends the process, and here there is
+  // somewhere else to go: tags carry the same releases. The other calls in this file keep the
+  // strict helper on purpose — a missing installer asset or a disagreeing `latest.json` has no
+  // second route, and failing is the documented behaviour.
+  let listed: ListedRelease[] = [];
+  try {
+    const index = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, {
+      headers,
+    });
+    if (index.ok) {
+      listed = (await index.json()) as ListedRelease[];
+    } else {
+      console.warn(`releases: the release index answered ${index.status} ${index.statusText}.`);
+    }
+  } catch (cause) {
+    console.warn(`releases: could not reach the release index — ${(cause as Error).message}`);
+  }
   if (listed.length === 0) {
-    console.warn("releases: the release index answered 200 with an empty list.");
-    console.warn("  Falling back to tags — the index is the only route that goes quiet like this.");
+    console.warn("releases: no releases from the index — falling back to tags.");
     const tags = await getJson<{ name: string }[]>(
       `https://api.github.com/repos/${REPO}/tags?per_page=30`,
       "the tag list",
