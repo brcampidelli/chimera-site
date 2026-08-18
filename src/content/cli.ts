@@ -101,6 +101,10 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
     {
       key: "cli.themeSkills",
       commands: [
+        // Shipped with the curated library and never listed here, so the reference has been
+        // one command short since — and `npm run test` failed on it every run, which means the
+        // site stopped deploying too. The gate was right; nobody was reading it.
+        "skills-library",
         "skills-pending",
         "skills-stats",
         "skills-approve",
