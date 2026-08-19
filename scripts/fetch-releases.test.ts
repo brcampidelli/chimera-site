@@ -11,7 +11,7 @@
  * upstream/ours distinction does not.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getJson } from "./fetch-releases";
+import { findPreview, getJson, newerThan } from "./fetch-releases";
 
 /** `process.exit` never returns; in a test it has to become something catchable. */
 class Exited extends Error {
@@ -172,5 +172,91 @@ describe("getJson — the message a failed build leaves behind", () => {
     // transient failure of the three and was the one saying nothing about whether to retry — it
     // shipped that way and a real outage found it the same day.
     expect(out().toLowerCase()).toContain("re-run");
+  });
+});
+
+/**
+ * Which candidate the download page offers, and — mostly — which it does not.
+ *
+ * A "try the preview" card is a promise with a shelf life. The failure worth guarding is not
+ * showing the wrong version; it is showing a version that stopped leading and staying there,
+ * because nobody edits a site to remove a card they cannot see.
+ */
+describe("newerThan — when a candidate still leads", () => {
+  it("offers a candidate whose base version is ahead of the stable release", () => {
+    expect(newerThan("0.48.0rc1", "0.47.0")).toBe(true);
+  });
+
+  it("stops offering it the moment the stable of the same version ships", () => {
+    // The case that decides whether this feature ages well. `0.48.0rc1` and `0.48.0` share a base,
+    // and a prerelease of a version that already shipped is behind it in every sense that matters.
+    expect(newerThan("0.48.0rc1", "0.48.0")).toBe(false);
+  });
+
+  it("never offers a candidate older than the stable release", () => {
+    expect(newerThan("0.47.0rc2", "0.48.0")).toBe(false);
+  });
+
+  it("compares numerically, not as text", () => {
+    // "0.9.0" > "0.10.0" as strings, which is how a version picker starts recommending the past.
+    expect(newerThan("0.10.0rc1", "0.9.0")).toBe(true);
+    expect(newerThan("0.9.0rc1", "0.10.0")).toBe(false);
+  });
+
+  it("answers no to anything it cannot parse, rather than guessing", () => {
+    expect(newerThan("nightly", "0.47.0")).toBe(false);
+    expect(newerThan("0.48.0rc1", "")).toBe(false);
+  });
+});
+
+describe("findPreview — the card is all-or-nothing", () => {
+  const headers = { Accept: "application/vnd.github+json" };
+  const listed = (over: Partial<Record<string, unknown>> = {}) => [
+    {
+      tag_name: "v0.48.0rc1",
+      name: "rc",
+      body: "notes",
+      published_at: "2026-08-19T00:07:00Z",
+      html_url: "https://example.invalid/rc",
+      prerelease: true,
+      draft: false,
+      ...over,
+    },
+  ];
+  const assets = [
+    { name: "Chimera_0.48.0-rc.1_x64-setup.exe", browser_download_url: "u", size: 1 },
+    { name: "Chimera_0.48.0-rc.1_aarch64.dmg", browser_download_url: "u", size: 1 },
+    { name: "Chimera_0.48.0-rc.1_x64.dmg", browser_download_url: "u", size: 1 },
+    { name: "Chimera_0.48.0-rc.1_amd64.AppImage", browser_download_url: "u", size: 1 },
+    { name: "Chimera_0.48.0-rc.1_amd64.deb", browser_download_url: "u", size: 1 },
+  ];
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("returns the candidate with every platform resolved", async () => {
+    vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ assets })));
+    const found = await findPreview(listed(), "0.47.0", headers);
+    expect(found?.version).toBe("0.48.0rc1");
+    expect(found?.downloads).toHaveLength(5);
+  });
+
+  it("skips a candidate whose installers are not all uploaded yet", async () => {
+    // The release workflow uploads per platform, so there is a window where the tag exists and half
+    // the assets do not. A card with three of five platforms is worse than no card: whoever is on
+    // the missing one reads it as unsupported.
+    vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ assets: assets.slice(0, 2) })));
+    expect(await findPreview(listed(), "0.47.0", headers)).toBeNull();
+  });
+
+  it("ignores drafts and stable releases in the list", async () => {
+    vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ assets })));
+    expect(await findPreview(listed({ draft: true }), "0.47.0", headers)).toBeNull();
+    expect(await findPreview(listed({ prerelease: false }), "0.47.0", headers)).toBeNull();
+  });
+
+  it("says nothing when the release it names cannot be fetched", async () => {
+    // Best-effort, unlike the stable downloads: an optional card must never take a build down.
+    vi.stubGlobal("fetch", async () => new Response("nope", { status: 503 }));
+    expect(await findPreview(listed(), "0.47.0", headers)).toBeNull();
   });
 });
