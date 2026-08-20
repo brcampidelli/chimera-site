@@ -91,31 +91,69 @@ jobs:
             } >&2
             exit 1
           fi
-          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new"
+          # `ConnectTimeout` because the failure this deploy actually has is a connection that never
+          # completes: without it the runner sits for over two minutes before admitting it, and a
+          # retry that costs two minutes per attempt is a retry nobody can afford to do three times.
+          # The keepalive covers the other shape — a session that opens and then goes quiet mid-rsync.
+          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
           remote="$SSH_USER@$HOST"
           root="domains/chimeraagent.space"
           rel="chimera-site/releases"
 
+          # This host refuses connections from GitHub runners intermittently: four of the ten deploys
+          # before this landed died on `connect to host …: Connection timed out`, and re-running by
+          # hand fixed every one of them without changing a byte. That was survivable while a person
+          # was watching — from the release that turned on the automatic notice, nobody is.
+          #
+          # Every step below is idempotent, which is what makes retrying safe rather than clever:
+          # mkdir -p, a read, an rsync that resumes, and `ln -sfn` which is the same symlink either
+          # way. Three attempts, 20s and 40s apart; a fourth failure is not a flaky network.
+          retry() {
+            what=$1; shift
+            for attempt in 1 2 3; do
+              if "$@"; then
+                [ "$attempt" -gt 1 ] && echo "$what: succeeded on attempt $attempt"
+                return 0
+              fi
+              if [ "$attempt" -lt 3 ]; then
+                echo "::warning::$what failed (attempt $attempt/3) — retrying in $((attempt * 20))s"
+                sleep $((attempt * 20))
+              fi
+            done
+            echo "::error::$what failed three times. This host times out on runners; if the site is"
+            echo "still on the previous release, re-running this workflow is the whole fix."
+            return 1
+          }
+
           # Land the new tree beside the old one, then move the symlink. The document root IS the
           # symlink — verified against this host before the workflow was written — so the site is
           # one directory until the instant it is the other, and is never half-written.
-          ssh $ssh_opts "$remote" "mkdir -p ~/$rel/$SHA"
+          make_dir() { ssh $ssh_opts "$remote" "mkdir -p ~/$rel/$SHA"; }
+          retry "create the release directory" make_dir
 
           # --link-dest hardlinks whatever the previous release already has, so a deploy that
           # changes six pages transfers six pages rather than eighty megabytes.
-          ssh $ssh_opts "$remote" "readlink -f ~/$root/public_html 2>/dev/null || true" > prev.txt
+          read_live() { ssh $ssh_opts "$remote" "readlink -f ~/$root/public_html 2>/dev/null || true" > prev.txt; }
+          retry "read the live release" read_live
           prev=$(cat prev.txt)
           link_dest=""
           if [ -n "$prev" ] && [ "$prev" != "$(printf '/home/%s/%s/%s' "$SSH_USER" "$rel" "$SHA")" ]; then
             link_dest="--link-dest=$prev"
           fi
 
-          rsync -az --delete $link_dest -e "ssh $ssh_opts" out/ "$remote:$rel/$SHA/"
-          ssh $ssh_opts "$remote" "ln -sfn ~/$rel/$SHA ~/$root/public_html"
+          # A partial transfer is not a live site: the symlink still points at the old release until
+          # the step after this one, so an interrupted rsync costs a retry and nothing else.
+          send_files() { rsync -az --delete --timeout=60 $link_dest -e "ssh $ssh_opts" out/ "$remote:$rel/$SHA/"; }
+          retry "send the built site" send_files
+
+          swap() { ssh $ssh_opts "$remote" "ln -sfn ~/$rel/$SHA ~/$root/public_html"; }
+          retry "point the site at the new release" swap
 
           # Keep five. A rollback is `ln -sfn` at one of them, which is why they are kept at all.
-          ssh $ssh_opts "$remote" \
-            "cd ~/$rel && ls -1t | tail -n +6 | xargs -r rm -rf"
+          # NOT retried, and not fatal: the site is already live at this point, and failing the job
+          # over unswept directories would report a successful deploy as a broken one.
+          prune() { ssh $ssh_opts "$remote" "cd ~/$rel && ls -1t | tail -n +6 | xargs -r rm -rf"; }
+          prune || echo "::warning::could not prune old releases — the deploy itself is live"
 
       - name: Prove it is live
         env:
