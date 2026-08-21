@@ -113,6 +113,16 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
         "skills-retire",
         "skills-lifecycle",
         "skills-evolve",
+        // The installable catalogue, shipped in 0.48.0rc10. Same lesson as the note above, one
+        // release later: the gate caught it, the deploy went red, and the download page sat on the
+        // previous version until somebody read why. Browse, fetch, switch on, switch off, remove —
+        // in the order a person meets them.
+        "skills-catalog",
+        "skills-install",
+        "skills-bundles",
+        "skills-bundle-enable",
+        "skills-bundle-disable",
+        "skills-uninstall",
         "evolve",
       ],
     },
