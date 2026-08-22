@@ -85,6 +85,9 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
         "lifecycle",
         "meta",
         "explore",
+        // Searching a repository by what the code DOES rather than by the string it contains.
+        // `chimera/rag/` had been in the tree since 0.44.0 with no entrance; `find` is it.
+        "find",
         "workflow",
         "drift",
         "scenarios",
