@@ -95,7 +95,27 @@ jobs:
           # completes: without it the runner sits for over two minutes before admitting it, and a
           # retry that costs two minutes per attempt is a retry nobody can afford to do three times.
           # The keepalive covers the other shape — a session that opens and then goes quiet mid-rsync.
-          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
+          # ONE TCP connection for the whole deploy, shared by every command below and by rsync.
+          #
+          # This step opened five separate sessions — mkdir, readlink, rsync, ln, prune — and each
+          # retry multiplied that. It is now one, which is faster and is strictly less of whatever
+          # the host is counting when it refuses.
+          #
+          # **It is not known to be the fix**, and the temptation to say so is why this comment is
+          # long. Two "Ship it" failures in the last thirty runs, and they do not tell one story:
+          #
+          #   * 2026-08-22 02:25 — the previous deploy had finished ninety-four seconds earlier
+          #     after five sessions in sixteen seconds, and this one could not `mkdir`, three times
+          #     over two minutes. Consistent with a per-source cooldown.
+          #   * 2026-08-19 20:08 — no deploy in the preceding two hours, and the run queued behind
+          #     it succeeded four minutes later. A cooldown predicts the opposite of both halves.
+          #
+          # So: one datum for a rate limit and one against it. The host answers 5/5 in ~115ms from a
+          # home connection, and hPanel exposes no allowlist to tune, so there is nothing here to
+          # verify against. Fewer connections is a change worth making on its own terms; if a
+          # "Ship it" failure shows up again after this, the cause is still open.
+          ctl="$(mktemp -d)/cm"
+          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o ControlMaster=auto -o ControlPath=$ctl -o ControlPersist=180"
           remote="$SSH_USER@$HOST"
           root="domains/chimeraagent.space"
           rel="chimera-site/releases"
@@ -154,6 +174,11 @@ jobs:
           # over unswept directories would report a successful deploy as a broken one.
           prune() { ssh $ssh_opts "$remote" "cd ~/$rel && ls -1t | tail -n +6 | xargs -r rm -rf"; }
           prune || echo "::warning::could not prune old releases — the deploy itself is live"
+
+          # Close the shared connection rather than leaving ControlPersist to time it out. The
+          # runner is thrown away either way; what this buys is that the host sees the session end
+          # when the deploy ends, which is the truthful thing for whatever is counting.
+          ssh $ssh_opts -O exit "$remote" 2>/dev/null || true
 
       - name: Prove it is live
         env:
