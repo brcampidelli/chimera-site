@@ -115,7 +115,9 @@ jobs:
           # verify against. Fewer connections is a change worth making on its own terms; if a
           # "Ship it" failure shows up again after this, the cause is still open.
           ctl="$(mktemp -d)/cm"
-          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o ControlMaster=auto -o ControlPath=$ctl -o ControlPersist=180"
+          # `BatchMode=yes` for the same reason as the diagnostic below: a deploy must fail on a
+          # rejected key, not wait on a password prompt that nobody is there to answer.
+          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o BatchMode=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o ControlMaster=auto -o ControlPath=$ctl -o ControlPersist=180"
           remote="$SSH_USER@$HOST"
           root="domains/chimeraagent.space"
           rel="chimera-site/releases"
@@ -140,9 +142,47 @@ jobs:
                 sleep $((attempt * 20))
               fi
             done
+            diagnose "$what"
             echo "::error::$what failed three times. This host times out on runners; if the site is"
             echo "still on the previous release, re-running this workflow is the whole fix."
             return 1
+          }
+
+          # What the log said after every failure so far was `Connection timed out`, and that one
+          # sentence covers two problems with different owners: a port that never answered, and a
+          # port that answered while the SSH exchange did not finish. Nothing here could tell them
+          # apart, so every post-mortem ended at "the host is flaky" — including one where the
+          # actual cause was a second deploy nobody needed to have started.
+          #
+          # Run ONLY after the third failure. `-vvv` on every call would bury a working deploy under
+          # two hundred lines of key exchange, which is how a diagnostic gets removed.
+          diagnose() {
+            echo "::group::ssh diagnostics after \"$1\" failed three times"
+
+            # TCP on its own, first. This is the whole distinction: if the port does not answer, the
+            # SSH client's verbosity has nothing to say, and the question is a network or firewall
+            # one. If it does answer, the failure is in the exchange and the lines below have it.
+            if timeout 20 bash -c "cat < /dev/null > /dev/tcp/$HOST/65002" 2>/dev/null; then
+              echo "tcp/65002: answered"
+            else
+              echo "tcp/65002: no answer within 20s"
+            fi
+
+            # A FRESH connection, deliberately not the shared one. Every command in this step reuses
+            # one master now, so if the master is what died, reusing it would report the symptom and
+            # hide the cause.
+            #
+            # `-vvv` names the private key's PATH and the host key's fingerprint. It does not print
+            # the key, and the host and username are secrets, which the runner masks in this log.
+            # `BatchMode=yes` is not tidiness. Without it, an auth failure asks for a password, and
+            # whether that hangs depends on there being no TTY — an assumption about the runner that
+            # this file would be silently relying on. Tested by running this function locally, where
+            # there IS a TTY: it hung until it was killed, which in CI would turn a three-minute
+            # failure into the job's twenty-five-minute timeout. A diagnostic that can do that is
+            # worse than no diagnostic.
+            ssh -vvv -i key -p 65002                 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o BatchMode=yes                 -o ControlMaster=no -o ControlPath=none                 "$remote" true 2>&1 | tail -40 || true
+
+            echo "::endgroup::"
           }
 
           # Land the new tree beside the old one, then move the symlink. The document root IS the
