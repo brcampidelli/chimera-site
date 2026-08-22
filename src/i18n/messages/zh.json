@@ -87,6 +87,7 @@
   "desktop.title": "Chimera Desktop",
   "docs.editOnGitHub": "在 GitHub 上编辑本页",
   "docs.navArchitecture": "架构",
+  "docs.navCommands": "命令参考",
   "docs.navBenchmarks": "基准测试",
   "docs.navConnect": "连接",
   "docs.navDeploy": "部署（Docker / systemd）",
