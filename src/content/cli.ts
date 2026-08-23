@@ -147,6 +147,11 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
       key: "cli.themeBench",
       commands: [
         "bench",
+        // The rulers the agent's own comments tell you to use, and could not reach: the RAG recall
+        // bench and the reranker A/B had no export and no caller. `measure` is how they run.
+        // Named apart from `bench` because `bench` was already taken — mounting it there shadowed
+        // the existing command.
+        "measure",
         "bench-compare",
         "swe-bench-compare",
         "fusion-bench",
