@@ -22,6 +22,7 @@
   --primary-foreground: 222 47% 11%;
   --accent: 217 91% 62%;
   --accent-foreground: 0 0% 100%;
+  --accent-ink: 217 91% 70%;
   --accent2: 189 94% 55%;
   --ring: 217 91% 62%;
   --ok: 152 58% 50%;
@@ -72,6 +73,7 @@
   --primary-foreground: 0 0% 100%;
   --accent: 217 91% 52%;
   --accent-foreground: 0 0% 100%;
+  --accent-ink: 217 91% 42%;
   --accent2: 189 90% 42%;
   --ring: 217 91% 52%;
   --ok: 152 55% 40%;
