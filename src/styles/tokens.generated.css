@@ -36,7 +36,7 @@
   --surface-hover: 222 24% 22%;
   --scrim: 222 47% 4% / 0.6;
   --code-plain: 210 22% 91%;
-  --code-comment: 214 14% 52%;
+  --code-comment: 214 15% 57%;
   --code-keyword: 217 91% 72%;
   --code-string: 152 48% 62%;
   --code-number: 28 90% 68%;
@@ -87,7 +87,7 @@
   --surface-hover: 214 30% 93%;
   --scrim: 222 30% 20% / 0.35;
   --code-plain: 222 47% 14%;
-  --code-comment: 222 12% 48%;
+  --code-comment: 222 16% 40%;
   --code-keyword: 217 82% 42%;
   --code-string: 152 52% 30%;
   --code-number: 24 78% 38%;
