@@ -25,7 +25,9 @@
   --accent2: 189 94% 55%;
   --ring: 217 91% 62%;
   --ok: 152 58% 50%;
+  --ok-foreground: 152 58% 58%;
   --bad: 0 72% 62%;
+  --bad-foreground: 0 78% 70%;
   --warn: 38 92% 50%;
   --warn-foreground: 38 92% 62%;
   --hairline: 210 20% 100% / 0.06;
@@ -73,9 +75,11 @@
   --accent2: 189 90% 42%;
   --ring: 217 91% 52%;
   --ok: 152 55% 40%;
+  --ok-foreground: 152 65% 26%;
   --bad: 0 72% 50%;
+  --bad-foreground: 0 75% 38%;
   --warn: 32 95% 44%;
-  --warn-foreground: 28 90% 34%;
+  --warn-foreground: 28 92% 30%;
   --hairline: 222 30% 12% / 0.1;
   --surface-2: 214 34% 97%;
   --surface-hover: 214 30% 93%;
