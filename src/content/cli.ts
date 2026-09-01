@@ -63,7 +63,18 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
   [
     {
       key: "cli.themeSetup",
-      commands: ["init", "doctor", "version", "features", "maturity", "migrate", "models"],
+      commands: [
+        "init",
+        "doctor",
+        "version",
+        "features",
+        "maturity",
+        "migrate",
+        "models",
+        // Provider keys in the OS keychain instead of a `.env`, shipped in 0.48.0. Setup, because
+        // it is where a person puts a key before anything else works.
+        "secrets",
+      ],
     },
     {
       key: "cli.themeWork",
@@ -141,7 +152,10 @@ export const CLI_THEMES: readonly { readonly key: string; readonly commands: rea
     },
     {
       key: "cli.themeSafety",
-      commands: ["guard", "redteam"],
+      // `approve` answers a decision the kernel is waiting on, from anywhere — shipped in 0.48.0,
+      // because without a terminal the approval gate had been collapsing to a refusal. It belongs
+      // with the kernel it answers to, not with setup.
+      commands: ["guard", "redteam", "approve"],
     },
     {
       key: "cli.themeBench",
