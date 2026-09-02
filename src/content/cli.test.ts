@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  CLI_THEMES,
+  cliThemes,
   cli,
   cliAvailable,
   flagOf,
@@ -36,14 +36,14 @@ describe("cli reference — every command is reachable and every entry is real",
   });
 
   it("never lists the same command under two themes", () => {
-    const all = CLI_THEMES.flatMap((theme) => theme.commands);
+    const all = cliThemes().flatMap((theme) => theme.commands);
     const duplicates = all.filter((name, i) => all.indexOf(name) !== i);
     expect(duplicates).toEqual([]);
   });
 
   it("gives every theme a heading that exists in English", () => {
     const strings = en as Record<string, string>;
-    for (const theme of CLI_THEMES) {
+    for (const theme of cliThemes()) {
       expect(strings[theme.key], theme.key).toBeTruthy();
     }
   });

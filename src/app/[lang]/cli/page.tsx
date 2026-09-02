@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CLI_THEMES, cli, cliAvailable, cliHref, commandByName } from "@/content/cli";
+import { cli, cliAvailable, cliHref, cliThemes, commandByName } from "@/content/cli";
 import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
 import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
@@ -49,7 +49,7 @@ export default async function CliIndex({ params }: { params: Promise<{ lang: str
       </p>
 
       <div className="mt-10 space-y-10">
-        {CLI_THEMES.map((theme) => (
+        {cliThemes().map((theme) => (
           <section key={theme.key}>
             <h2 className="text-d3">{t(theme.key)}</h2>
             <ul className="mt-3 grid gap-2">

@@ -53,138 +53,53 @@ export function cli(): CliSnapshot {
 }
 
 /**
- * How the reference is grouped.
+ * How the reference is grouped, read from the product like the snapshot above it.
  *
- * The CLI is alphabetical on `--help`, which is the correct answer for someone who already knows
- * the name and useless for someone who does not. These are the themes; `cli.test.ts` asserts every
- * command lands in exactly one of them, so a new command cannot slip in unlisted.
+ * This was a hand-written const here until 0.48.0, and that is precisely why it kept going stale:
+ * the assertion that every command lands in a theme could only run where the list was, so it ran at
+ * DEPLOY time — after the release. Three times it caught the same omission (`sessions`, the
+ * installable skills catalogue, then `approve` and `secrets`), and three times this page stayed on
+ * the previous version until somebody read a red deploy to find out why.
+ *
+ * The list now lives in `chimera/cli/themes.py`, where the commands are, and `chimera-agent`'s CI
+ * fails on the pull request that adds a command without listing it. What stays here is the part
+ * that is genuinely the site's: the translation of each `key`, and the rendering.
+ *
+ * The tests below stay too. They cost nothing and they are the only thing that would notice if the
+ * product ever shipped a grouping this site cannot render.
  */
-export const CLI_THEMES: readonly { readonly key: string; readonly commands: readonly string[] }[] =
-  [
-    {
-      key: "cli.themeSetup",
-      commands: [
-        "init",
-        "doctor",
-        "version",
-        "features",
-        "maturity",
-        "migrate",
-        "models",
-        // Provider keys in the OS keychain instead of a `.env`, shipped in 0.48.0. Setup, because
-        // it is where a person puts a key before anything else works.
-        "secrets",
-      ],
-    },
-    {
-      key: "cli.themeWork",
-      commands: [
-        "chat",
-        // Shipped with the persistent terminal conversation and never listed here, so the command
-        // reference described a CLI that had one fewer command than the CLI does. The gate that
-        // catches this has been red since that release.
-        "sessions",
-        "tui",
-        "assist",
-        "run",
-        "agent",
-        "deliver",
-        "solve",
-        "solve-batch",
-        "crew",
-        "crew-isolated",
-        "lifecycle",
-        "meta",
-        "explore",
-        // Searching a repository by what the code DOES rather than by the string it contains.
-        // `chimera/rag/` had been in the tree since 0.44.0 with no entrance; `find` is it.
-        "find",
-        "workflow",
-        "drift",
-        "scenarios",
-      ],
-    },
-    {
-      key: "cli.themeFusion",
-      commands: ["fuse", "fusion-receipts", "orchestrate", "brief", "delegations"],
-    },
-    {
-      key: "cli.themeMemory",
-      commands: ["memory", "profile", "playbook", "skills", "tools"],
-    },
-    {
-      key: "cli.themeSkills",
-      commands: [
-        // Shipped with the curated library and never listed here, so the reference has been
-        // one command short since — and `npm run test` failed on it every run, which means the
-        // site stopped deploying too. The gate was right; nobody was reading it.
-        "skills-library",
-        "skills-pending",
-        "skills-stats",
-        "skills-approve",
-        "skills-export",
-        "skills-import",
-        "skills-retire",
-        "skills-lifecycle",
-        "skills-evolve",
-        // The installable catalogue, shipped in 0.48.0rc10. Same lesson as the note above, one
-        // release later: the gate caught it, the deploy went red, and the download page sat on the
-        // previous version until somebody read why. Browse, fetch, switch on, switch off, remove —
-        // in the order a person meets them.
-        "skills-catalog",
-        "skills-install",
-        "skills-bundles",
-        "skills-bundle-enable",
-        "skills-bundle-disable",
-        "skills-uninstall",
-        "evolve",
-      ],
-    },
-    {
-      key: "cli.themeAutomation",
-      commands: ["cron", "kanban", "project", "agents"],
-    },
-    {
-      key: "cli.themeServe",
-      // `acp` is the agent side of the Agent Client Protocol — the mirror of the client half the
-      // Code screen uses. It belongs beside the other ways something outside reaches the agent.
-      commands: ["serve", "app", "mcp", "a2a-card", "acp"],
-    },
-    {
-      key: "cli.themeSafety",
-      // `approve` answers a decision the kernel is waiting on, from anywhere — shipped in 0.48.0,
-      // because without a terminal the approval gate had been collapsing to a refusal. It belongs
-      // with the kernel it answers to, not with setup.
-      commands: ["guard", "redteam", "approve"],
-    },
-    {
-      key: "cli.themeBench",
-      commands: [
-        "bench",
-        // The rulers the agent's own comments tell you to use, and could not reach: the RAG recall
-        // bench and the reranker A/B had no export and no caller. `measure` is how they run.
-        // Named apart from `bench` because `bench` was already taken — mounting it there shadowed
-        // the existing command.
-        "measure",
-        "bench-compare",
-        "swe-bench-compare",
-        "fusion-bench",
-        "cascade-bench",
-        "hierarchy-bench",
-        "skillcard-bench",
-        "schema-bench",
-        "sandbox-bench",
-        "memory-bench",
-        "memory-poison",
-        "probe-select",
-        "transfer-gate",
-        "evoclaw",
-        "rubric-grade",
-        "context-curve",
-      ],
-    },
-    { key: "cli.themeFun", commands: ["pet"] },
-  ];
+const THEMES_FILE = join(resolveProductRoot(), "chimera", "_cli_themes.json");
+
+export interface CliTheme {
+  readonly key: string;
+  readonly commands: readonly string[];
+}
+
+let themesCached: readonly CliTheme[] | null = null;
+
+export function themesAvailable(): boolean {
+  return existsSync(THEMES_FILE);
+}
+
+/**
+ * Throws rather than returning `[]` when the file is missing.
+ *
+ * An empty grouping renders an empty reference, which looks like a page with nothing to say instead
+ * of a build that could not read its input — the exact failure mode this whole change is about.
+ */
+export function cliThemes(): readonly CliTheme[] {
+  if (!themesCached) {
+    if (!existsSync(THEMES_FILE)) {
+      throw new Error(
+        `the command reference grouping was not found at ${THEMES_FILE}. It ships with ` +
+          "chimera-agent from 0.48.0; regenerate it there with " +
+          "`python -m chimera.cli.themes_dump > chimera/_cli_themes.json`.",
+      );
+    }
+    themesCached = JSON.parse(readFileSync(THEMES_FILE, "utf8")) as readonly CliTheme[];
+  }
+  return themesCached;
+}
 
 /** Top-level commands and groups, visible ones only. */
 export function topLevel(): CliCommand[] {
@@ -197,7 +112,7 @@ export function commandByName(name: string): CliCommand | undefined {
 
 /** Any command in the snapshot that no theme claims. The test requires this to be empty. */
 export function unthemedCommands(): string[] {
-  const claimed = new Set(CLI_THEMES.flatMap((theme) => theme.commands));
+  const claimed = new Set(cliThemes().flatMap((theme) => theme.commands));
   return topLevel()
     .map((command) => command.name)
     .filter((name) => !claimed.has(name));
@@ -206,7 +121,7 @@ export function unthemedCommands(): string[] {
 /** Any theme entry naming a command that does not exist. */
 export function phantomThemeEntries(): string[] {
   const real = new Set(topLevel().map((command) => command.name));
-  return CLI_THEMES.flatMap((theme) => theme.commands).filter((name) => !real.has(name));
+  return cliThemes().flatMap((theme) => theme.commands).filter((name) => !real.has(name));
 }
 
 export function cliHref(locale: LocaleSegment, name?: string): string {
