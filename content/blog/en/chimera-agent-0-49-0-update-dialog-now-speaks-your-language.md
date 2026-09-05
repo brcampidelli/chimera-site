@@ -1,28 +1,23 @@
 ---
 title: "Chimera Agent 0.49.0: Update Dialog Now Speaks Your Language"
-date: 2026-09-04
+date: 2026-09-05
 category: update
-summary: "The update dialog and failure messages now follow your system's language, with a manual check option in the tray."
+summary: "Chimera Agent 0.49.0 introduces localized update dialogs and a manual update check, improving user experience across ten languages."
 version: "0.49.0"
 ---
 
-## Update Dialog Translations and Manual Checks
+## Update Dialog in Your Language
 
-The update dialog in Chimera Agent was previously only available in English, regardless of the app's language setting. This has been fixed in version 0.49.0 — the dialog now follows your operating system's language. This change addresses a disconnect for users who run the app in one language but see critical system messages in another.
+Chimera Agent now supports localized update dialogs across ten languages. Previously, the update dialog was displayed only in English, regardless of the language selected within the app. This inconsistency has been resolved, ensuring that the update dialog follows the operating system's language settings. This change is particularly beneficial for users who rely on their system's default language, as the app's language detection falls back to the same locale.
 
-The tray menu now includes a **Check for updates** option, which serves as the first manual way to trigger an update check. Previously, the automatic check ran silently at startup, providing no feedback unless an update was found. While this design avoids unnecessary notifications, it left users with no way to confirm they were up to date without restarting the app. The new manual check provides explicit confirmation when no update is available, along with clear error messages if the check fails.
+Additionally, the tray menu now includes a **Check for updates** option, providing users with a manual way to verify if updates are available. The automatic update check, which runs once at startup, remains silent when no updates are found to avoid unnecessary interruptions. However, the manual check explicitly informs users if they are up to date or if the check failed, addressing the previous issue where silence after a click could be misinterpreted as a broken feature.
 
-## Translated Failure Messages with Untouched Diagnostics
+## Failure Dialogs and Diagnostics
 
-Failure dialogs — including backend crash reports and the tray's Quit option — are now also translated. However, there's an important distinction in what gets translated:
-
-- **User instructions** appear in your system's language (e.g., "Feche o Chimera e abra de novo")
-- **Technical details** (file paths, error codes, backend logs) remain in their original form
-
-This separation ensures that users receive clear guidance in their preferred language while maintaining searchable, actionable error information for troubleshooting. A test enforces this behavior, verifying that user-facing text comes from translation tables while diagnostic data passes through unchanged.
+The backend-failure dialogs and the tray's Quit option have also been translated. However, the diagnostic information remains in its original language. This distinction is crucial: **what tells you what to do is translated, but what goes into a bug report is not.** For example, while the error message explaining the issue is displayed in your language, the path, OS error, and backend's stderr stay verbatim. This ensures that users can effectively search for solutions and report bugs without encountering language barriers.
 
 ## What Remains Unchanged
 
-The update mechanism itself hasn't changed — checks still happen automatically at launch, and installations always require user confirmation. The app never installs updates without explicit permission. One subtle but important detail: the version displaying the update dialog is always the currently installed one, not the new version being offered. This means the prompt offering 0.49.0 appears in whatever language your current version uses — from 0.49.0 onward, that will match your system language.
+This update does not alter the update mechanism itself. The automatic check still runs at every launch, and the installation process remains user-initiated, requiring explicit consent before proceeding. There is no periodic check while the app is running. Additionally, it's important to note that the version displaying the update dialog is the one currently installed, not the one being offered. This means that the prompt offering you version 0.49.0 is drawn by the version you are currently using.
 
-To see the changes, update to 0.49.0 or check manually via the tray menu. Full details are in the [release notes][Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
+For more details, refer to the [Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
