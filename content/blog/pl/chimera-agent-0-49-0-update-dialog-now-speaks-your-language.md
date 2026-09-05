@@ -1,28 +1,23 @@
 ---
-title: "Chimera Agent 0.49.0: Okno Aktualizacji Teraz Mówi Twoim Językiem"
-date: 2026-09-04
+title: "Chimera Agent 0.49.0: Dialog Aktualizacji Teraz Mówi Twoim Językiem"
+date: 2026-09-05
 category: update
-summary: "Okno aktualizacji i komunikaty o błędach są teraz wyświetlane w języku systemu, z opcją ręcznej weryfikacji w zasobniku."
+summary: "Chimera Agent 0.49.0 wprowadza zlokalizowane dialogi aktualizacji oraz ręczną opcję sprawdzania aktualizacji, poprawiając doświadczenie użytkownika w dziesięciu językach."
 version: "0.49.0"
 ---
 
-## Tłumaczenia Okna Aktualizacji i Ręczna Weryfikacja
+## Dialog Aktualizacji w Twoim Języku
 
-Okno aktualizacji w Chimera Agent było wcześniej dostępne tylko w języku angielskim, niezależnie od ustawień językowych aplikacji. W wersji 0.49.0 zostało to poprawione — okno teraz dostosowuje się do języka systemu operacyjnego. Ta zmiana eliminuje niezgodność dla użytkowników, którzy korzystają z aplikacji w jednym języku, ale widzą krytyczne komunikaty systemowe w innym.
+Chimera Agent obsługuje teraz zlokalizowane dialogi aktualizacji w dziesięciu językach. Wcześniej dialog aktualizacji był wyświetlany wyłącznie po angielsku, niezależnie od języka wybranego w aplikacji. Ta niespójność została rozwiązana, dzięki czemu dialog aktualizacji dostosowuje się do ustawień języka systemu operacyjnego. Ta zmiana jest szczególnie korzystna dla użytkowników, którzy polegają na domyślnym języku systemu, ponieważ wykrywanie języka aplikacji korzysta z tego samego ustawienia.
 
-W menu zasobnika dodano opcję **Sprawdź aktualizacje**, która stanowi pierwszy sposób ręcznego sprawdzenia dostępności aktualizacji. Wcześniej automatyczne sprawdzanie odbywało się po cichu podczas uruchamiania, bez żadnej informacji zwrotnej, chyba że znaleziono aktualizację. Chociaż takie podejście unika niepotrzebnych powiadomień, pozostawiało użytkowników bez możliwości potwierdzenia, czy mają najnowszą wersję, bez restartowania aplikacji. Nowa opcja ręcznej weryfikacji zapewnia wyraźne potwierdzenie, gdy brak aktualizacji, oraz czytelne komunikaty o błędach w przypadku niepowodzenia.
+Dodatkowo, menu w zasobniku systemowym zawiera teraz opcję **Sprawdź aktualizacje**, umożliwiając ręczne sprawdzenie dostępności aktualizacji. Automatyczne sprawdzanie aktualizacji, które odbywa się raz przy starcie, pozostaje ciche, gdy nie znaleziono aktualizacji, aby uniknąć niepotrzebnych przerw. Jednak ręczne sprawdzanie wyraźnie informuje użytkownika, czy jest on na bieżąco lub czy sprawdzanie nie powiodło się, rozwiązując problem, w którym cisza po kliknięciu mogła być błędnie interpretowana jako uszkodzona funkcja.
 
-## Przetłumaczone Komunikaty o Błędach z Niezmienionymi Diagnostykami
+## Dialogi Błędów i Diagnostyka
 
-Komunikaty o błędach — w tym raporty o awariach backendu i opcja Zakończ w zasobniku — są teraz również tłumaczone. Istnieje jednak ważne rozróżnienie co podlega tłumaczeniu:
-
-- **Instrukcje dla użytkownika** są wyświetlane w języku systemu (np. "Zamknij Chimera i uruchom ponownie")
-- **Szczegóły techniczne** (ścieżki plików, kody błędów, logi backendu) pozostają w oryginalnej formie
-
-To rozdzielenie zapewnia użytkownikom jasne wskazówki w preferowanym języku, jednocześnie zachowując możliwość wyszukiwania i analizy informacji o błędach. Test weryfikuje to zachowanie, sprawdzając, czy tekst widoczny dla użytkownika pochodzi z tabel tłumaczeń, a dane diagnostyczne pozostają niezmienione.
+Dialogi błędów backendu oraz opcja Zakończ w zasobniku systemowym również zostały przetłumaczone. Jednak informacje diagnostyczne pozostają w oryginalnym języku. To rozróżnienie jest kluczowe: **to, co mówi ci, co zrobić, jest przetłumaczone, ale to, co trafia do raportu o błędach, nie jest.** Na przykład, podczas gdy komunikat o błędzie wyjaśniający problem jest wyświetlany w twoim języku, ścieżka, błąd systemu operacyjnego oraz stderr backendu pozostają niezmienione. To zapewnia, że użytkownicy mogą skutecznie szukać rozwiązań i zgłaszać błędy bez napotykania barier językowych.
 
 ## Co Pozostaje Niezmienione
 
-Mechanizm aktualizacji sam w sobie nie uległ zmianie — sprawdzanie nadal odbywa się automatycznie przy uruchomieniu, a instalacja zawsze wymaga potwierdzenia przez użytkownika. Aplikacja nigdy nie instaluje aktualizacji bez wyraźnej zgody. Jedna subtelna, ale ważna szczegółowość: wersja wyświetlająca okno aktualizacji zawsze jest tą obecnie zainstalowaną, a nie nową wersją, która jest oferowana. Oznacza to, że monit oferujący wersję 0.49.0 pojawia się w języku używanym przez bieżącą wersję — od 0.49.0 wzwyż będzie to język systemu.
+Ta aktualizacja nie zmienia samego mechanizmu aktualizacji. Automatyczne sprawdzanie nadal odbywa się przy każdym uruchomieniu, a proces instalacji pozostaje inicjowany przez użytkownika, wymagając wyraźnej zgody przed kontynuacją. Nie ma okresowego sprawdzania podczas działania aplikacji. Ponadto ważne jest, aby pamiętać, że wersja wyświetlająca dialog aktualizacji to ta obecnie zainstalowana, a nie ta, która jest oferowana. Oznacza to, że monit oferujący ci wersję 0.49.0 jest wyświetlany przez wersję, której aktualnie używasz.
 
-Aby zobaczyć zmiany, zaktualizuj do wersji 0.49.0 lub sprawdź ręcznie przez menu zasobnika. Pełne szczegóły znajdują się w [informacjach o wydaniu][Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
+W celu uzyskania dodatkowych informacji, zapoznaj się z [Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
