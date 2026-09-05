@@ -1,28 +1,23 @@
 ---
-title: "Chimera Agent 0.49.0: Il dialogo di aggiornamento ora parla la tua lingua"
-date: 2026-09-04
+title: "Chimera Agent 0.49.0: Il Dialogo di Aggiornamento Ora Parla la Tua Lingua"
+date: 2026-09-05
 category: update
-summary: "Il dialogo di aggiornamento e i messaggi di errore seguono ora la lingua del sistema, con un'opzione di controllo manuale nel tray."
+summary: "Chimera Agent 0.49.0 introduce dialoghi di aggiornamento localizzati e un controllo manuale degli aggiornamenti, migliorando l'esperienza utente in dieci lingue."
 version: "0.49.0"
 ---
 
-## Traduzioni del dialogo di aggiornamento e controlli manuali
+## Dialogo di Aggiornamento nella Tua Lingua
 
-Il dialogo di aggiornamento in Chimera Agent era precedentemente disponibile solo in inglese, indipendentemente dall'impostazione della lingua dell'applicazione. Questo è stato risolto nella versione 0.49.0 — il dialogo segue ora la lingua del sistema operativo. Questo cambiamento risolve una disconnessione per gli utenti che eseguono l'app in una lingua ma vedono messaggi di sistema critici in un'altra.
+Chimera Agent ora supporta dialoghi di aggiornamento localizzati in dieci lingue. In precedenza, il dialogo di aggiornamento veniva visualizzato solo in inglese, indipendentemente dalla lingua selezionata all'interno dell'app. Questa incoerenza è stata risolta, garantendo che il dialogo di aggiornamento segua le impostazioni di lingua del sistema operativo. Questo cambiamento è particolarmente utile per gli utenti che si affidano alla lingua predefinita del sistema, poiché il rilevamento della lingua dell'app si basa sullo stesso locale.
 
-Il menu nel tray include ora un'opzione **Controlla aggiornamenti**, che rappresenta il primo modo manuale per avviare un controllo degli aggiornamenti. In precedenza, il controllo automatico avveniva silenziosamente all'avvio, senza fornire feedback a meno che non fosse trovato un aggiornamento. Sebbene questo design eviti notifiche non necessarie, lasciava gli utenti senza un modo per confermare di essere aggiornati senza riavviare l'app. Il nuovo controllo manuale fornisce una conferma esplicita quando non ci sono aggiornamenti disponibili, insieme a messaggi di errore chiari se il controllo fallisce.
+Inoltre, il menu nella tray ora include un'opzione **Controlla aggiornamenti**, fornendo agli utenti un modo manuale per verificare la disponibilità di aggiornamenti. Il controllo automatico degli aggiornamenti, che viene eseguito una volta all'avvio, rimane silenzioso quando non ci sono aggiornamenti disponibili per evitare interruzioni non necessarie. Tuttavia, il controllo manuale informa esplicitamente gli utenti se sono aggiornati o se il controllo è fallito, risolvendo il problema precedente in cui il silenzio dopo un clic poteva essere interpretato come un malfunzionamento.
 
-## Messaggi di errore tradotti con diagnostica invariata
+## Dialoghi di Errore e Diagnostica
 
-Anche i dialoghi di errore — inclusi i report di crash del backend e l'opzione Esci nel tray — sono ora tradotti. Tuttavia, c'è una distinzione importante su cosa viene tradotto:
+Anche i dialoghi di errore del backend e l'opzione Esci nella tray sono stati tradotti. Tuttavia, le informazioni diagnostiche rimangono nella lingua originale. Questa distinzione è cruciale: **ciò che ti dice cosa fare è tradotto, ma ciò che va in un report di bug non lo è.** Ad esempio, mentre il messaggio di errore che spiega il problema viene visualizzato nella tua lingua, il percorso, l'errore del sistema operativo e lo stderr del backend rimangono invariati. Questo garantisce che gli utenti possano cercare soluzioni e segnalare bug in modo efficace senza incontrare barriere linguistiche.
 
-- **Istruzioni per l'utente** appaiono nella lingua del sistema (ad esempio, "Chiudi Chimera e riaprilo")
-- **Dettagli tecnici** (percorsi dei file, codici di errore, log del backend) rimangono nella loro forma originale
+## Cosa Rimane Invariato
 
-Questa separazione garantisce che gli utenti ricevano indicazioni chiare nella loro lingua preferita, mantenendo al contempo informazioni di errore ricercabili e utili per la risoluzione dei problemi. Un test verifica questo comportamento, confermando che il testo rivolto all'utente proviene dalle tabelle di traduzione mentre i dati diagnostici passano invariati.
+Questo aggiornamento non modifica il meccanismo di aggiornamento stesso. Il controllo automatico viene ancora eseguito ad ogni avvio, e il processo di installazione rimane avviato dall'utente, richiedendo un consenso esplicito prima di procedere. Non c'è un controllo periodico mentre l'app è in esecuzione. Inoltre, è importante notare che la versione che visualizza il dialogo di aggiornamento è quella attualmente installata, non quella offerta. Ciò significa che il prompt che ti offre la versione 0.49.0 viene generato dalla versione che stai utilizzando.
 
-## Cosa rimane invariato
-
-Il meccanismo di aggiornamento stesso non è cambiato — i controlli avvengono ancora automaticamente all'avvio, e le installazioni richiedono sempre la conferma dell'utente. L'app non installa mai aggiornamenti senza un permesso esplicito. Un dettaglio sottile ma importante: la versione che mostra il dialogo di aggiornamento è sempre quella attualmente installata, non la nuova versione offerta. Ciò significa che il prompt che offre la 0.49.0 appare nella lingua utilizzata dalla versione corrente — dalla 0.49.0 in poi, corrisponderà alla lingua del sistema.
-
-Per vedere le modifiche, aggiorna alla versione 0.49.0 o controlla manualmente tramite il menu nel tray. I dettagli completi sono nelle [note di rilascio][Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
+Per maggiori dettagli, consulta [Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
