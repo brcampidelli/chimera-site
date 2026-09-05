@@ -1,28 +1,23 @@
 ---
-title: "Chimera Agent 0.49.0: Diálogo de Atualização Agora Fala Sua Língua"
-date: 2026-09-04
+title: "Chimera Agent 0.49.0: Diálogo de Atualização Agora Fala a Sua Língua"
+date: 2026-09-05
 category: update
-summary: "O diálogo de atualização e mensagens de erro agora seguem o idioma do seu sistema, com opção de verificação manual na bandeja."
+summary: "Chimera Agent 0.49.0 introduz diálogos de atualização localizados e uma verificação manual de atualizações, melhorando a experiência do usuário em dez idiomas."
 version: "0.49.0"
 ---
 
-## Traduções do Diálogo de Atualização e Verificações Manuais
+## Diálogo de Atualização no Seu Idioma
 
-O diálogo de atualização no Chimera Agent antes só aparecia em inglês, independente do idioma configurado no app. Isso foi corrigido na versão 0.49.0 — agora o diálogo segue o idioma do seu sistema operacional. Essa mudança resolve uma desconexão para usuários que rodam o app em um idioma mas vêem mensagens críticas do sistema em outro.
+O Chimera Agent agora suporta diálogos de atualização localizados em dez idiomas. Anteriormente, o diálogo de atualização era exibido apenas em inglês, independentemente do idioma selecionado no aplicativo. Essa inconsistência foi resolvida, garantindo que o diálogo de atualização siga as configurações de idioma do sistema operacional. Essa mudança é especialmente benéfica para usuários que dependem do idioma padrão do sistema, já que a detecção de idioma do app recai para o mesmo local.
 
-O menu da bandeja agora inclui uma opção **Verificar atualizações**, que serve como a primeira forma manual de checar por updates. Antes, a verificação automática ocorria silenciosamente na inicialização, sem dar feedback a menos que uma atualização fosse encontrada. Embora esse design evite notificações desnecessárias, ele não dava aos usuários nenhuma forma de confirmar se estavam atualizados sem reiniciar o app. A nova verificação manual fornece confirmação explícita quando não há updates disponíveis, junto com mensagens de erro claras se a verificação falhar.
+Além disso, o menu da bandeja agora inclui uma opção **Verificar atualizações**, oferecendo aos usuários uma maneira manual de verificar se há atualizações disponíveis. A verificação automática de atualizações, que é executada uma vez na inicialização, permanece silenciosa quando não há atualizações para evitar interrupções desnecessárias. No entanto, a verificação manual informa explicitamente aos usuários se eles estão atualizados ou se a verificação falhou, resolvendo o problema anterior em que o silêncio após um clique poderia ser interpretado como uma funcionalidade quebrada.
 
-## Mensagens de Falha Traduzidas com Diagnósticos Intactos
+## Diálogos de Falha e Diagnósticos
 
-Diálogos de falha — incluindo relatórios de crash do backend e a opção Sair na bandeja — agora também são traduzidos. Porém, há uma distinção importante no que é traduzido:
-
-- **Instruções para o usuário** aparecem no idioma do sistema (ex: "Feche o Chimera e abra de novo")
-- **Detalhes técnicos** (caminhos de arquivo, códigos de erro, logs do backend) permanecem no formato original
-
-Essa separação garante que usuários recebam orientações claras no idioma preferido, enquanto mantém informações de erro acionáveis e pesquisáveis para troubleshooting. Um teste reforça esse comportamento, verificando que textos visíveis ao usuário vêm de tabelas de tradução enquanto dados de diagnóstico passam intactos.
+Os diálogos de falha no backend e a opção Sair na bandeja também foram traduzidos. No entanto, as informações de diagnóstico permanecem no idioma original. Essa distinção é crucial: **o que te diz o que fazer é traduzido, mas o que vai para um relatório de bug não é.** Por exemplo, enquanto a mensagem de erro explicando o problema é exibida no seu idioma, o caminho, o erro do sistema e o stderr do backend permanecem verbatim. Isso garante que os usuários possam buscar soluções e reportar bugs de forma eficaz sem encontrar barreiras linguísticas.
 
 ## O Que Permanece Inalterado
 
-O mecanismo de atualização em si não mudou — as verificações ainda ocorrem automaticamente na inicialização, e instalações sempre exigem confirmação do usuário. O app nunca instala updates sem permissão explícita. Um detalhe sutil mas importante: a versão que exibe o diálogo de atualização é sempre a instalada atualmente, não a nova versão sendo oferecida. Isso significa que o prompt oferecendo a 0.49.0 aparece no idioma que sua versão atual usa — a partir da 0.49.0, isso vai corresponder ao idioma do seu sistema.
+Esta atualização não altera o mecanismo de atualização em si. A verificação automática ainda é executada a cada inicialização, e o processo de instalação continua sendo iniciado pelo usuário, exigindo consentimento explícito antes de prosseguir. Não há verificação periódica enquanto o app está em execução. Além disso, é importante notar que a versão que exibe o diálogo de atualização é a que está instalada atualmente, não a que está sendo oferecida. Isso significa que o prompt oferecendo a versão 0.49.0 é gerado pela versão que você está usando no momento.
 
-Para ver as mudanças, atualize para a 0.49.0 ou verifique manualmente pelo menu da bandeja. Detalhes completos estão nas [notas de versão][Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
+Para mais detalhes, consulte [Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
