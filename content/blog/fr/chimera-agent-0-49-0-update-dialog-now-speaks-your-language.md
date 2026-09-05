@@ -1,28 +1,23 @@
 ---
-title: "Chimera Agent 0.49.0 : La boîte de dialogue de mise à jour parle désormais votre langue"
-date: 2026-09-04
+title: "Chimera Agent 0.49.0 : Les dialogues de mise à jour parlent désormais votre langue"
+date: 2026-09-05
 category: update
-summary: "La boîte de dialogue de mise à jour et les messages d'erreur suivent désormais la langue de votre système, avec une option de vérification manuelle dans la barre des tâches."
+summary: "Chimera Agent 0.49.0 introduit des dialogues de mise à jour localisés et une vérification manuelle des mises à jour, améliorant l'expérience utilisateur dans dix langues."
 version: "0.49.0"
 ---
 
-## Traductions de la boîte de dialogue et vérifications manuelles
+## Dialogue de mise à jour dans votre langue
 
-La boîte de dialogue de mise à jour de Chimera Agent était auparavant uniquement disponible en anglais, quelle que soit la langue configurée dans l'application. Ce problème est résolu dans la version 0.49.0 — la boîte de dialogue suit désormais la langue de votre système d'exploitation. Ce changement corrige une incohérence pour les utilisateurs qui exécutent l'application dans une langue mais voient les messages système critiques dans une autre.
+Chimera Agent prend désormais en charge les dialogues de mise à jour localisés dans dix langues. Auparavant, le dialogue de mise à jour s'affichait uniquement en anglais, indépendamment de la langue sélectionnée dans l'application. Cette incohérence est résolue, garantissant que le dialogue de mise à jour suit les paramètres de langue du système d'exploitation. Ce changement est particulièrement bénéfique pour les utilisateurs qui dépendent de la langue par défaut de leur système, car la détection de langue de l'application se base sur cette même locale.
 
-Le menu de la barre des tâches inclut désormais une option **Vérifier les mises à jour**, qui constitue le premier moyen manuel de déclencher une vérification. Auparavant, la vérification automatique s'exécutait silencieusement au démarrage, sans aucun retour sauf si une mise à jour était trouvée. Bien que cette conception évite les notifications inutiles, elle ne permettait pas aux utilisateurs de confirmer qu'ils étaient à jour sans redémarrer l'application. La vérification manuelle fournit désormais une confirmation explicite lorsqu'aucune mise à jour n'est disponible, ainsi que des messages d'erreur clairs en cas d'échec.
+De plus, le menu de la barre des tâches inclut désormais une option **Vérifier les mises à jour**, offrant aux utilisateurs un moyen manuel de vérifier si des mises à jour sont disponibles. La vérification automatique des mises à jour, qui s'exécute une fois au démarrage, reste silencieuse lorsqu'aucune mise à jour n'est trouvée pour éviter des interruptions inutiles. Cependant, la vérification manuelle informe explicitement les utilisateurs s'ils sont à jour ou si la vérification a échoué, résolvant le problème précédent où le silence après un clic pouvait être interprété comme une fonctionnalité défectueuse.
 
-## Messages d'erreur traduits avec diagnostics intacts
+## Dialogues d'erreur et diagnostics
 
-Les boîtes de dialogue d'erreur — y compris les rapports de plantage du backend et l'option Quitter dans la barre des tâches — sont désormais également traduites. Cependant, une distinction importante est faite sur ce qui est traduit :
+Les dialogues d'échec du backend et l'option Quitter de la barre des tâches ont également été traduits. Cependant, les informations de diagnostic restent dans leur langue d'origine. Cette distinction est cruciale : **ce qui vous indique quoi faire est traduit, mais ce qui est destiné à un rapport de bug ne l'est pas.** Par exemple, bien que le message d'erreur expliquant le problème soit affiché dans votre langue, le chemin, l'erreur système et la sortie d'erreur du backend restent tels quels. Cela garantit que les utilisateurs peuvent rechercher efficacement des solutions et signaler des bugs sans rencontrer de barrières linguistiques.
 
-- **Les instructions utilisateur** apparaissent dans la langue de votre système (ex. "Fermez Chimera et rouvrez-le")
-- **Les détails techniques** (chemins de fichiers, codes d'erreur, logs backend) restent dans leur forme originale
+## Ce qui reste inchangé
 
-Cette séparation garantit que les utilisateurs reçoivent des instructions claires dans leur langue préférée tout en conservant des informations d'erreur exploitables pour le dépannage. Un test vérifie ce comportement, confirmant que les textes utilisateur proviennent des tables de traduction tandis que les données techniques restent inchangées.
+Cette mise à jour ne modifie pas le mécanisme de mise à jour lui-même. La vérification automatique s'exécute toujours à chaque lancement, et le processus d'installation reste initié par l'utilisateur, nécessitant un consentement explicite avant de continuer. Il n'y a pas de vérification périodique pendant que l'application est en cours d'exécution. De plus, il est important de noter que la version affichant le dialogue de mise à jour est celle actuellement installée, et non celle proposée. Cela signifie que l'invite vous proposant la version 0.49.0 est générée par la version que vous utilisez actuellement.
 
-## Ce qui ne change pas
-
-Le mécanisme de mise à jour lui-même n'a pas changé — les vérifications ont toujours lieu automatiquement au lancement, et les installations nécessitent toujours une confirmation utilisateur. L'application n'installe jamais de mises à jour sans permission explicite. Un détail subtil mais important : la version affichant la boîte de dialogue est toujours celle actuellement installée, pas la nouvelle version proposée. Cela signifie que l'invite proposant la 0.49.0 apparaît dans la langue utilisée par votre version actuelle — à partir de la 0.49.0, cela correspondra à la langue de votre système.
-
-Pour voir ces changements, mettez à jour vers la 0.49.0 ou vérifiez manuellement via le menu de la barre des tâches. Les détails complets sont dans les [notes de version][Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
+Pour plus de détails, consultez la [Chimera Agent v0.49.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.0).
