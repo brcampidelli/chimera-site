@@ -1,25 +1,25 @@
 ---
 title: "Chimera Agent 0.49.1: Fixes for Update Flow and UI Consistency"
-date: 2026-09-12
+date: 2026-09-15
 category: update
-summary: "Version 0.49.1 resolves critical update issues, improves UI consistency, and fixes translation gaps in the first-run wizard."
+summary: "Chimera Agent 0.49.1 addresses critical issues in the update process, UI consistency, and translation gaps, ensuring smoother operation and clearer user interactions."
 version: "0.49.1"
 ---
 
-## Update Flow Fixes
+## Update Process Improvements
 
-One of the most significant issues addressed in Chimera Agent 0.49.1 involves the update mechanism. Previously, after an in-place update, the backend process would incorrectly report the old version due to a lingering `dist-info` file from the previous installation. This occurred because the PyInstaller bundle retained both the old and new version files, causing `importlib.metadata` to return the first version it encountered. As a result, the app would persistently offer an update to the version it was already running, leading to confusion and unnecessary update prompts.
+The update mechanism in Chimera Agent 0.49.0 had a significant flaw: the backend process incorrectly reported the version due to leftover files from previous installations. Specifically, the PyInstaller bundle retained `dist-info` directories from both the old and new versions, causing `importlib.metadata` to return the wrong version. This led to the app persistently offering an update to the version it already was. The installer now removes the old bundle before writing the new one, ensuring that only the correct version is reported. Note that this fix applies to the installer shipped with 0.49.1, not the one that installs it. If you're updating from 0.49.0, you may still see a stale `dist-info` until the next update.
 
-To resolve this, the installer now removes the old bundle before writing the new one, ensuring only the correct version is recognized. However, note that this fix applies to the installer shipped with 0.49.1, not the one used to install it. Users updating from 0.49.0 may still encounter this issue until the next update. A manual fix involves deleting the stale `dist-info` file and restarting the app.
+## Auto-Update Reliability
 
-Another update-related issue involved the auto-update feature. For approximately twenty-five minutes after every release, the updater would fail because the `releases/latest/download/latest.json` endpoint returned a 404 error while builds were still in progress. This issue went unnoticed because the updater silently swallowed errors. Now, releases are held back with `--latest=false` until all builds are complete, ensuring the endpoint always resolves to a valid release.
+Another issue was discovered in the auto-update mechanism. For approximately twenty-five minutes after every release, the updater would fail because the `latest.json` endpoint returned a 404 error. This happened because the release was marked as latest before all platform builds were complete. Now, releases are held back with `--latest=false` and only promoted once the manifest is attached. This ensures that the endpoint always resolves to a valid release, improving reliability and preventing broken releases from being offered.
 
-## UI Consistency and Translation Fixes
+## UI Consistency and Clarity
 
-The 'new version available' panel previously asked a question it couldn't answer. The panel's heading read 'A new version is available. Update?' but only offered buttons to view the release or dismiss the panel. Since the panel resides in the webview without IPC to the Rust updater, it couldn't initiate an update. The panel now simply states the availability of a new version and directs users to the tray's 'Check for updates' option.
+The 'new version available' panel previously asked a question it couldn't answer: *"A new version is available. Update?"* However, the panel only offered options to view the release or dismiss the notification, with no actual update functionality. The panel now simply states that a new version is available and directs users to the tray's **Check for updates** option. This change eliminates confusion and aligns the UI with its actual capabilities.
 
-Additionally, the first-run wizard had a translation gap in the cost-mode dropdown, which displayed raw values (`auto / cheap / balanced / premium`) instead of translated labels. This inconsistency has been corrected, aligning the wizard with the Settings screen, which already used the translated labels. Note that the values remain in English to match the server's expected input.
+## Translation Fixes
 
-For full details, refer to the [release notes][Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1).
+The first-run wizard had a minor but noticeable translation issue: the cost-mode dropdown displayed raw values (`auto / cheap / balanced / premium`) instead of their translated counterparts. While the labels existed and were translated, they weren't being used in this context. This inconsistency has been resolved, ensuring that the dropdown now displays the correct translated labels, consistent with the Settings screen.
 
-[Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1): CHANGELOG.md
+For full details, refer to the [release notes][Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1). To update, run `chimera-desktop --update` or download the latest version from the official site.
