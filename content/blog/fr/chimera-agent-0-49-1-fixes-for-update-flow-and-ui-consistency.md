@@ -1,25 +1,25 @@
 ---
-title: "Chimera Agent 0.49.1 : Corrections pour le flux de mise à jour et l'homogénéité de l'interface"
-date: 2026-09-12
+title: "Chimera Agent 0.49.1 : Corrections pour le flux de mise à jour et la cohérence de l'interface utilisateur"
+date: 2026-09-15
 category: update
-summary: "La version 0.49.1 résout des problèmes critiques de mise à jour, améliore l'homogénéité de l'interface et comble les lacunes de traduction dans l'assistant de première utilisation."
+summary: "Chimera Agent 0.49.1 résout des problèmes critiques dans le processus de mise à jour, la cohérence de l'interface utilisateur et les lacunes de traduction, garantissant un fonctionnement plus fluide et des interactions utilisateur plus claires."
 version: "0.49.1"
 ---
 
-## Corrections du flux de mise à jour
+## Améliorations du processus de mise à jour
 
-L'un des problèmes majeurs résolus dans Chimera Agent 0.49.1 concerne le mécanisme de mise à jour. Auparavant, après une mise à jour en place, le processus backend signalait incorrectement l'ancienne version en raison de la persistance d'un fichier `dist-info` de l'installation précédente. Cela se produisait car le bundle PyInstaller conservait à la fois les fichiers de l'ancienne et de la nouvelle version, ce qui amenait `importlib.metadata` à retourner la première version rencontrée. En conséquence, l'application proposait continuellement une mise à jour vers la version déjà en cours d'exécution, créant confusion et invites de mise à jour superflues.
+Le mécanisme de mise à jour de Chimera Agent 0.49.0 présentait un défaut majeur : le processus backend rapportait incorrectement la version en raison de fichiers résiduels provenant d'installations précédentes. Plus précisément, le bundle PyInstaller conservait les répertoires `dist-info` des versions anciennes et nouvelles, ce qui amenait `importlib.metadata` à retourner la mauvaise version. Cela entraînait l'application à proposer constamment une mise à jour vers la version déjà installée. L'installateur supprime désormais l'ancien bundle avant d'écrire le nouveau, garantissant que seule la version correcte est rapportée. Notez que cette correction s'applique à l'installateur livré avec 0.49.1, et non à celui qui l'installe. Si vous effectuez une mise à jour depuis 0.49.0, vous pourriez encore voir un `dist-info` obsolète jusqu'à la prochaine mise à jour.
 
-Pour résoudre ce problème, l'installateur supprime désormais l'ancien bundle avant d'écrire le nouveau, garantissant que seule la version correcte soit reconnue. Notez cependant que cette correction s'applique à l'installateur livré avec la version 0.49.1, et non à celui utilisé pour l'installer. Les utilisateurs mettant à jour depuis la 0.49.0 peuvent encore rencontrer ce problème jusqu'à la prochaine mise à jour. Une solution manuelle consiste à supprimer le fichier `dist-info` obsolète et à redémarrer l'application.
+## Fiabilité de la mise à jour automatique
 
-Un autre problème lié aux mises à jour concernait la fonctionnalité de mise à jour automatique. Pendant environ vingt-cinq minutes après chaque publication, le système de mise à jour échouait car l'endpoint `releases/latest/download/latest.json` retournait une erreur 404 pendant que les builds étaient encore en cours. Ce problème passait inaperçu car le système de mise à jour ignorait silencieusement les erreurs. Désormais, les publications sont retenues avec `--latest=false` jusqu'à ce que tous les builds soient terminés, garantissant que l'endpoint pointe toujours vers une version valide.
+Un autre problème a été découvert dans le mécanisme de mise à jour automatique. Pendant environ vingt-cinq minutes après chaque publication, le système de mise à jour échouait car l'endpoint `latest.json` retournait une erreur 404. Cela se produisait car la publication était marquée comme la dernière avant que toutes les builds pour les plateformes ne soient terminées. Désormais, les publications sont retenues avec `--latest=false` et ne sont promues qu'une fois le manifeste attaché. Cela garantit que l'endpoint résout toujours une publication valide, améliorant la fiabilité et empêchant l'offre de publications cassées.
 
-## Homogénéité de l'interface et corrections de traduction
+## Cohérence et clarté de l'interface utilisateur
 
-Le panneau 'nouvelle version disponible' posait auparavant une question à laquelle il ne pouvait pas répondre. Son en-tête indiquait 'Une nouvelle version est disponible. Mettre à jour ?' mais ne proposait que des boutons pour voir la publication ou ignorer le panneau. Comme le panneau se trouve dans la webview sans IPC vers le système de mise à jour Rust, il ne pouvait pas initier la mise à jour. Le panneau indique désormais simplement la disponibilité d'une nouvelle version et oriente les utilisateurs vers l'option 'Vérifier les mises à jour' dans la barre des tâches.
+Le panneau 'nouvelle version disponible' posait auparavant une question à laquelle il ne pouvait pas répondre : *"Une nouvelle version est disponible. Mettre à jour ?"* Cependant, le panneau ne proposait que des options pour voir la publication ou ignorer la notification, sans aucune fonctionnalité de mise à jour réelle. Le panneau indique maintenant simplement qu'une nouvelle version est disponible et dirige les utilisateurs vers l'option **Vérifier les mises à jour** dans la barre des tâches. Ce changement élimine la confusion et aligne l'interface utilisateur avec ses capacités réelles.
 
-Par ailleurs, l'assistant de première utilisation présentait une lacune de traduction dans le menu déroulant du mode de coût, qui affichait des valeurs brutes (`auto / cheap / balanced / premium`) au lieu des libellés traduits. Cette incohérence a été corrigée, alignant l'assistant sur l'écran des paramètres, qui utilisait déjà les libellés traduits. Notez que les valeurs restent en anglais pour correspondre aux entrées attendues par le serveur.
+## Corrections de traduction
 
-Pour plus de détails, consultez les [notes de publication][Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1).
+L'assistant de première exécution présentait un problème de traduction mineur mais notable : le menu déroulant du mode de coût affichait des valeurs brutes (`auto / cheap / balanced / premium`) au lieu de leurs équivalents traduits. Bien que les étiquettes existaient et étaient traduites, elles n'étaient pas utilisées dans ce contexte. Cette incohérence a été résolue, garantissant que le menu déroulant affiche désormais les étiquettes traduites correctes, cohérentes avec l'écran des paramètres.
 
-[Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1): CHANGELOG.md
+Pour plus de détails, consultez les [notes de publication][Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1). Pour mettre à jour, exécutez `chimera-desktop --update` ou téléchargez la dernière version sur le site officiel.
