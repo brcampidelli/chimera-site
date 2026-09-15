@@ -1,25 +1,25 @@
 ---
 title: "Chimera Agent 0.49.1: Korrekturen für Update-Ablauf und UI-Konsistenz"
-date: 2026-09-12
+date: 2026-09-15
 category: update
-summary: "Version 0.49.1 behebt kritische Update-Probleme, verbessert die UI-Konsistenz und schließt Übersetzungslücken im Erststart-Assistenten."
+summary: "Chimera Agent 0.49.1 behebt kritische Probleme im Update-Prozess, der UI-Konsistenz und Übersetzungslücken, was einen reibungsloseren Betrieb und klarere Benutzerinteraktionen gewährleistet."
 version: "0.49.1"
 ---
 
-## Korrekturen am Update-Ablauf
+## Verbesserungen am Update-Prozess
 
-Eines der größten Probleme, die in Chimera Agent 0.49.1 behoben wurden, betrifft den Update-Mechanismus. Zuvor meldete der Backend-Prozess nach einem In-Place-Update fälschlicherweise die alte Version, da eine verbliebene `dist-info`-Datei der vorherigen Installation vorhanden war. Dies geschah, weil das PyInstaller-Bundle sowohl die alte als auch die neue Version enthielt, wodurch `importlib.metadata` die erste gefundene Version zurückgab. Folglich bot die App hartnäckig ein Update auf die bereits laufende Version an, was zu Verwirrung und unnötigen Update-Aufforderungen führte.
+Der Update-Mechanismus in Chimera Agent 0.49.0 hatte einen schwerwiegenden Fehler: Der Backend-Prozess meldete aufgrund von übrig gebliebenen Dateien aus vorherigen Installationen die falsche Version. Konkret behielt das PyInstaller-Bundle `dist-info`-Verzeichnisse sowohl der alten als auch der neuen Version bei, wodurch `importlib.metadata` die falsche Version zurückgab. Dies führte dazu, dass die App beharrlich ein Update auf die bereits installierte Version anbot. Der Installer entfernt nun das alte Bundle, bevor das neue geschrieben wird, und stellt so sicher, dass nur die korrekte Version gemeldet wird. Beachten Sie, dass diese Korrektur für den mit 0.49.1 ausgelieferten Installer gilt, nicht für den, der 0.49.1 installiert. Wenn Sie von 0.49.0 aktualisieren, sehen Sie möglicherweise noch ein veraltetes `dist-info`, bis das nächste Update erfolgt.
 
-Zur Lösung entfernt das Installationsprogramm nun das alte Bundle, bevor das neue geschrieben wird, sodass nur die korrekte Version erkannt wird. Beachten Sie jedoch, dass diese Korrektur nur für das mit 0.49.1 ausgelieferte Installationsprogramm gilt, nicht für dasjenige, das zur Installation von 0.49.1 verwendet wird. Benutzer, die von 0.49.0 aktualisieren, könnten dieses Problem bis zum nächsten Update noch erleben. Eine manuelle Lösung besteht darin, die veraltete `dist-info`-Datei zu löschen und die App neu zu starten.
+## Zuverlässigkeit der Auto-Updates
 
-Ein weiteres Update-bezogenes Problem betraf die Auto-Update-Funktion. Für etwa 25 Minuten nach jedem Release schlug der Updater fehl, weil der Endpunkt `releases/latest/download/latest.json` einen 404-Fehler zurückgab, während die Builds noch liefen. Dieses Problem blieb unbemerkt, da der Updater Fehler stillschweigend verschluckte. Nun werden Releases mit `--latest=false` zurückgehalten, bis alle Builds abgeschlossen sind, sodass der Endpunkt immer auf ein gültiges Release verweist.
+Ein weiteres Problem wurde im Auto-Update-Mechanismus entdeckt. Für etwa fünfundzwanzig Minuten nach jedem Release schlug der Updater fehl, weil der `latest.json`-Endpunkt einen 404-Fehler zurückgab. Dies geschah, weil das Release als „latest“ markiert wurde, bevor alle Plattform-Builds abgeschlossen waren. Nun werden Releases zunächst mit `--latest=false` zurückgehalten und erst freigegeben, sobald das Manifest angehängt ist. Dadurch wird sichergestellt, dass der Endpunkt immer auf ein gültiges Release verweist, was die Zuverlässigkeit erhöht und verhindert, dass fehlerhafte Releases angeboten werden.
 
-## UI-Konsistenz und Übersetzungskorrekturen
+## UI-Konsistenz und Klarheit
 
-Das Panel 'Neue Version verfügbar' stellte zuvor eine Frage, die es nicht beantworten konnte. Die Überschrift lautete 'Eine neue Version ist verfügbar. Aktualisieren?', bot aber nur Buttons zum Anzeigen des Releases oder zum Schließen des Panels. Da das Panel im Webview ohne IPC zum Rust-Updater liegt, konnte es kein Update starten. Das Panel teilt nun einfach die Verfügbarkeit einer neuen Version mit und verweist Benutzer auf die Option 'Nach Updates suchen' im Tray.
+Das Panel „Neue Version verfügbar“ stellte zuvor eine Frage, die es nicht beantworten konnte: *„Eine neue Version ist verfügbar. Aktualisieren?“* Allerdings bot das Panel nur Optionen an, um das Release anzuzeigen oder die Benachrichtigung zu verwerfen – ohne tatsächliche Update-Funktionalität. Das Panel teilt nun einfach mit, dass eine neue Version verfügbar ist, und verweist Benutzer auf die Option **Nach Updates suchen** im Tray. Diese Änderung beseitigt Verwirrung und passt die UI an ihre tatsächlichen Fähigkeiten an.
 
-Zudem gab es im Erststart-Assistenten eine Übersetzungslücke im Kostenmodus-Dropdown, das Rohwerte (`auto / cheap / balanced / premium`) anzeigte statt übersetzter Labels. Diese Inkonsistenz wurde behoben, sodass der Assistent nun mit dem Einstellungsbildschirm übereinstimmt, der bereits übersetzte Labels verwendete. Beachten Sie, dass die Werte weiterhin auf Englisch bleiben, um mit den vom Server erwarteten Eingaben übereinzustimmen.
+## Übersetzungskorrekturen
 
-Weitere Details finden Sie in den [Release Notes][Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1).
+Der Erststart-Assistent hatte ein kleines, aber auffälliges Übersetzungsproblem: Die Dropdown-Liste für den Kostenmodus zeigte Rohwerte (`auto / cheap / balanced / premium`) anstelle ihrer übersetzten Entsprechungen. Obwohl die Beschriftungen vorhanden und übersetzt waren, wurden sie in diesem Kontext nicht verwendet. Diese Inkonsistenz wurde behoben, sodass die Dropdown-Liste nun die korrekten übersetzten Beschriftungen anzeigt, konsistent mit dem Einstellungsbildschirm.
 
-[Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1): CHANGELOG.md
+Weitere Details finden Sie in den [Release Notes][Chimera Agent v0.49.1](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.1). Zum Aktualisieren führen Sie `chimera-desktop --update` aus oder laden Sie die neueste Version von der offiziellen Website herunter.
