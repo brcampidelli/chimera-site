@@ -114,6 +114,12 @@ export function linkResolver(locale: LocaleSegment, from: string) {
 
     const slug = path.replace(/^\.\//, "").slice(0, -3);
     if (!known.has(slug)) {
+      // A doc in a subdirectory (`docs/audits/…`) is real but is not a page here: `docSlugs()`
+      // lists only the top level. It goes to GitHub like the `../` links above. Only a file that
+      // does not exist at all is still an error — that is the 404 this check is for.
+      if (slug.includes("/") && existsSync(join(DOCS_DIR, `${slug}.md`))) {
+        return `${LINKS.github}/blob/main/docs/${slug}.md${anchor}`;
+      }
       throw new Error(`docs/${from}.md links to docs/${path}, which does not exist`);
     }
     return `${docHref(locale, slug)}${anchor}`;
