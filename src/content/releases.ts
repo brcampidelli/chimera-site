@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Download, Releases } from "../../scripts/fetch-releases";
+import type { Download, Preview, Releases } from "../../scripts/fetch-releases";
 
 const FILE = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", ".content", "releases.json");
 
-export type { Download, Releases };
+export type { Download, Preview, Releases };
 
 export function releasesAvailable(): boolean {
   return existsSync(FILE);
@@ -24,6 +24,20 @@ export function releases(): Releases | null {
 
 export function downloadFor(platform: Download["platform"]): Download | undefined {
   return releases()?.downloads.find((d) => d.platform === platform);
+}
+
+/**
+ * The release candidate, when one is ahead of the stable release.
+ *
+ * Null far more often than not, and the page is written for that: no candidate means no section,
+ * rather than a section explaining that there is nothing to try.
+ */
+export function preview(): Preview | null {
+  return releases()?.preview ?? null;
+}
+
+export function previewDownloadFor(platform: Download["platform"]): Download | undefined {
+  return preview()?.downloads.find((d) => d.platform === platform);
 }
 
 /** Sizes are shown because these installers are large and a surprise is worse than a number. */

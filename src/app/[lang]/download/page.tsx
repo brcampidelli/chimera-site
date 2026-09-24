@@ -6,6 +6,8 @@ import { evidenceAvailable } from "@/content/evidence";
 import {
   downloadFor,
   formatBytes,
+  preview,
+  previewDownloadFor,
   releases,
   type Download,
 } from "@/content/releases";
@@ -45,6 +47,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ lang:
   if (!isLocaleSegment(lang)) notFound();
   const t = translator(lang);
   const release = releases();
+  const previewRelease = preview();
   const copy = { copy: t("common.copy"), copied: t("common.copied") };
 
   return (
@@ -120,6 +123,57 @@ export default async function DownloadPage({ params }: { params: Promise<{ lang:
           </a>
         </p>
       </section>
+
+      {/*
+        The release candidate, when one is ahead of the stable build — and only then. It sits AFTER
+        the stable downloads and reads as the smaller offer, because that is what it is: installed
+        apps are never offered a prerelease (GitHub's `latest` skips it by definition), so anyone
+        arriving here to update should leave with the stable one. What this section answers is the
+        person who came looking for something specific and had no route but a GitHub tag.
+
+        No card is rendered from a partial upload: `findPreview` drops a candidate whose assets are
+        not all there yet, so this either shows every platform or shows nothing.
+      */}
+      {previewRelease ? (
+        <section className="surface mt-10 border-l-2 border-l-accent2 p-5">
+          <h2 className="text-d2">{t("download.previewHeading")}</h2>
+          <p className="mt-2 max-w-measure text-sm text-muted-foreground">
+            {t("download.previewBody", { version: previewRelease.version })}
+          </p>
+          <p className="mt-2 max-w-measure text-sm text-muted-foreground">
+            {t("download.previewNotOffered")}
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {PLATFORMS.map(({ platform, label }) => {
+              const download = previewDownloadFor(platform);
+              if (!download) return null;
+              return (
+                <li key={platform}>
+                  <a
+                    href={download.url}
+                    className="focus-ring surface flex h-full flex-col justify-between gap-2 p-5 transition duration-1 ease-out hover:bg-surface-hover"
+                  >
+                    <span className="text-base font-semibold">{t(label)}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{download.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatBytes(download.bytes)}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-5 text-sm">
+            <a
+              href={previewRelease.url}
+              rel="noreferrer"
+              className="focus-ring rounded text-accent2 hover:text-accent"
+            >
+              {t("download.previewNotes")} →
+            </a>
+          </p>
+        </section>
+      ) : null}
 
       <section className="mt-10">
         <h2 className="text-d2">{t("download.terminalHeading")}</h2>
