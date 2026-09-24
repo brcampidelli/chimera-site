@@ -11,7 +11,7 @@
  * upstream/ours distinction does not.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { findPreview, getJson, newerThan } from "./fetch-releases";
+import { collectListed, findPreview, getJson, isPublishedStable, newerThan } from "./fetch-releases";
 
 /** `process.exit` never returns; in a test it has to become something catchable. */
 class Exited extends Error {
@@ -258,5 +258,106 @@ describe("findPreview — the card is all-or-nothing", () => {
     // Best-effort, unlike the stable downloads: an optional card must never take a build down.
     vi.stubGlobal("fetch", async () => new Response("nope", { status: 503 }));
     expect(await findPreview(listed(), "0.47.0", headers)).toBeNull();
+  });
+});
+
+
+describe("collectListed — one page of thirty was a bet on the release cadence", () => {
+  const headers = { Accept: "application/vnd.github+json" };
+
+  /** `n` releases, all prerelease unless `stableFrom` says otherwise. */
+  function page(n: number, stableFrom = Infinity) {
+    return Array.from({ length: n }, (_unused, i) => ({
+      tag_name: `v0.48.0rc${i + 1}`,
+      name: `rc${i + 1}`,
+      body: "notes",
+      published_at: "2026-08-25T00:00:00Z",
+      html_url: "https://example.invalid",
+      prerelease: i < stableFrom,
+      draft: false,
+    }));
+  }
+
+  it("keeps asking for pages while every release it has seen is a prerelease", async () => {
+    // The failure of 2026-08-25, exactly: rc1..rc30 filled the first page and the newest stable
+    // release sat just past the end. The API was answering perfectly and the history came back
+    // empty, so the build blamed upstream and asked to be re-run.
+    const pedidas: string[] = [];
+    const read = async (url: string) => {
+      pedidas.push(url);
+      // page 1: 100 prereleases (a full page, so there is more). page 2: stable ones.
+      // `endsWith`, not `includes`: `per_page=100` CONTAINS "page=1", so a substring check made
+      // every page look like page one and the walk ran to its cap. The mock was the defect.
+      return url.endsWith("page=1") ? page(100) : page(40, 0);
+    };
+
+    const all = await collectListed(headers, read as never);
+
+    expect(pedidas).toHaveLength(2);
+    expect(all.filter(isPublishedStable).length).toBeGreaterThan(0);
+  });
+
+  it("stops at a short page instead of spending a request to be told nothing", async () => {
+    const pedidas: string[] = [];
+    const read = async (url: string) => {
+      pedidas.push(url);
+      return page(7);
+    };
+
+    await collectListed(headers, read as never);
+
+    expect(pedidas).toHaveLength(1);
+  });
+
+  it("stops once it has enough stable releases, rather than walking to the cap", async () => {
+    const pedidas: string[] = [];
+    const read = async (url: string) => {
+      pedidas.push(url);
+      return page(100, 0); // a full page, all stable
+    };
+
+    await collectListed(headers, read as never);
+
+    expect(pedidas).toHaveLength(1);
+  });
+
+  it("walks a bounded number of pages even when nothing stable is ever found", async () => {
+    const pedidas: string[] = [];
+    const read = async (url: string) => {
+      pedidas.push(url);
+      return page(100); // a full page of prereleases, for ever
+    };
+
+    await collectListed(headers, read as never);
+
+    expect(pedidas.length).toBeGreaterThan(1);
+    expect(pedidas.length).toBeLessThanOrEqual(5);
+  });
+
+  it("treats a page it could not read as empty rather than crashing the walk", async () => {
+    const all = await collectListed(headers, (async () => null) as never);
+    expect(all).toEqual([]);
+  });
+});
+
+describe("isPublishedStable — what earns a release page", () => {
+  const base = {
+    tag_name: "v0.47.0",
+    name: "0.47.0",
+    body: "notes",
+    published_at: "2026-08-01T00:00:00Z",
+    html_url: "https://example.invalid",
+    prerelease: false,
+    draft: false,
+  };
+
+  it("accepts a shipped stable release that has something written on it", () => {
+    expect(isPublishedStable(base as never)).toBe(true);
+  });
+
+  it("refuses a prerelease, a draft, and a release with an empty body", () => {
+    expect(isPublishedStable({ ...base, prerelease: true } as never)).toBe(false);
+    expect(isPublishedStable({ ...base, draft: true } as never)).toBe(false);
+    expect(isPublishedStable({ ...base, body: "   " } as never)).toBe(false);
   });
 });

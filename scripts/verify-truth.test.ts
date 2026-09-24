@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { checkNoTypedFigures, textOf, uncaveatedNames } from "./verify-truth";
+import { alphaCaveatFor, checkNoTypedFigures, textOf, uncaveatedNames } from "./verify-truth";
 
 const CAVEATS = join(import.meta.dirname, "..", "src", "i18n", "messages");
 const caveat = (lang: string) =>
@@ -60,5 +60,46 @@ describe("truth gate — the benchmark's name may only appear with its caveat", 
     // caveat in the same node. This is what stops a number being lifted out of its qualification
     // by somebody tightening a paragraph.
     expect(checkNoTypedFigures()).toEqual([]);
+  });
+});
+
+
+describe("the alpha caveat is looked for in the page's own language", () => {
+  // Written as `/alpha/i`, this check read the Japanese and Russian pages as missing a caveat they
+  // carry in full — theirs say アルファ版 and Альфа — and took four builds down for it. The pages
+  // were right and the rule was English. Measured on the built output before it was changed:
+  // ja/blog carried アルファ and no Latin "alpha"; pt/blog carried both and passed.
+
+  it("accepts the Japanese page's own wording", () => {
+    expect(alphaCaveatFor("ja/blog/index.html").test("… アルファ版 — 堅実で …")).toBe(true);
+  });
+
+  it("accepts the Russian page's own wording", () => {
+    expect(alphaCaveatFor("ru/blog/index.html").test("… Альфа — надёжно …")).toBe(true);
+  });
+
+  it("still refuses a page in that language that carries no caveat at all", () => {
+    // The risk of narrowing a rule is blinding it. A Japanese page with neither wording must fail.
+    expect(alphaCaveatFor("ja/blog/index.html").test("<p>maturity 37/37 GA</p>")).toBe(false);
+    expect(alphaCaveatFor("ru/blog/index.html").test("<p>maturity 37/37 GA</p>")).toBe(false);
+  });
+
+  it("does not accept one language's wording on another language's page", () => {
+    // Otherwise the fix would be "any of the ten words, anywhere", which is the English rule with
+    // more spellings — a page could satisfy it with a word its own reader cannot see.
+    expect(alphaCaveatFor("ja/blog/index.html").test("… Альфа …")).toBe(false);
+    expect(alphaCaveatFor("ru/blog/index.html").test("… アルファ版 …")).toBe(false);
+  });
+
+  it("falls back to English for a path with no language prefix", () => {
+    expect(alphaCaveatFor("blog/index.html").test("Alpha — solid and heavily tested")).toBe(true);
+  });
+
+  it("reads the wording from the dictionaries rather than from a list kept here", () => {
+    // A language added tomorrow has to work without anybody remembering this file exists.
+    const messages = JSON.parse(
+      readFileSync(join(__dirname, "..", "src", "i18n", "messages", "ja.json"), "utf8"),
+    ) as Record<string, string>;
+    expect(alphaCaveatFor("ja/x.html").test(messages["footer.alpha"] ?? "")).toBe(true);
   });
 });
