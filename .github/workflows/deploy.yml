@@ -95,7 +95,29 @@ jobs:
           # completes: without it the runner sits for over two minutes before admitting it, and a
           # retry that costs two minutes per attempt is a retry nobody can afford to do three times.
           # The keepalive covers the other shape — a session that opens and then goes quiet mid-rsync.
-          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
+          # ONE TCP connection for the whole deploy, shared by every command below and by rsync.
+          #
+          # This step opened five separate sessions — mkdir, readlink, rsync, ln, prune — and each
+          # retry multiplied that. It is now one, which is faster and is strictly less of whatever
+          # the host is counting when it refuses.
+          #
+          # **It is not known to be the fix**, and the temptation to say so is why this comment is
+          # long. Two "Ship it" failures in the last thirty runs, and they do not tell one story:
+          #
+          #   * 2026-08-22 02:25 — the previous deploy had finished ninety-four seconds earlier
+          #     after five sessions in sixteen seconds, and this one could not `mkdir`, three times
+          #     over two minutes. Consistent with a per-source cooldown.
+          #   * 2026-08-19 20:08 — no deploy in the preceding two hours, and the run queued behind
+          #     it succeeded four minutes later. A cooldown predicts the opposite of both halves.
+          #
+          # So: one datum for a rate limit and one against it. The host answers 5/5 in ~115ms from a
+          # home connection, and hPanel exposes no allowlist to tune, so there is nothing here to
+          # verify against. Fewer connections is a change worth making on its own terms; if a
+          # "Ship it" failure shows up again after this, the cause is still open.
+          ctl="$(mktemp -d)/cm"
+          # `BatchMode=yes` for the same reason as the diagnostic below: a deploy must fail on a
+          # rejected key, not wait on a password prompt that nobody is there to answer.
+          ssh_opts="-i key -p 65002 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o BatchMode=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o ControlMaster=auto -o ControlPath=$ctl -o ControlPersist=180"
           remote="$SSH_USER@$HOST"
           root="domains/chimeraagent.space"
           rel="chimera-site/releases"
@@ -120,9 +142,47 @@ jobs:
                 sleep $((attempt * 20))
               fi
             done
+            diagnose "$what"
             echo "::error::$what failed three times. This host times out on runners; if the site is"
             echo "still on the previous release, re-running this workflow is the whole fix."
             return 1
+          }
+
+          # What the log said after every failure so far was `Connection timed out`, and that one
+          # sentence covers two problems with different owners: a port that never answered, and a
+          # port that answered while the SSH exchange did not finish. Nothing here could tell them
+          # apart, so every post-mortem ended at "the host is flaky" — including one where the
+          # actual cause was a second deploy nobody needed to have started.
+          #
+          # Run ONLY after the third failure. `-vvv` on every call would bury a working deploy under
+          # two hundred lines of key exchange, which is how a diagnostic gets removed.
+          diagnose() {
+            echo "::group::ssh diagnostics after \"$1\" failed three times"
+
+            # TCP on its own, first. This is the whole distinction: if the port does not answer, the
+            # SSH client's verbosity has nothing to say, and the question is a network or firewall
+            # one. If it does answer, the failure is in the exchange and the lines below have it.
+            if timeout 20 bash -c "cat < /dev/null > /dev/tcp/$HOST/65002" 2>/dev/null; then
+              echo "tcp/65002: answered"
+            else
+              echo "tcp/65002: no answer within 20s"
+            fi
+
+            # A FRESH connection, deliberately not the shared one. Every command in this step reuses
+            # one master now, so if the master is what died, reusing it would report the symptom and
+            # hide the cause.
+            #
+            # `-vvv` names the private key's PATH and the host key's fingerprint. It does not print
+            # the key, and the host and username are secrets, which the runner masks in this log.
+            # `BatchMode=yes` is not tidiness. Without it, an auth failure asks for a password, and
+            # whether that hangs depends on there being no TTY — an assumption about the runner that
+            # this file would be silently relying on. Tested by running this function locally, where
+            # there IS a TTY: it hung until it was killed, which in CI would turn a three-minute
+            # failure into the job's twenty-five-minute timeout. A diagnostic that can do that is
+            # worse than no diagnostic.
+            ssh -vvv -i key -p 65002                 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o BatchMode=yes                 -o ControlMaster=no -o ControlPath=none                 "$remote" true 2>&1 | tail -40 || true
+
+            echo "::endgroup::"
           }
 
           # Land the new tree beside the old one, then move the symlink. The document root IS the
@@ -154,6 +214,11 @@ jobs:
           # over unswept directories would report a successful deploy as a broken one.
           prune() { ssh $ssh_opts "$remote" "cd ~/$rel && ls -1t | tail -n +6 | xargs -r rm -rf"; }
           prune || echo "::warning::could not prune old releases — the deploy itself is live"
+
+          # Close the shared connection rather than leaving ControlPersist to time it out. The
+          # runner is thrown away either way; what this buys is that the host sees the session end
+          # when the deploy ends, which is the truthful thing for whatever is counting.
+          ssh $ssh_opts -O exit "$remote" 2>/dev/null || true
 
       - name: Prove it is live
         env:
