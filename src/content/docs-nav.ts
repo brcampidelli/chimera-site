@@ -54,6 +54,10 @@ export const DOCS_NAV: readonly DocsSection[] = [
     heading: "docs.navUnderstand",
     items: [
       { slug: "architecture", label: "docs.navArchitecture" },
+      // All 79, generated from the CLI itself in the agent repo — including the 33 that used to
+      // appear in no doc at all. Under "Understand" rather than "Get started": it is a reference
+      // you come back to, not a page you read once.
+      { slug: "commands", label: "docs.navCommands" },
       { slug: "fusion-receipts", label: "docs.navFusionReceipts" },
       { slug: "benchmarks", label: "docs.navBenchmarks" },
     ],

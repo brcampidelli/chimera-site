@@ -194,6 +194,44 @@ export function checkNoTypedFigures(): string[] {
  */
 const PRODUCT_RENDERED = /\/(docs|cli)\/|\/blog\/releases\//;
 
+/**
+ * The word each language uses for "alpha", read from the site's own dictionaries.
+ *
+ * Hardcoding `alpha` made the check a check about English. Hardcoding a list of translations would
+ * make it a check about the ten languages somebody remembered on the day. The footer carries this
+ * caveat on every page, so the footer's own wording is what the page can be searched for — and a
+ * language added tomorrow works without anybody remembering this file exists.
+ *
+ * The leading term, not the sentence: `"Alpha — solid and heavily tested…"` differs from its
+ * rendering by punctuation and entity escaping, and matching a whole sentence through HTML is a
+ * check that fails for reasons that have nothing to do with the claim.
+ */
+function alphaTerms(): Map<string, string> {
+  const terms = new Map<string, string>();
+  const dir = join(SRC, "i18n", "messages");
+  if (!existsSync(dir)) return terms;
+  for (const name of readdirSync(dir).filter((f) => f.endsWith(".json") && !f.startsWith("_"))) {
+    const locale = name.slice(0, -5);
+    const dict = JSON.parse(readFileSync(join(dir, name), "utf8")) as Record<string, string>;
+    const term = (dict["footer.alpha"] ?? "").split(/[—–-]/)[0]?.trim();
+    // A dictionary that stops carrying the caveat must not silently disable the check for that
+    // language — that is the failure this whole file is about, one level up.
+    if (!term) throw new Error(`verify:truth: ${name} has no usable footer.alpha to search for`);
+    terms.set(locale, term);
+  }
+  return terms;
+}
+
+const ALPHA_TERMS = alphaTerms();
+/** `ja/blog/index.html` → `ja`; `blog/index.html` → the default locale, which is English. */
+const DEFAULT_LOCALE = "en";
+
+export function alphaCaveatFor(relPath: string): RegExp {
+  const first = relPath.split("/")[0] ?? "";
+  const term = ALPHA_TERMS.get(first) ?? ALPHA_TERMS.get(DEFAULT_LOCALE) ?? "alpha";
+  return new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+}
+
 function checkNoForbiddenPhrases(): string[] {
   if (!existsSync(OUT)) return [];
   const failures: string[] = [];
@@ -206,11 +244,19 @@ function checkNoForbiddenPhrases(): string[] {
       if (pattern.test(html)) failures.push(`${rel}: ${pattern} — ${why}`);
     }
     for (const failure of uncaveatedNames(html)) failures.push(`${rel}: ${failure}`);
-    // "GA" may appear only where the page also says the product is alpha. The maturity snapshot
+    // "GA" may appear only where the page also carries the alpha caveat. The maturity snapshot
     // says `"level": "GA"`, and that verdict standing alone is the one accurate number in this
     // repository that would mislead every reader.
-    if (/\bGA\b/.test(html) && !/alpha/i.test(html)) {
-      failures.push(`${rel}: says "GA" with no "alpha" anywhere on the page`);
+    //
+    // The caveat is looked for IN THE PAGE'S OWN LANGUAGE. Written as `/alpha/i` it read the
+    // Japanese and Russian pages — which say アルファ版 and Альфа — as missing a caveat they carry
+    // in full, and failed four builds for it. A rule calibrated on English fails the other
+    // languages for being themselves; the answer is to narrow the rule, never to except them.
+    if (/\bGA\b/.test(html) && !alphaCaveatFor(rel).test(html)) {
+      failures.push(
+        `${rel}: says "GA" with no alpha caveat (looked for ${alphaCaveatFor(rel)} — the ` +
+          "wording this page's own language uses)",
+      );
     }
   }
   return failures;
