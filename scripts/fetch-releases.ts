@@ -56,6 +56,25 @@ export interface Releases {
   readonly url: string;
   readonly downloads: readonly Download[];
   readonly history: readonly ReleaseNote[];
+  /** A prerelease NEWER than the stable one above, when there is one. Absent otherwise. */
+  readonly preview?: Preview;
+}
+
+/**
+ * A release candidate, offered beside the stable download rather than instead of it.
+ *
+ * Prereleases are still kept out of `history` — an `rc` is a test of the release machinery, not an
+ * announcement, and a blog post per candidate is noise. What changed is that people asked to try
+ * one, and the only route was reading a GitHub tag. So it gets a card, clearly marked, and only
+ * while it leads: once the stable of the same version ships, `newerThan` drops it and the section
+ * disappears without anyone editing anything.
+ */
+export interface Preview {
+  readonly tag: string;
+  readonly version: string;
+  readonly published: string;
+  readonly url: string;
+  readonly downloads: readonly Download[];
 }
 
 interface Asset {
@@ -231,6 +250,119 @@ export async function getJson<T>(
   }
 }
 
+/** `"0.48.0rc1"` -> `[0, 48, 0]`. The prerelease suffix is deliberately dropped: what decides
+ *  whether a candidate still leads is its BASE version against the stable one. */
+function base(version: string): [number, number, number] | null {
+  const match = /^(\d+)\.(\d+)\.(\d+)/.exec(version.replace(/^v/, ""));
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+/**
+ * Is `candidate` a version ahead of `stable`?
+ *
+ * Equal bases answer NO, and that is the case that matters: `0.48.0rc1` and `0.48.0` share a base,
+ * and once the stable ships the candidate is behind it in every sense that counts. Answering YES
+ * there would leave a "try the preview" card advertising an older build for ever.
+ */
+export function newerThan(candidate: string, stable: string): boolean {
+  const a = base(candidate);
+  const b = base(stable);
+  if (!a || !b) return false;
+  for (let i = 0; i < 3; i++) {
+    const left = a[i] ?? 0;
+    const right = b[i] ?? 0;
+    if (left !== right) return left > right;
+  }
+  return false;
+}
+
+/**
+ * The newest prerelease that is ahead of the stable release, with its installers.
+ *
+ * Best-effort by construction, unlike everything else that produces a download link here. A missing
+ * asset on the STABLE release fails the build, because a dead card on the main download path is the
+ * worst link a site can have. A missing asset on a candidate means the release workflow is probably
+ * still uploading, and taking the whole site down over an optional card would be the wrong trade —
+ * so it is logged and skipped, and the next build picks it up.
+ */
+export async function findPreview(
+  listed: readonly ListedRelease[],
+  stableVersion: string,
+  headers: Record<string, string>,
+): Promise<Preview | null> {
+  const candidate = listed
+    .filter((r) => r.prerelease && !r.draft)
+    .find((r) => newerThan(r.tag_name.replace(/^v/, ""), stableVersion));
+  if (!candidate) return null;
+
+  const full = await tryJson<{ assets: Asset[] }>(
+    `https://api.github.com/repos/${REPO}/releases/tags/${candidate.tag_name}`,
+    `the preview release ${candidate.tag_name}`,
+    headers,
+  );
+  if (!full) return null;
+
+  const { downloads, missing } = pick(full.assets);
+  if (missing.length > 0) {
+    console.warn(
+      `releases: preview ${candidate.tag_name} has no asset for ${missing.join(", ")} — skipping it.`,
+    );
+    return null;
+  }
+  return {
+    tag: candidate.tag_name,
+    version: candidate.tag_name.replace(/^v/, ""),
+    published: candidate.published_at,
+    url: candidate.html_url,
+    downloads,
+  };
+}
+
+/** A release the blog will publish a page for: shipped, stable, and with something written on it. */
+export function isPublishedStable(release: ListedRelease): boolean {
+  return !release.draft && !release.prerelease && (release.body ?? "").trim().length > 0;
+}
+
+/** How many stable releases the history wants before it stops asking for more pages. */
+const HISTORY_WANTED = 10;
+/** GitHub's maximum, and the reason one page used to be nowhere near enough. */
+const PAGE_SIZE = 100;
+/** A ceiling, so a repository shaped unexpectedly walks 5 pages rather than for ever. */
+const MAX_PAGES = 5;
+
+/**
+ * Walk the release index until enough STABLE releases are in hand.
+ *
+ * One page of thirty used to be the whole of it, which held for as long as a release cycle was
+ * shorter than thirty releases. On 2026-08-25 it was not: `v0.48.0rc1` … `rc30` filled the page
+ * exactly, the newest stable release fell off the end, and the history came back empty on a repo
+ * whose API was answering perfectly. The build then failed with a message saying the problem was
+ * upstream and the fix was to re-run — which cannot work, and it was followed once before anybody
+ * read the filter.
+ *
+ * That is the mistake `getJson` above already refuses to make about 4xx, one level up.
+ */
+export async function collectListed(
+  headers: Record<string, string>,
+  read: (url: string, what: string, headers: Record<string, string>) => Promise<ListedRelease[] | null>,
+): Promise<ListedRelease[]> {
+  const all: ListedRelease[] = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const batch =
+      (await read(
+        `https://api.github.com/repos/${REPO}/releases?per_page=${PAGE_SIZE}&page=${page}`,
+        `the release list (page ${page})`,
+        headers,
+      )) ?? [];
+    all.push(...batch);
+    // A short page is the last page — asking for another spends a request to be told nothing.
+    if (batch.length < PAGE_SIZE) break;
+    if (all.filter(isPublishedStable).length >= HISTORY_WANTED) break;
+  }
+  return all;
+}
+
 async function main(): Promise<void> {
   const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
   // A token lifts the anonymous rate limit. It is optional and never required — a build that only
@@ -277,12 +409,7 @@ async function main(): Promise<void> {
   //
   // Every live read here is best-effort. `getJson` is kept for the installer asset and the updater
   // manifest, which have no second route and are meant to take the build down.
-  let listed: ListedRelease[] =
-    (await tryJson<ListedRelease[]>(
-      `https://api.github.com/repos/${REPO}/releases?per_page=30`,
-      "the release list",
-      headers,
-    )) ?? [];
+  let listed: ListedRelease[] = await collectListed(headers, tryJson);
 
   if (listed.length === 0) {
     console.warn("releases: no releases from the index — trying tags.");
@@ -328,7 +455,7 @@ async function main(): Promise<void> {
   }
 
   const history: ReleaseNote[] = listed
-    .filter((r) => !r.draft && !r.prerelease && (r.body ?? "").trim().length > 0)
+    .filter(isPublishedStable)
     .map((r) => ({
       tag: r.tag_name,
       version: r.tag_name.replace(/^v/, ""),
@@ -343,26 +470,45 @@ async function main(): Promise<void> {
   // rest of this file already fails rather than ship a dead download card; the same applies to a
   // blog whose release pages have no tags to generate.
   if (history.length === 0) {
-    console.error("releases: no release notes from the index or from tags.");
-    console.error(`  https://api.github.com/repos/${REPO}/releases?per_page=30`);
-    console.error("  Both routes empty means an upstream problem, not a change here — re-run the");
-    console.error("  build. Publishing with no release pages would look like a deliberate edit.");
+    // Two causes, opposite remedies. Saying "re-run" to the second one is how an afternoon gets
+    // spent re-running a build that cannot pass, and it happened before this branch was split.
+    if (listed.length > 0) {
+      const rcs = listed.filter((r) => r.prerelease).length;
+      console.error(
+        `releases: the index answered with ${listed.length} releases and not one of them is a ` +
+          `published stable release (${rcs} are prereleases).`,
+      );
+      console.error("  Re-running CANNOT change this. Either a stable release has to be published,");
+      console.error(`  or the walk has to reach further back than ${MAX_PAGES} pages of ${PAGE_SIZE}.`);
+    } else {
+      console.error("releases: no release notes from the index or from tags.");
+      console.error(`  https://api.github.com/repos/${REPO}/releases?per_page=${PAGE_SIZE}`);
+      console.error("  Both routes empty means an upstream problem, not a change here — re-run the");
+      console.error("  build. Publishing with no release pages would look like a deliberate edit.");
+    }
     process.exit(1);
   }
 
+  const stableVersion = release.tag_name.replace(/^v/, "");
+  // Read from the list that was already fetched for the history — no extra hop unless a candidate
+  // is actually there.
+  const preview = await findPreview(listed, stableVersion, headers);
+
   const payload: Releases = {
     tag: release.tag_name,
-    version: release.tag_name.replace(/^v/, ""),
+    version: stableVersion,
     published: release.published_at,
     url: release.html_url,
     downloads,
     history,
+    ...(preview ? { preview } : {}),
   };
 
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, `${JSON.stringify(payload, null, 2)}\n`);
   console.log(
-    `releases: ${release.tag_name} — ${downloads.length} downloads, ${history.length} release notes`,
+    `releases: ${release.tag_name} — ${downloads.length} downloads, ${history.length} release notes` +
+      (preview ? `, preview ${preview.tag}` : ""),
   );
 }
 
