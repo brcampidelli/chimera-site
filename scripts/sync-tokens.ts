@@ -67,9 +67,23 @@ export function tokensFrom(block: string): string[] {
   return declarations.map((d) => `${d};`);
 }
 
+/**
+ * The light block, whichever quote style the product uses. The Tailwind 4 migration in
+ * chimera-agent (#366, 06/09/2026) reformatted `[data-theme="light"]` to `[data-theme='light']`,
+ * and an exact-string lookup turned that cosmetic change into a red deploy for weeks. The quotes
+ * mean the same thing in CSS, so the lookup accepts both instead of pinning one spelling.
+ */
+export function lightBlock(css: string): string {
+  for (const q of ['"', "'"]) {
+    const selector = `:root[data-theme=${q}light${q}]`;
+    if (css.includes(selector)) return extractBlock(css, selector);
+  }
+  return extractBlock(css, ':root[data-theme="light"]');
+}
+
 export function render(css: string): string {
   const dark = tokensFrom(extractBlock(css, ":root {"));
-  const light = tokensFrom(extractBlock(css, ':root[data-theme="light"]'));
+  const light = tokensFrom(lightBlock(css));
   if (dark.length === 0 || light.length === 0) {
     throw new Error("extracted an empty token set — the source shape changed");
   }
