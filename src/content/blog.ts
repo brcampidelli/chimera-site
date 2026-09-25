@@ -87,14 +87,29 @@ export const ARTICLE_MIN_WORDS = 250;
 export const ARTICLE_MAX_WORDS = 1400;
 
 /**
- * How far a translation may sit from the English, measured in characters.
+ * How far a translation may sit from the English, measured in characters of PROSE — link targets
+ * removed from both sides.
  *
  * Not style policing — a truncation detector. A run where the model returned one paragraph instead
  * of eight produces a page that reads fine and is missing most of the argument, and nobody reads
- * nine languages before merging. Chinese runs near half the character count of English and German
- * somewhat over it, so the band is wide enough to never fire on a real translation.
+ * nine languages before merging.
+ *
+ * The first version counted URLs too, and a URL is the same length in every language. So the ratio
+ * for Chinese depended on how many links the post had: with long links it looked like "near half
+ * the English", with two short ones it fell to 31-35% and failed — ten complete translations (same
+ * paragraphs, same headings) stuck in September 2026. Measured on prose over the 54 published posts:
+ * Chinese 28-53% of the English, Japanese 41-71%, the European languages 81-132%. The floor is per
+ * script, with room below the lowest real translation.
  */
 export const TRANSLATION_LENGTH_BAND = { min: 0.35, max: 2.6 } as const;
+
+/** Floors for scripts that are denser than the Latin alphabet. Everything else uses the band's min. */
+export const TRANSLATION_MIN_BY_LANG: Readonly<Record<string, number>> = { zh: 0.2, ja: 0.3 };
+
+/** The text a reader reads: markdown link targets removed, since they do not translate. */
+export function proseLength(body: string): number {
+  return body.replace(/\]\((https?:\/\/[^)\s]+)\)/g, "]").length;
+}
 
 /**
  * Links to our own things, which need no declared source because they are not claims about others.
@@ -344,8 +359,9 @@ export function articleProblems(id: string, post: Post, english?: Post): string[
           "the reader and has to be visible here.",
       );
     }
-    const ratio = post.body.length / Math.max(english.body.length, 1);
-    if (ratio < TRANSLATION_LENGTH_BAND.min || ratio > TRANSLATION_LENGTH_BAND.max) {
+    const ratio = proseLength(post.body) / Math.max(proseLength(english.body), 1);
+    const min = TRANSLATION_MIN_BY_LANG[post.lang] ?? TRANSLATION_LENGTH_BAND.min;
+    if (ratio < min || ratio > TRANSLATION_LENGTH_BAND.max) {
       problems.push(
         `${id}: ${Math.round(ratio * 100)}% the length of the English. A translation that came ` +
           "back as one paragraph reads fine and is missing the argument.",
