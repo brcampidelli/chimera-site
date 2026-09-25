@@ -8,6 +8,7 @@ import {
   SOURCES_MAX,
   articleProblems,
   postProblems,
+  proseLength,
   posts,
   releaseTagUrl,
   type Post,
@@ -183,6 +184,23 @@ describe("blog — an article cannot cite what it never read", () => {
     it("accepts a real translation", () => {
       const pt = article({ lang: "pt", body: `${Array(240).fill("palavra").join(" ")} [x](${SRC})` });
       expect(articleProblems("pt/x", pt, english)).toEqual([]);
+    });
+
+    it("measures prose, not URLs, and lets Chinese be as dense as it is", () => {
+      // 30% of the English prose: where the published Chinese posts actually sit.
+      const zh = article({ lang: "zh", body: `${"字".repeat(Math.round(proseLength(english.body) * 0.3))} [x](${SRC})` });
+      expect(articleProblems("zh/x", zh, english)).toEqual([]);
+    });
+
+    it("still catches Chinese that collapsed into a paragraph", () => {
+      const zh = article({ lang: "zh", body: `太短了。 [x](${SRC})` });
+      expect(articleProblems("zh/x", zh, english).join(" ")).toMatch(/the length of the English/);
+    });
+
+    it("does not let a long link carry a short translation", () => {
+      const longUrl = `${SRC}?${"q".repeat(4000)}`;
+      const pt = article({ lang: "pt", body: `Curto demais. [x](${longUrl})` });
+      expect(articleProblems("pt/x", pt, english).join(" ")).toMatch(/the length of the English/);
     });
   });
 
