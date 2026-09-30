@@ -96,6 +96,14 @@ export function Footer({ locale }: Props) {
               {t("footer.privacy")}
             </Link>
             {" · "}
+            <Link href={to("/terms")} className="focus-ring rounded hover:text-foreground">
+              {t("footer.terms")}
+            </Link>
+            {" · "}
+            <Link href={to("/s1")} className="focus-ring rounded hover:text-foreground">
+              {t("footer.s1")}
+            </Link>
+            {" · "}
             <Link href={to("/press")} className="focus-ring rounded hover:text-foreground">
               {t("footer.press")}
             </Link>

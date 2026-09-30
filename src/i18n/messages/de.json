@@ -228,5 +228,13 @@
   "theme.dark": "Dunkel",
   "theme.label": "Design",
   "theme.light": "Hell",
-  "theme.system": "System"
+  "theme.system": "System",
+  "footer.terms": "Nutzungsbedingungen",
+  "footer.s1": "S1-Pro (neu)",
+  "caveat.s1JevBench": "Gepaart, Item für Item, mit den veröffentlichten Vorhersagen von Jev – keine Jev-API wurde verwendet. S1-Pro wurde mit den öffentlichen Trainingssplits einiger jev-bench-Quellen trainiert; auf diesen Quellen ist das Ergebnis domänenintern.",
+  "caveat.s1Public": "Nur öffentliche Items. Der versiegelte JevBench-Satz wird von den Maintainern bewertet und wurde noch nicht ausgeführt.",
+  "caveat.s1Injection": "Eigener Test mit 300 jev-bench-Items, sauber gegen injiziert. Zahlen Dritter für andere Modelle beruhen auf anderen Items.",
+  "caveat.s1Synthetic": "300 synthetische Tickets, deren richtige Antwort per Code aus der angegebenen Regel berechnet wird.",
+  "caveat.s1Abstention": "MMLU- und ARC-Fragen ohne die richtige Option, sodass keine Option stimmt. Niedriger ist besser.",
+  "caveat.s1Latency": "Clientseitig gemessen auf einer NVIDIA H200 mit vLLM, vor dem Start. Die Produktionshardware kann abweichen."
 }

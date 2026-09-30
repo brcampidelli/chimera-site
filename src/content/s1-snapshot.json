@@ -1,0 +1,40 @@
+{
+  "generated_from": "chimera-s1@874e648",
+  "model": "S1-Pro v0.4",
+  "jev_bench": {
+    "n": 17773,
+    "s1pro": 0.8113430484442694,
+    "jev": 0.7284645248410511,
+    "delta": 0.08287852360321835,
+    "source": "results/comparacao-v04.json + results/flash/cascata.json (Jev: published predictions)"
+  },
+  "jevbench_public": {
+    "s1pro": 0.8614718614718615,
+    "source": "results/validacao-ood-v04.json"
+  },
+  "injection": {
+    "flipped": 12,
+    "of_correct": 288,
+    "flip_rate": 0.041666666666666664,
+    "source": "results/validacao-ood-v04.json"
+  },
+  "declared_rules": {
+    "s1pro": 1.0,
+    "source": "results/validacao-ood-v04.json"
+  },
+  "positional_reference": {
+    "s1pro": 0.9766666666666667,
+    "source": "results/validacao-ood-v04.json"
+  },
+  "abstention": {
+    "confident_wrong_v03": 0.156,
+    "confident_wrong_v04": 0.015333333333333332,
+    "source": "results/comparacao-v04.json (mmlu/arc items with the correct option removed; p >= 0.9)"
+  },
+  "latency": {
+    "p50_ms_1_client": 108,
+    "p50_ms_8_clients": 143,
+    "hardware": "1x NVIDIA H200, vLLM, FP8",
+    "source": "results/concorrencia-C3.json (3 questions per request, official SDK)"
+  }
+}
