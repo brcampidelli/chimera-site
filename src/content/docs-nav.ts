@@ -48,6 +48,9 @@ export const DOCS_NAV: readonly DocsSection[] = [
     items: [
       { slug: "deploy", label: "docs.navDeploy" },
       { slug: "security", label: "docs.navSecurity" },
+      // What a typed decision sends to a hosted backend and what the redaction net keeps back: the
+      // reader choosing a backend is deciding an operational and privacy question, so it sits here.
+      { slug: "decisions-redaction", label: "docs.navDecisionsRedaction" },
     ],
   },
   {

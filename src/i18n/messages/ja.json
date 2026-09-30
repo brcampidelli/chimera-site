@@ -96,6 +96,7 @@
   "docs.navExtending": "ツール・Skill・レシピを追加する",
   "docs.navExternalAgents": "外部エージェント",
   "docs.navFusionReceipts": "フュージョンの記録",
+  "docs.navDecisionsRedaction": "判定が送信するもの",
   "docs.navGetStarted": "はじめに",
   "docs.navHome": "ホーム",
   "docs.navInstall": "インストールと初回実行",
@@ -228,5 +229,13 @@
   "theme.dark": "ダーク",
   "theme.label": "テーマ",
   "theme.light": "ライト",
-  "theme.system": "システム"
+  "theme.system": "システム",
+  "footer.terms": "利用規約",
+  "footer.s1": "S1-Pro（新）",
+  "caveat.s1JevBench": "Jev が公開した予測と項目ごとに対応させて比較（Jev の API は一切使用していません）。S1-Pro は一部の jev-bench ソースの公開学習分割で学習しているため、それらのソースではドメイン内の結果です。",
+  "caveat.s1Public": "公開項目のみ。JevBench の非公開セットはメンテナーが採点するもので、まだ実行されていません。",
+  "caveat.s1Injection": "jev-bench の 300 項目で行った自社テスト（元の版と注入版の比較）。他モデルについて第三者が公表した数値は別の項目によるものです。",
+  "caveat.s1Synthetic": "正解が記載されたルールからコードで計算される合成チケット 300 件。",
+  "caveat.s1Abstention": "正しい選択肢を取り除いた MMLU と ARC の問題で、正しい選択肢は存在しません。低いほど良い指標です。",
+  "caveat.s1Latency": "ローンチ前に、NVIDIA H200 1 基と vLLM を使いクライアント側で測定。本番のハードウェアは異なる場合があります。"
 }

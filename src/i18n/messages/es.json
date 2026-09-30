@@ -96,6 +96,7 @@
   "docs.navExtending": "Añadir una herramienta, skill o receta",
   "docs.navExternalAgents": "Agentes externos",
   "docs.navFusionReceipts": "Registros de fusión",
+  "docs.navDecisionsRedaction": "Qué envían las decisiones",
   "docs.navGetStarted": "Empieza aquí",
   "docs.navHome": "Inicio",
   "docs.navInstall": "Instalación y primera ejecución",
@@ -228,5 +229,13 @@
   "theme.dark": "Oscuro",
   "theme.label": "Tema",
   "theme.light": "Claro",
-  "theme.system": "Sistema"
+  "theme.system": "Sistema",
+  "footer.terms": "Términos",
+  "footer.s1": "S1-Pro (nuevo)",
+  "caveat.s1JevBench": "Emparejado, ítem por ítem, con las predicciones publicadas de Jev; no se usó ninguna API de Jev. S1-Pro se entrenó con los splits públicos de entrenamiento de algunas fuentes de jev-bench, así que en esas fuentes el resultado es dentro del dominio.",
+  "caveat.s1Public": "Solo los ítems públicos. El conjunto sellado de JevBench lo evalúan sus mantenedores y aún no se ha ejecutado.",
+  "caveat.s1Injection": "Prueba propia sobre 300 ítems de jev-bench, versión limpia frente a inyectada. Las cifras de terceros para otros modelos usaron ítems distintos.",
+  "caveat.s1Synthetic": "300 tickets sintéticos cuya respuesta correcta se calcula por código a partir de la regla declarada.",
+  "caveat.s1Abstention": "Preguntas de MMLU y ARC sin la opción correcta, así que ninguna opción es válida. Cuanto menor, mejor.",
+  "caveat.s1Latency": "Medido desde el cliente en una NVIDIA H200 con vLLM, antes del lanzamiento. El hardware de producción puede ser distinto."
 }

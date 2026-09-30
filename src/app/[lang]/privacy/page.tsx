@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SEGMENTS, alternatesFor, isLocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
-import { LINKS } from "@/lib/site";
+import { CONTACT, LINKS } from "@/lib/site";
 import { UntranslatedNotice } from "@/components/ui/UntranslatedNotice";
 
 export function generateStaticParams() {
@@ -53,6 +53,23 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
           {LINKS.issues.replace("https://", "")}
         </a>
       </p>
+
+      {/* The hosted API is the one place this project processes somebody else's data, so it gets
+          its own section with the retention in plain numbers rather than a policy of adjectives. */}
+      <section className="mt-12">
+        <h2 className="text-d2">{t("privacy.apiHeading")}</h2>
+        {(["apiContent", "apiMetadata", "apiTraining", "apiLocation", "apiRights"] as const).map((k) => (
+          <p key={k} className="mt-4 max-w-measure text-prose text-muted-foreground">
+            {t(`privacy.${k}`)}
+          </p>
+        ))}
+        <p className="mt-4 max-w-measure text-prose text-muted-foreground">
+          {t("privacy.apiContact")}{" "}
+          <a href={`mailto:${CONTACT.support}`} className="focus-ring rounded text-accent2 hover:text-accent">
+            {CONTACT.support}
+          </a>
+        </p>
+      </section>
     </div>
   );
 }
