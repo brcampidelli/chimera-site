@@ -1,31 +1,25 @@
 ---
 title: "Chimera Agent 0.49.2: Correções para o Atualizador e Instalador"
-date: 2026-09-30
+date: 2026-10-01
 category: update
-summary: "Chimera Agent 0.49.2 resolve problemas críticos no atualizador e instalador, garantindo atualizações mais suaves e relatórios de versão precisos."
+summary: "Chimera Agent 0.49.2 resolve problemas críticos no atualizador e instalador, garantindo atualizações mais suaves e relatório correto de versões."
 version: "0.49.2"
 ---
 
-## Atualizador Agora Funciona Continuamente
+## Atualizador Agora Verifica a Cada Seis Horas
 
-Em versões anteriores, o atualizador verificava novas versões apenas uma vez — ao iniciar o aplicativo. Isso era uma falha significativa para um aplicativo como o Chimera Agent, projetado para permanecer aberto por longos períodos. Como resultado, os usuários frequentemente perdiam atualizações, a menos que verificassem manualmente ou reiniciassem o aplicativo. Esse problema ficou evidente quando a versão 0.49.1 foi lançada: o app não notificou os usuários sobre a atualização, forçando-os a baixar o instalador manualmente do site.
+Anteriormente, a verificação de atualizações no Chimera Agent ocorria apenas uma vez ao iniciar, o que significava que, se o app permanecesse aberto, nunca detectaria novas versões. Esse problema era especialmente crítico para uma ferramenta como o Chimera, projetada para ficar em execução por longos períodos. Como resultado, os usuários precisavam buscar atualizações manualmente no site, anulando o propósito de um atualizador automático.
 
-**Com a 0.49.2, o atualizador agora verifica novas versões a cada seis horas** enquanto o app está em execução. Essa mudança garante que os usuários sejam informados prontamente sobre atualizações sem a necessidade de reinícios frequentes. Além disso, o atualizador evita avisos desnecessários ao lembrar das atualizações recusadas durante o processo. Se uma versão mais nova estiver disponível, ele solicitará novamente o usuário, garantindo que pedidos de atualização manual sejam sempre atendidos.
+Na versão 0.49.2, o atualizador agora verifica novas versões a cada seis horas enquanto o app está em execução. Essa mudança garante que os usuários sejam notificados prontamente sobre atualizações sem necessidade de intervenção manual. Além disso, o atualizador lembra versões recusadas durante a sessão, evitando solicitações repetidas para a mesma atualização, a menos que uma versão mais nova esteja disponível.
 
-## Correção do Instalador Entra em Vigor
+## Correção do Instalador Entra em Ação
 
-A versão 0.49.1 introduziu uma correção para um problema no instalador que deixava arquivos de versões anteriores. Especificamente, o diretório `_internal` podia acabar com múltiplos diretórios `chimera_agent-*.dist-info`, fazendo com que o app relatasse a versão errada e oferecesse atualizações repetidamente. No entanto, essa correção só se aplicava ao instalador enviado com o lançamento, não ao usado para atualizações in-place.
+A versão 0.49.1 introduziu uma correção para um problema no instalador que deixava arquivos da versão anterior, fazendo com que o app relatasse incorretamente sua versão e oferecesse atualizações para si mesmo. Porém, essa correção só se aplicava ao instalador enviado com aquela versão, não ao usado para instalá-la.
 
-**A 0.49.2 é a primeira versão em que o instalador corrigido é usado para atualizações in-place.** Se você atualizou para a 0.49.1 e enfrentou relatórios de versão incorretos, esta versão resolve o problema. O instalador agora remove corretamente os arquivos antigos, garantindo relatórios de versão precisos e evitando solicitações de atualização redundantes.
+Na 0.49.2, o instalador corrigido agora é usado para atualizações in-place, garantindo que a versão correta seja relatada após uma atualização. Se você atualizou para a 0.49.1 e enfrentou o problema de relatório de versão, esta versão resolve isso.
 
 ## Melhorias Adicionais
 
-Várias outras melhorias introduzidas na 0.49.1 valem a pena ser mencionadas se você pulou essa versão:
+Outras melhorias nesta versão incluem segurar versões de serem marcadas como "latest" até que seu manifesto seja anexado, evitando que o endpoint do atualizador retorne erro 404 durante o processo de build. As mensagens de falha e a bandeja do sistema agora falam a língua do usuário, enquanto diagnósticos técnicos permanecem sem tradução para facilitar buscas por mensagens de erro. Os modos de custo do assistente de primeira execução também foram localizados, evitando o problema anterior de exibir termos em inglês em telas traduzidas.
 
-- **As versões são retidas de "latest" até que seu manifesto seja anexado.** Anteriormente, o endpoint do atualizador retornava um erro 404 durante o processo de build, falhando silenciosamente porque as mensagens de erro eram suprimidas para evitar incomodar os usuários.
-- **Diálogos de falha e notificações na bandeja agora estão localizados**, enquanto diagnósticos técnicos permanecem em inglês para garantir que possam ser facilmente pesquisados.
-- **Os modos de custo do assistente de primeira execução não são mais exibidos como palavras em inglês não traduzidas** em telas localizadas.
-
-Para todos os detalhes, consulte as [notas de lançamento][Chimera Agent v0.49.2](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.2).
-
-Para aproveitar essas correções, atualize para o Chimera Agent 0.49.2 agora.
+Para a lista completa de mudanças, consulte o [Chimera Agent v0.49.2](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.2).
