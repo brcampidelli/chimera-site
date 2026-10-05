@@ -1,33 +1,37 @@
 ---
-title: "Chimera Agent 0.49.3: Poprawki dla zastosowań w rzeczywistych warunkach"
-date: 2026-10-04
+title: "Chimera Agent 0.49.3: Poprawki dla rzeczywistego użytku"
+date: 2026-10-05
 category: update
-summary: "Wersja 0.49.3 rozwiązuje krytyczne problemy wykryte podczas rzeczywistego użytkowania, poprawiając przejrzystość, niezawodność i efektywność kosztową."
+summary: "Wersja 0.49.3 rozwiązuje krytyczne problemy wykryte podczas rzeczywistego użytkowania, poprawiając klarowność, niezawodność i efektywność kosztową."
 version: "0.49.3"
 ---
 
-## Bardziej czytelne komunikaty błędów dla operacji MCP
+## Problem z zapisywaniem plików MCP: Jasność i koszty
 
-Jednym z najbardziej kosztownych problemów w poprzednich wersjach było odczytywanie danych MCP. Gdy przebieg był zanieczyszczony przez niezaufane treści, komunikat błędu był niejasny, co prowadziło do wielokrotnych prób ponownego wykonania tej samej operacji bez powodzenia. Skutkowało to niepotrzebnymi kosztami i frustracją. Teraz komunikaty błędów są specyficzne dla każdego scenariusza, jasno wskazując, czy ponowna próba może pomóc, oraz sugerując działania alternatywne, takie jak użycie przełącznika pauzy-do-akceptacji lub unikanie niezaufanych treści.
+Jedna z najważniejszych poprawek w tej wersji dotyczy kosztownego problemu z zapisywaniem plików MCP. Wcześniej, podczas odczytywania danych przez MCP, proces zatrzymywał się bez zapisywania plików, a komunikat błędu był niejasny. To prowadziło do wielokrotnych prób, z których każda generowała koszty bez postępu. Na przykład cztery uruchomienia tego samego zadania kosztowały **5,11 USD**, nie produkując żadnych plików, podczas gdy to samo zadanie z użyciem wbudowanych narzędzi zakończyło się sukcesem za pierwszym razem za **0,37 USD**.
 
-## Ulepszone testowanie serwera MCP
+Komunikat błędu teraz rozróżnia trzy scenariusze: odmowa przez człowieka, odmowa konfiguracji oraz brak osoby zatwierdzającej. Sugeruje również działania naprawcze, takie jak użycie przełącznika oczekiwania na zatwierdzenie lub unikanie niezaufanej treści w procesie. Ta zmiana zapobiega niepotrzebnym ponownym próbom i redukuje koszty.
 
-Przycisk Test MCP wcześniej sprawdzał tylko łączność z serwerem, pozostawiając użytkowników w nieświadomości, czy agent może faktycznie korzystać z serwera. Prowadziło to do marnowania czasu i zasobów, gdy przebiegi kończyły się niepowodzeniem z powodu niezaładowanych serwerów. Przycisk Test teraz wyraźnie informuje, czy agent może wykorzystać serwer, dostarczając różnych komunikatów dla różnych przyczyn i wskazując użytkownikom, jak rozwiązać problem.
+## Przycisk testowania MCP: Lepsze informacje zwrotne
 
-## Dokładny status weryfikacji
+Kolejną istotną poprawą jest przycisk testowania MCP. Wcześniej potwierdzał tylko łączność z serwerem, wprowadzając użytkowników w błąd, że agent może korzystać z serwera. W rzeczywistości agent nie miał dostępu do serwera, ponieważ ładowanie serwerów MCP przy starcie było domyślnie wyłączone. To prowadziło do marnowania czasu i zasobów, jak w przypadku, gdzie wykonano **dwadzieścia dwa wywołania narzędzi w ciągu dziewiętnastu minut** bez użycia serwera.
 
-Przebiegi wcześniej raportowały `verified: True` na podstawie migawki w danym momencie, co mogło być mylące, jeśli pliki zmieniły się później. Teraz przebiegi zawierają flagę `delivered_matches_verified`, a lista przebiegów wyświetla oznaczenie, gdy pliki na dysku już nie pasują do zweryfikowanego stanu. Zapewnia to użytkownikom świadomość rozbieżności i możliwość podjęcia odpowiednich działań.
+Przycisk testowania teraz informuje, czy agent może korzystać z serwera, z różnymi komunikatami dla różnych przyczyn. To zapewnia, że użytkownicy rozumieją kroki potrzebne do włączenia korzystania z serwera.
 
-## Poprawione błędy instalacji umiejętności
+## Status `verified`: Dokładne przedstawienie
 
-Błędy instalacji umiejętności były wcześniej przypisywane do godzinnego limitu GitHub dla pobrań anonimowych, nawet gdy limit nie był problemem. Komunikaty błędów teraz poprawnie identyfikują hosta, który odrzucił żądanie, oraz zapewniają, że token dociera do obu hostów. Dodatkowo, błędy 429 są ponawiane z czasem oczekiwania określonym przez serwer, redukując niepotrzebne próby.
+Status `verified` wcześniej wskazywał natychmiastową weryfikację, ale nie uwzględniał zmian po chwili weryfikacji. To prowadziło do zamieszania, gdy to samo polecenie wykonane na wynikowym drzewie powodowało **20 błędów na 20 prób**. Status teraz zawiera `delivered_matches_verified`, a lista Runs pokazuje znacznik, gdy pliki na dysku nie zgadzają się ze stanem zweryfikowanym. To zapewnia jaśniejszy obraz wyniku procesu.
 
-## Precyzyjne komunikaty o odmowie zapisu plików
+## Instalacja skilli: Poprawne komunikaty błędów
 
-Zapisywanie plików było czasem odrzucane z mylącymi komunikatami, które porównywały katalogi zamiast ścieżek. Powodowało to, że agent wyczerpywał swój budżet na ponowne próby tej samej operacji. Komunikaty o odmowie teraz dokładnie opisują porównanie ścieżek i wyjaśniają wzorzec względnych globów obszaru roboczego, zapobiegając zamieszaniu i marnowaniu prób.
+Błędy instalacji skilli wcześniej wskazywały niewłaściwy limit, sugerując ponowne próby lub ustawienie `GITHUB_TOKEN`, gdy problem był niepowiązany. Token teraz dociera do obu hostów, a komunikaty błędów dokładnie identyfikują hosta odmawiającego. To zapobiega niepotrzebnym ponownym próbom i zapewnia, że użytkownicy podejmują właściwe działania.
 
-## Zaktualizowane domyślne modele
+## Zapisywanie plików: Jasne komunikaty odmowy
 
-Domyślne modele były przestarzałe, niektóre o generację w tyle, a inne zagrożone wycofaniem. Domyślne ustawienia zostały zaktualizowane do nowszych i stabilniejszych modeli, zapewniając lepszą wydajność i niezawodność. Dodatkowo, `.env.example` nie ustawia już domyślnych wartości znacząco droższych ani nie zawiera wycofanych modeli.
+Komunikaty odmowy zapisywania plików były wcześniej niejasne, zwłaszcza gdy ścieżka absolutna była zadeklarowana jako region zapisu. Komunikat odmowy teraz nazywa ścieżkę porównywaną, wyjaśnia region jako listę globów względnych do obszaru roboczego i wskazuje wzór, który nigdy nie może pasować. To zapobiega powtarzającym się próbom i zgłoszeniom błędów środowiska.
 
-Te zmiany są oparte na rzeczywistym użytkowaniu i mają na celu poprawę doświadczenia użytkownika poprzez rozwiązanie częstych problemów. Pełne szczegóły można znaleźć w [Chimera Agent v0.49.3](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.3).
+## Domyślne modele: Zaktualizowane i niezawodne
+
+Domyślne modele zostały zaktualizowane, aby odzwierciedlać obecne generacje, zapewniając lepszą wydajność i efektywność kosztową. Domyślny model zmienił się z `deepseek-chat-v3.1` na `deepseek-v4-flash-0731`, znacząco redukując koszty. Model najwyższej klasy został zaktualizowany do `z-ai/glm-5.3`, a modele sędziego fuzji i panelu również zostały zaktualizowane. Test teraz zapewnia, że żaden domyślny model nie jest `-preview`, który dostawcy mogą wycofać bez ostrzeżenia.
+
+Pełne szczegóły można znaleźć w [Chimera Agent v0.49.3](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.49.3).
