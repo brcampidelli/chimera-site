@@ -23,5 +23,35 @@
     "evidence": null,
     "caveat": "caveat.retracted",
     "retracted": true
+  },
+  "s1-jev-bench": {
+    "evidence": "s1.jev_bench",
+    "caveat": "caveat.s1JevBench",
+    "retracted": false
+  },
+  "s1-jevbench-public": {
+    "evidence": "s1.jevbench_public",
+    "caveat": "caveat.s1Public",
+    "retracted": false
+  },
+  "s1-injection": {
+    "evidence": "s1.injection",
+    "caveat": "caveat.s1Injection",
+    "retracted": false
+  },
+  "s1-rules": {
+    "evidence": "s1.declared_rules",
+    "caveat": "caveat.s1Synthetic",
+    "retracted": false
+  },
+  "s1-abstention": {
+    "evidence": "s1.abstention",
+    "caveat": "caveat.s1Abstention",
+    "retracted": false
+  },
+  "s1-latency": {
+    "evidence": "s1.latency",
+    "caveat": "caveat.s1Latency",
+    "retracted": false
   }
 }

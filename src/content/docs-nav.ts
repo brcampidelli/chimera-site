@@ -48,6 +48,9 @@ export const DOCS_NAV: readonly DocsSection[] = [
     items: [
       { slug: "deploy", label: "docs.navDeploy" },
       { slug: "security", label: "docs.navSecurity" },
+      // What a typed decision sends to a hosted backend and what the redaction net keeps back: the
+      // reader choosing a backend is deciding an operational and privacy question, so it sits here.
+      { slug: "decisions-redaction", label: "docs.navDecisionsRedaction" },
     ],
   },
   {
@@ -59,6 +62,9 @@ export const DOCS_NAV: readonly DocsSection[] = [
       // you come back to, not a page you read once.
       { slug: "commands", label: "docs.navCommands" },
       { slug: "fusion-receipts", label: "docs.navFusionReceipts" },
+      // A decision record: what Chimera does by default when one agent could become several, and
+      // what would reopen each line (chimera-agent #744). The test failed on it being unreachable.
+      { slug: "multi-agent-policy", label: "docs.navMultiAgentPolicy" },
       { slug: "benchmarks", label: "docs.navBenchmarks" },
     ],
   },

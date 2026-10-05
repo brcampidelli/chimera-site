@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { resolveProductRoot } from "../../scripts/sync-tokens";
+import s1Snapshot from "./s1-snapshot.json";
 
 /**
  * Every number this site is allowed to show, and where it comes from.
@@ -90,21 +91,30 @@ export function evidence(): Evidence {
  * carries must not ship rendering a blank.
  */
 export function resolvePath(path: string): unknown {
+  // `s1.*` reads the S1-Pro snapshot, generated in the chimera-s1 repository by
+  // scripts/exportar_snapshot_site.py from its versioned result files. It lives next to this module
+  // rather than in the product tree because S1-Pro is a separate (hosted) product, not a part of the
+  // open-source agent — and it must not need the agent's snapshots to resolve.
+  if (path.startsWith("s1.")) return walk(s1Snapshot, path.slice(3), path);
   if (FORBIDDEN.has(path)) {
     throw new Error(
       `evidence: "${path}" is off limits. ` +
         "The maturity level is internal surface coverage, not product maturity — the product is alpha.",
     );
   }
+  return walk(evidence(), path, path);
+}
+
+function walk(root: unknown, path: string, full: string): unknown {
   const parts = path.split(/[.[\]]+/).filter(Boolean);
-  let node: unknown = evidence();
+  let node: unknown = root;
   for (const part of parts) {
     if (node === null || typeof node !== "object") {
-      throw new Error(`evidence: "${path}" does not exist in the snapshots`);
+      throw new Error(`evidence: "${full}" does not exist in the snapshots`);
     }
     node = (node as Record<string, unknown>)[part];
     if (node === undefined) {
-      throw new Error(`evidence: "${path}" does not exist in the snapshots`);
+      throw new Error(`evidence: "${full}" does not exist in the snapshots`);
     }
   }
   return node;
