@@ -96,6 +96,8 @@
   "docs.navExtending": "添加工具、Skill 或配方",
   "docs.navExternalAgents": "外部智能体",
   "docs.navFusionReceipts": "融合记录",
+  "docs.navMultiAgentPolicy": "多智能体策略",
+  "docs.navDecisionsRedaction": "判定会发送什么",
   "docs.navGetStarted": "开始使用",
   "docs.navHome": "首页",
   "docs.navInstall": "安装与首次运行",
@@ -228,5 +230,13 @@
   "theme.dark": "深色",
   "theme.label": "主题",
   "theme.light": "浅色",
-  "theme.system": "跟随系统"
+  "theme.system": "跟随系统",
+  "footer.terms": "条款",
+  "footer.s1": "S1-Pro（新）",
+  "caveat.s1JevBench": "与 Jev 公开发布的预测逐项配对比较——未使用任何 Jev API。S1-Pro 使用了部分 jev-bench 来源的公开训练集，因此在这些来源上属于域内结果。",
+  "caveat.s1Public": "仅公开题目。JevBench 的封存集由维护者评测，尚未运行。",
+  "caveat.s1Injection": "我们在 300 个 jev-bench 题目上的自测，干净版本对比注入版本。第三方对其他模型公布的数字使用的是不同题目。",
+  "caveat.s1Synthetic": "300 个合成工单，正确答案由代码根据所述规则计算。",
+  "caveat.s1Abstention": "去掉正确选项的 MMLU 和 ARC 题目，因此没有任何选项是对的。越低越好。",
+  "caveat.s1Latency": "上线前在客户端测量，使用一张 NVIDIA H200 和 vLLM。生产硬件可能不同。"
 }

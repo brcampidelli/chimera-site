@@ -96,6 +96,8 @@
   "docs.navExtending": "Ajouter un outil, une skill ou une recette",
   "docs.navExternalAgents": "Agents externes",
   "docs.navFusionReceipts": "Traces de fusion",
+  "docs.navMultiAgentPolicy": "Politique multi-agents",
+  "docs.navDecisionsRedaction": "Ce que les décisions envoient",
   "docs.navGetStarted": "Démarrer",
   "docs.navHome": "Accueil",
   "docs.navInstall": "Installation et première exécution",
@@ -228,5 +230,13 @@
   "theme.dark": "Sombre",
   "theme.label": "Thème",
   "theme.light": "Clair",
-  "theme.system": "Système"
+  "theme.system": "Système",
+  "footer.terms": "Conditions",
+  "footer.s1": "S1-Pro (nouveau)",
+  "caveat.s1JevBench": "Apparié, item par item, avec les prédictions publiées de Jev ; aucune API Jev n'a été utilisée. S1-Pro a été entraîné sur les splits d'entraînement publics de certaines sources de jev-bench : sur ces sources, le résultat est intra-domaine.",
+  "caveat.s1Public": "Items publics uniquement. Le jeu scellé de JevBench est évalué par ses mainteneurs et n'a pas encore été exécuté.",
+  "caveat.s1Injection": "Notre propre test sur 300 items de jev-bench, version propre contre version injectée. Les chiffres publiés par des tiers pour d'autres modèles portent sur d'autres items.",
+  "caveat.s1Synthetic": "300 tickets synthétiques dont la bonne réponse est calculée par du code à partir de la règle énoncée.",
+  "caveat.s1Abstention": "Questions MMLU et ARC dont la bonne option a été retirée : aucune option n'est juste. Plus c'est bas, mieux c'est.",
+  "caveat.s1Latency": "Mesuré côté client sur une NVIDIA H200 avec vLLM, avant le lancement. Le matériel de production peut différer."
 }

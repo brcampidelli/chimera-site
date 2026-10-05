@@ -96,6 +96,8 @@
   "docs.navExtending": "Dodaj narzędzie, skill lub przepis",
   "docs.navExternalAgents": "Agenci zewnętrzni",
   "docs.navFusionReceipts": "Zapisy fuzji",
+  "docs.navMultiAgentPolicy": "Polityka wielu agentów",
+  "docs.navDecisionsRedaction": "Co wysyłają decyzje",
   "docs.navGetStarted": "Zacznij tutaj",
   "docs.navHome": "Start",
   "docs.navInstall": "Instalacja i pierwsze uruchomienie",
@@ -228,5 +230,13 @@
   "theme.dark": "Ciemny",
   "theme.label": "Motyw",
   "theme.light": "Jasny",
-  "theme.system": "Systemowy"
+  "theme.system": "Systemowy",
+  "footer.terms": "Warunki",
+  "footer.s1": "S1-Pro (nowość)",
+  "caveat.s1JevBench": "Porównanie parami, element po elemencie, z opublikowanymi predykcjami Jev — nie użyto żadnego API Jev. S1-Pro trenowano na publicznych splitach treningowych części źródeł jev-bench, więc na tych źródłach to wynik w domenie.",
+  "caveat.s1Public": "Tylko elementy publiczne. Zapieczętowany zbiór JevBench oceniają jego opiekunowie i nie został jeszcze uruchomiony.",
+  "caveat.s1Injection": "Nasz własny test na 300 elementach jev-bench, wersja czysta kontra wstrzyknięta. Liczby innych firm dla innych modeli dotyczą innych elementów.",
+  "caveat.s1Synthetic": "300 syntetycznych zgłoszeń, których poprawną odpowiedź kod wylicza z podanej reguły.",
+  "caveat.s1Abstention": "Pytania z MMLU i ARC z usuniętą poprawną opcją, więc żadna opcja nie jest dobra. Im mniej, tym lepiej.",
+  "caveat.s1Latency": "Zmierzone po stronie klienta na jednej NVIDIA H200 z vLLM, przed premierą. Sprzęt produkcyjny może się różnić."
 }

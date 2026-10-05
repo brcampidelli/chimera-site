@@ -32,3 +32,12 @@ export const LINKS = {
 } as const;
 
 export const REPO = { owner: "brcampidelli", name: "chimera-agent" } as const;
+
+/**
+ * Mailboxes on the site's own domain, for the hosted product (S1-Pro). The open-source agent keeps
+ * using the issue tracker; these exist for partners, customers and legal requests.
+ */
+export const CONTACT = {
+  partners: "partners@chimeraagent.space",
+  support: "support@chimeraagent.space",
+} as const;

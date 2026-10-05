@@ -30,6 +30,7 @@ const OUT = join(ROOT, "out");
 const NUMBER_EXEMPT = [
   "src/content/evidence.ts",
   "src/content/claims.json",
+  "src/content/s1-snapshot.json",
   "src/components/evidence/Stat.tsx",
   "src/styles/",
   "src/i18n/messages/",
