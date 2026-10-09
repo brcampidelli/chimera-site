@@ -1,31 +1,40 @@
 ---
-title: "Chimera Agent 0.50.0: Transparenz, Kontrolle und Zuverlässigkeit"
-date: 2026-10-07
+title: "Chimera Agent 0.50.0: Sichtbarkeit, Kontrolle und Zuverlässigkeit"
+date: 2026-10-09
 category: update
-summary: "Chimera Agent 0.50.0 bringt mehr Transparenz, bessere Kontrolle und Behebungen für stille Fehler."
+summary: "Chimera Agent 0.50.0 führt Sichtbarkeit in Agenten-Aufgaben ein, fügt Genehmigungs-Webhooks hinzu, erweitert Governance-Kontrollen, ermöglicht hybrides Retrieval und behebt Probleme mit Kontextfenstern von Modellen."
 version: "0.50.0"
 ---
 
-## Einblick in Agenten-Operationen
+## Einblick in Agenten-Aufgaben
 
-Bisher war die Aufgabenliste des Agenten für Benutzer unsichtbar, obwohl das Feld `RunState.tasks` existierte. Nun zeigt der Agent seine Aufgabenliste in Echtzeit an und markiert Elemente als in Bearbeitung oder abgeschlossen. Diese Liste bleibt auch bei der Komprimierung des Kontexts erhalten, sodass lange Ausführungen ihre Pläne nicht verlieren. Diese Änderung behebt eine häufige Frustration, bei der Benutzer nicht sehen konnten, was der Agent tat, insbesondere bei längeren Operationen.
+Eine der wichtigsten Neuerungen in Chimera Agent 0.50.0 ist die Einführung von Aufgabensichtbarkeit. Zwar existierte das Feld `RunState.tasks` bereits, doch es wurde nie befüllt – Nutzer hatten keine Ahnung, was der Agent gerade tat. Jetzt pflegt der Agent eine Aufgabenliste, die während eines Laufs auf dem Bildschirm angezeigt wird. Jede Aufgabe wird als „in Bearbeitung“ oder „abgeschlossen“ markiert, und die Liste bleibt auch bei Kontextkomprimierung erhalten. Das bedeutet: Selbst bei langen Läufen vergisst der Agent seinen Plan nicht, und Nutzer behalten stets den Überblick über den Fortschritt.
 
-## Erreichbarkeit jenseits der Konsole
+## Genehmigungs-Webhooks für unbeaufsichtigte Läufe
 
-Agenten, die unbeaufsichtigt laufen, wie Cron-Jobs, konnten nicht effektiv mit Benutzern kommunizieren, wenn eine Genehmigung erforderlich war. Durch die Einstellung von `CHIMERA_APPROVAL_WEBHOOK` können Benutzer nun Genehmigungsanfragen in ihren bevorzugten Kanälen erhalten. Diese Änderung stellt sicher, dass Agenten Benutzer erreichen können, auch wenn niemand aktiv die Konsole überwacht. Zuvor scheiterten diese Anfragen stillschweigend, wenn keine Liefermethode verfügbar war, was zu unerwarteten Entscheidungen führte.
+Eine weitere große Verbesserung ist die Fähigkeit des Agents, auch ohne aktive Konsole Genehmigungen einzuholen. Durch Setzen der Umgebungsvariable `CHIMERA_APPROVAL_WEBHOOK` auf einen Kanal-Webhook kann der Agent nun Genehmigungsfragen an einen bestimmten Kanal senden. Dies behebt ein bisheriges Problem, bei dem unbeaufsichtigte Prozesse (einschließlich Cron-Jobs) stillschweigend Entscheidungen trafen. Falls eine Zustellungsmöglichkeit fehlt, gibt der Agent nun explizit `unreachable` an – für volle Transparenz.
 
-## Governance-Kontrolle
+## Governance-Kontrollen
 
-Die Governance-Funktion, die ein Audit-Log enthält, war bisher unzugänglich. Obwohl der Sicherheitsbildschirm das Audit-Log anzeigte, gab es keine Möglichkeit, es zu aktivieren. Nun können Benutzer die Governance mit dem Parameter `CHIMERA_GOVERNANCE` einschalten. Diese Änderung gibt Benutzern die Möglichkeit, die Sicherheitseinstellungen ihres Agenten zu überwachen und zu kontrollieren, was eine Lücke in Transparenz und Kontrolle schließt.
+Der bisher unsichtbare und inaktive Governance-Kernel lässt sich jetzt aktivieren. Der Parameter `CHIMERA_GOVERNANCE` ist standardmäßig `off`, kann aber eingeschaltet werden. Der Sicherheitsbildschirm zeigt zudem den aktuellen Governance-Status an – für Kontrolle und Transparenz über diese kritische Funktion.
 
-## Verbesserte Modellbehandlung
+## Hybrides Retrieval in `chimera find`
 
-Agenten gingen bisher von einer Standard-Token-Fenstergröße für nicht explizit katalogisierte Modelle aus, was zu Kontextüberläufen und Ausführungsfehlern führte. Mit diesem Release ruft der Agent nun die korrekte Token-Fenstergröße aus dem Live-Index für nicht katalogisierte Modelle ab. Zusätzlich wurden fünf Katalogeinträge korrigiert, um genaue Token-Fenster und Preise widerzuspiegeln. Diese Änderung verhindert, dass Ausführungen aufgrund falscher Annahmen über Modellfähigkeiten scheitern.
+Der Befehl `chimera find` wurde um hybrides Retrieval erweitert, das Keyword- und Vektorsuche kombiniert. Diese vor Laufbeginn festgelegte Hybridmethode schneidet im eigenen Projektkorpus 6,25 Punkte besser ab als reine Keyword-Suche. Da reine Vektorsuche schlechter performt, ist das Hybridverfahren nun Standard – für präzisere und zuverlässigere Suchergebnisse.
 
-## Verbesserte Nachverfolgbarkeit
+## Behebungen für Modell-Kontextfenster
 
-Traces zeichnen nun auf, welches Backend jeden Schritt bedient hat, nicht nur welches Modell geantwortet hat. Dies ist besonders wichtig für Modelle wie die auf OpenRouter, bei denen ein einzelner Modell-Slug einen Pool von Endpunkten mit unterschiedlichen Fähigkeiten und Kosten darstellen kann. Zuvor konnten Benutzer nicht zwischen verschiedenen Endpunkten unterscheiden, was zu Verwirrung und ungenauen Messungen führte. Diese Änderung verbessert die Transparenz und Genauigkeit bei der Leistungsverfolgung.
+Bisher wurde für nicht im Katalog gelistete Modelle ein 128.000-Token-Fenster angenommen, was bei Modellen mit kleineren Fenstern zu Überläufen und Laufabbrüchen führte. Dieses Release behebt das Problem, indem es das Kontextfenster live aus dem Index bezieht, falls der Katalog das Modell nicht kennt. Zudem wurden fünf Katalogeinträge korrigiert, um die tatsächlichen Kontextfenster der Anbieter widerzuspiegeln, und ein Preis an verifizierte Daten angepasst.
 
-## Was als Nächstes zu tun ist
+## Weitere Verbesserungen
 
-Um von diesen Verbesserungen zu profitieren, aktualisieren Sie auf Chimera Agent 0.50.0 und lesen Sie die [Release Notes][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) für detaillierte Anweisungen zur Konfiguration neuer Funktionen wie `CHIMERA_APPROVAL_WEBHOOK` und `CHIMERA_GOVERNANCE`.
+Traces erfassen nun nicht mehr nur das antwortende Modell, sondern auch das genutzte Backend. Besonders relevant für Modelle auf OpenRouter, wo ein einzelner Model-Slug mehrere Endpunkte mit unterschiedlichen Kontextfenstern und Preisen repräsentieren kann. Diese Änderung gibt Nutzern mehr Klarheit über die verwendeten Ressourcen.
+
+## Echte Einschränkungen
+
+- **Die Installer sind unsigniert.** Beim ersten Start erscheint unter Windows eine SmartScreen-Warnung, unter macOS eine Gatekeeper-Warnung. Das ist erwartet; der *Updater* ist signiert – und der entscheidet, was nach der Installation auf Ihrem System landet.
+- **Governance ist standardmäßig `off`.** Die Kontrolle existiert, damit Sie sie einschalten können, nicht weil sie aktiv wäre.
+- **Der Komprimierungs-Zusammenfasser ist deaktiviert**, hinter `AgentConfig.summarise_compaction`. Komprimierung trat in der Praxis nie auf (0-mal in 137 Läufen), daher ist der Zusammenfasser eher „ungetestet“ als „notwendig“.
+- **Abbruch ist kooperativ.** Ein Lauf stoppt vor dem nächsten Modellaufruf; bereits laufende Aufrufe werden abgerechnet.
+
+Details, einschließlich der Messdaten hinter diesen Änderungen, finden Sie im [Changelog][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0).
