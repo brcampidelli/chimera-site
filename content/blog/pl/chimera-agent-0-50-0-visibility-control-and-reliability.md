@@ -1,31 +1,40 @@
 ---
-title: "Chimera Agent 0.50.0: Widoczność, kontrola i niezawodność"
-date: 2026-10-07
+title: "Chimera Agent 0.50.0: Widoczność, Kontrola i Niezawodność"
+date: 2026-10-09
 category: update
-summary: "Chimera Agent 0.50.0 wprowadza przejrzystość, lepszą kontrolę oraz naprawia ciche błędy."
+summary: "Chimera Agent 0.50.0 wprowadza widoczność zadań agenta, webhooki do zatwierdzania, kontrolę zarządzania, hybrydowe wyszukiwanie oraz poprawki dotyczące okien kontekstowych modeli."
 version: "0.50.0"
 ---
 
-## Widoczność operacji agenta
+## Widoczność zadań agenta
 
-Wcześniej lista zadań agenta była niewidoczna dla użytkowników, mimo istnienia pola `RunState.tasks`. Teraz agent wyświetla swoją listę zadań w czasie rzeczywistym, oznaczając elementy jako w trakcie lub zakończone. Ta lista jest zachowywana podczas kompaktowania kontekstu, co zapewnia, że długotrwałe operacje nie tracą śladu swoich planów. Ta zmiana rozwiązuje częsty problem, gdy użytkownicy nie mogli zobaczyć, co agent robi, szczególnie podczas długotrwałych operacji.
+Jedną z najważniejszych zmian w Chimera Agent 0.50.0 jest wprowadzenie widoczności zadań. Wcześniej pole `RunState.tasks` istniało, ale nigdy nie było wypełniane, pozostawiając użytkowników w nieświadomości co do działań agenta. Teraz agent utrzymuje listę zadań, która jest wyświetlana na ekranie podczas działania. Każde zadanie jest oznaczone jako w trakcie lub zakończone, a lista przetrwa kompaktowanie kontekstu. Oznacza to, że nawet podczas długich działań agent nie zapomina swojego planu, zapewniając użytkownikom jasny widok postępów.
 
-## Dostępność poza konsolą
+## Webhooki do zatwierdzania dla działań bez nadzoru
 
-Agenty działające bez nadzoru, takie jak zadania cron, nie mogły skutecznie komunikować się z użytkownikami, gdy potrzebna była aprobata. Ustawiając `CHIMERA_APPROVAL_WEBHOOK`, użytkownicy mogą teraz otrzymywać prośby o aprobatę w preferowanych kanałach. Ta zmiana zapewnia, że agenty mogą dotrzeć do użytkowników, nawet gdy nikt aktywnie nie monitoruje konsoli. Wcześniej takie prośby cicho zawodziły, jeśli nie było dostępnej metody dostarczenia, prowadząc do nieoczekiwanych decyzji.
+Kolejną istotną poprawą jest możliwość zwracania się przez agenta o zatwierdzenia nawet wtedy, gdy nikt nie jest przy konsoli. Ustawiając zmienną środowiskową `CHIMERA_APPROVAL_WEBHOOK` na webhook kanału, agent może teraz wysyłać pytania o zatwierdzenie do wyznaczonego kanału. Ta zmiana rozwiązuje wcześniejszy problem, gdy niezauważone działania, w tym zadania cron, podejmowały decyzje bez udziału użytkownika. Teraz, jeśli nie ma możliwości dostarczenia pytania, agent wyraźnie informuje, że jest `nieosiągalny`, zapewniając przejrzystość.
 
 ## Kontrola zarządzania
 
-Funkcja zarządzania, która obejmuje dziennik audytu, była wcześniej niedostępna. Chociaż ekran Security wyświetlał dziennik audytu, nie było możliwości jego włączenia. Teraz użytkownicy mogą włączyć zarządzanie za pomocą parametru `CHIMERA_GOVERNANCE`. Ta zmiana daje użytkownikom możliwość monitorowania i kontrolowania ustawień bezpieczeństwa ich agenta, rozwiązując lukę w przejrzystości i kontroli.
+Jądro zarządzania, które wcześniej było niewidoczne i nieaktywne, może teraz zostać włączone. Parametr `CHIMERA_GOVERNANCE` domyślnie jest ustawiony na `off`, ale użytkownicy mają teraz możliwość jego aktywacji. Ekran Zabezpieczeń również wskazuje aktualny stan zarządzania, zapewniając użytkownikom niezbędną kontrolę i widoczność nad tą kluczową funkcją.
 
-## Lepsze zarządzanie modelami
+## Hybrydowe wyszukiwanie w `chimera find`
 
-Wcześniej agenty zakładały domyślny rozmiar okna tokenów dla modeli, które nie były jawnie skatalogowane, co prowadziło do przepełnienia kontekstu i błędów w działaniu. W tej wersji agent teraz pobiera prawidłowy rozmiar okna tokenów z żywego indeksu dla nieskatalogowanych modeli. Dodatkowo poprawiono pięć wpisów w katalogu, aby odzwierciedlały dokładne rozmiary okien tokenów i ceny. Ta zmiana zapobiega błędom w działaniu spowodowanym błędnymi założeniami dotyczącymi możliwości modeli.
+Polecenie `chimera find` zostało ulepszone o hybrydowe wyszukiwanie, łączące metody wyszukiwania słów kluczowych i wektorowego. To podejście hybrydowe, które jest ustalane przed rozpoczęciem działania, wykazało przewagę nad wyszukiwaniem słów kluczowych o 6,25 punktów na własnym korpusie projektu. Co istotne, samo wyszukiwanie wektorowe wypada gorzej niż wyszukiwanie słów kluczowych, dlatego metoda hybrydowa jest teraz domyślna. Ta zmiana zapewnia bardziej dokładne i niezawodne wyniki wyszukiwania.
 
-## Ulepszona śledzalność
+## Poprawki dotyczące okien kontekstowych modeli
 
-Ślady teraz rejestrują, który backend obsłużył każdy krok, a nie tylko który model odpowiedział. Jest to szczególnie ważne dla modeli takich jak te na OpenRouter, gdzie pojedynczy slug modelu może reprezentować pulę endpointów o różnych możliwościach i kosztach. Wcześniej użytkownicy nie mogli rozróżnić między różnymi endpointami, co prowadziło do zamieszania i nieprecyzyjnych pomiarów. Ta zmiana poprawia przejrzystość i dokładność w śledzeniu wydajności.
+Wcześniej modele nieuwzględnione w ręcznie sprawdzonym katalogu były domyślnie przypisywane do okna kontekstowego o rozmiarze 128 000 tokenów, co prowadziło do przepełnienia kontekstu i błędów działania dla modeli z mniejszymi oknami. Ta wersja naprawia ten problem, pobierając rozmiar okna kontekstowego z indeksu na żywo, gdy katalog nie zna modelu. Dodatkowo poprawiono pięć wpisów w katalogu, aby odzwierciedlały rzeczywiste rozmiary okien kontekstowych dostarczane przez ich dostawców, oraz dostosowano jedną cenę do zweryfikowanych danych.
 
-## Co robić dalej
+## Dodatkowe ulepszenia
 
-Aby skorzystać z tych ulepszeń, zaktualizuj do Chimera Agent 0.50.0 i przejrzyj [notki wydania][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0), aby uzyskać szczegółowe instrukcje dotyczące konfigurowania nowych funkcji, takich jak `CHIMERA_APPROVAL_WEBHOOK` i `CHIMERA_GOVERNANCE`.
+Ślady teraz rejestrują, który backend obsłużył każdy krok, a nie tylko który model odpowiedział. Jest to szczególnie ważne dla modeli na OpenRouter, gdzie pojedynczy slug modelu może reprezentować pulę endpointów o różnych rozmiarach okien kontekstowych i cenach. Ta zmiana zapewnia użytkownikom lepsze zrozumienie wykorzystywanych zasobów.
+
+## Szczere zastrzeżenia
+
+- **Instalatory są niepodpisane.** Pierwsze uruchomienie wyświetla ostrzeżenie SmartScreen na Windows i Gatekeeper na macOS. To oczekiwane; *aktualizator* jest podpisany, co jest kluczowe dla tego, co trafia na Twój komputer po instalacji.
+- **Zarządzanie jest domyślnie wyłączone.** Kontrola istnieje, abyś mógł ją włączyć, a nie dlatego, że jest aktywna.
+- **Podsumowanie kompaktowania jest domyślnie wyłączone**, ukryte za `AgentConfig.summarise_compaction`. Kompaktowanie samo w sobie nigdy nie wystąpiło w zwykłym użyciu — zmierzone 0 razy w 137 przebiegach — więc podsumowanie jest zbudowane i nieprzetestowane, a nie zbudowane i potrzebne.
+- **Anulowanie jest współpracujące.** Zatrzymanie działania zatrzymuje je przed kolejnym wywołaniem modelu; wywołania już w trakcie kończą się i są rozliczane.
+
+Pełne szczegóły, w tym pomiary, które wpłynęły na te zmiany, znajdziesz w [changelogu][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0).
