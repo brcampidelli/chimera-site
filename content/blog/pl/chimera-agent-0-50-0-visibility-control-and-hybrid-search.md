@@ -1,35 +1,31 @@
 ---
-title: "Chimera Agent 0.50.0: Widoczność, Kontrola i Hybrydowe Wyszukiwanie"
-date: 2026-10-08
+title: "Chimera Agent 0.50.0: Widoczność, kontrola i hybrydowe wyszukiwanie"
+date: 2026-10-11
 category: update
-summary: "Ta wersja naprawia ciche zachowania, dodaje mechanizmy kontroli zarządczej i poprawia wyszukiwanie dzięki hybrydowemu podejściu."
+summary: "Ta wersja naprawia ukryte zachowania, dodaje brakujące kontrole i poprawia wyszukiwanie dzięki hybrydowemu podejściu."
 version: "0.50.0"
 ---
 
-## Zadania Są Teraz Widoczne
+## Zadania są teraz widoczne
 
-Agenty wcześniej przechowywały wewnętrzną listę zadań, która była niedostępna podczas wykonywania. `RunState.tasks` istniało, ale nigdy nie było wypełniane. Teraz zadania są wyświetlane w czasie rzeczywistym z markerami postępu, a lista jest zachowywana nawet podczas kompaktowania kontekstu. Oznacza to, że długo działające agenty nie tracą już orientacji w swoich planach w trakcie wykonywania.
+Agenty wcześniej przechowywały wewnętrzną listę zadań (`RunState.tasks`), która nigdy nie była udostępniana ani zapisywana. Długie przebiegi mogły tracić ślad swojego postępu podczas kompaktowania kontekstu. Teraz aktywna zadanie jest wyświetlane podczas wykonywania, a zakończone zadania są przekreślone. Lista przetrwa kompaktowanie, więc agenty nie zapominają już swojego planu w trakcie działania.
 
-## Prośby o Zatwierdzenie Podążają za Tobą
+## Prośby o zatwierdzenie podążają za tobą
 
-Przepływy pracy związane z zatwierdzaniem wcześniej zakładały, że konsola jest zawsze obsługiwana. Trzy nieobsługiwane powierzchnie—w tym zadania cron—mogły prosić o interakcję człowieka, ale nie miały sposobu na dostarczenie pytania, jeśli nikt nie był obecny. Ustawienie `CHIMERA_APPROVAL_WEBHOOK` teraz kieruje prośby o zatwierdzenie do określonego kanału. Systemy bez możliwości dostarczania poprawnie zgłaszają `unreachable` zamiast cicho zawieść.
+Trzy niezauważone powierzchnie wykonawcze (w tym zadania cron) mogły prosić o zatwierdzenia, ale mechanizm był niejasny. Jeśli skonfigurowane z `CHIMERA_APPROVAL_WEBHOOK`, agenty teraz kierują pytania o zatwierdzenie do określonego kanału zamiast cicho zawieść, gdy konsola jest niedostępna. System również wyraźnie zgłasza stany `unreachable`, gdy dostarczenie nie jest możliwe.
 
-## Zarządzanie Może Być Włączone
+## Ulepszenia zarządzania i wyszukiwania
 
-Dziennik audytu bezpieczeństwa był wcześniej funkcją pasywną bez mechanizmu aktywacji. `CHIMERA_GOVERNANCE` teraz zapewnia kontrolę do jego włączenia, a ekran Bezpieczeństwa wyraźnie pokazuje jego aktualny stan. Zostało to zaimplementowane, ponieważ posiadanie dziennika audytu, którego nie można było włączyć, nie miało praktycznego zastosowania.
+Jądro zaufania (`CHIMERA_GOVERNANCE`) wcześniej nie miało kontroli aktywacji pomimo logowania zdarzeń bezpieczeństwa. Teraz jest domyślnie wyłączone z widocznym przełącznikiem. Dla wyszukiwania, `chimera find` teraz domyślnie używa hybrydowego wyszukiwania (słowa kluczowe + wektory) po testach pokazujących przewagę o 6.25 punktów (p = 1.7e-04) w porównaniu z samymi słowami kluczowymi na korpusie projektu. Samo wyszukiwanie wektorowe wypada gorzej, uzasadniając połączone podejście.
 
-## Hybrydowe Wyszukiwanie Przewyższa Słowa Kluczowe
+## Naprawy w obsłudze modeli
 
-`chimera find` wcześniej używało albo wyszukiwania słów kluczowych, albo wektorowego, z decyzją podejmowaną po rozpoczęciu działania. Hybrydowe wyszukiwanie—łączące obie metody—teraz przewyższa wyszukiwanie tylko słów kluczowych o 6,25 punktów (p = 1.7e-04) na własnym korpusie projektu. Wyszukiwanie wektorowe samo w sobie wypada gorzej niż słowa kluczowe, dlatego hybrydowe podejście jest teraz domyślne. System również oblicza koszty z góry.
+Agenty zakładały, że niekatalogowane modele mają okna 128k tokenów, powodując awarie dla 31 modeli (z 431 indeksowanych), które faktycznie obsługują ≤64k. System teraz sprawdza indeks na żywo dla nieznanych modeli. Pięć wpisów w katalogu zostało poprawionych z powodu zawyżonych rozmiarów okien, a jeden błąd cenowy (2.2x różnicy) został naprawiony.
 
-## Naprawy Kompatybilności Modeli
+## Śledzenie i zastrzeżenia
 
-Agenty zakładały, że niekatalogowane modele mają okno 128 000 tokenów, co powodowało awarie dla 31 modeli w indeksie, które faktycznie obsługują 64 000 lub mniej tokenów. System teraz sprawdza żywy indeks dla nieznanych modeli. Pięć wpisów katalogowych zostało również poprawionych pod kątem nieprawidłowych rozmiarów okien, a jeden błąd cenowy (2,2x za wysoko) został naprawiony.
+Ślady teraz rejestrują, który backend obsłużył każdy krok, a nie tylko który model odpowiedział. To ma znaczenie dla usług takich jak OpenRouter, gdzie skróty modeli reprezentują pule z 8.8x różnicą cen. Zmiany w dzienniku wycofują niektóre deklaracje wydajności, które błędnie porównywały połączone pomiary.
 
-## Widoczność Backendu w Śladach
+Kluczowe ograniczenia pozostają: instalatory są niepodpisane (choć aktualizatory są podpisane), zarządzanie jest domyślnie wyłączone, a podsumowanie kompaktowania jest wyłączone domyślnie, ponieważ nie jest używane w praktyce (0 wywołań w 137 zmierzonych przebiegach). Anulowanie jest kooperatywne - aktywne wywołania kończą się przed zatrzymaniem.
 
-Ślady teraz rejestrują, który backend obsłużył każdy krok, a nie tylko który model odpowiedział. To ma znaczenie, ponieważ identyfikatory modeli na OpenRouter mogą reprezentować pule o skrajnie różnych możliwościach—jedna pula obejmuje punkty końcowe z 5-krotną różnicą w oknach kontekstu i 8,8-krotną różnicą cenową. Poprzednie twierdzenia dotyczące wydajności konkretnych modeli faktycznie mierzyły pule; dziennik zmian wycofuje dotknięte benchmarki.
-
-### Co Robić Dalej
-
-Zaktualizuj do wersji 0.50.0 i przejrzyj [pełny dziennik zmian][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) w celu uzyskania szczegółów implementacyjnych. Włącz zarządzanie, jeśli jest potrzebne, i przetestuj hybrydowe wyszukiwanie za pomocą `chimera find`.
+Zobacz [Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) dla pomiarów i pełnego dziennika zmian. Aby zaktualizować: `pip install --upgrade chimera-agent`.
