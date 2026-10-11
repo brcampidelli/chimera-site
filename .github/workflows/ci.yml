@@ -45,6 +45,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
+        # fetch-releases calls the GitHub API; without a token it shares the runner IP's 60 req/h
+        # and fails with 403 whenever several PRs run CI at once (seen twice on 2026-10-11).
+        # deploy.yml already passes it.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # The only check here that starts a browser, and the only one that can see layout. It runs
       # after the build because it measures `out/`, not the source: a translation that breaks the
