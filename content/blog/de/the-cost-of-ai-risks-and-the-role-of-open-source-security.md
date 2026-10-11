@@ -1,5 +1,5 @@
 ---
-title: "Die Kosten von KI-Risiken und die Rolle von Open-Source-Sicherheit"
+title: "Anthropics OSS Scanner: Schließung der Sicherheitslücke in Open-Source-KI"
 date: 2026-10-09
 category: analysis
 summary: "Während KI-Unternehmen mit existenziellen Risikobewertungen konfrontiert sind, müssen Open-Source-Projekte Sicherheit priorisieren, um Schwachstellen zu minimieren und Vertrauen aufzubauen."

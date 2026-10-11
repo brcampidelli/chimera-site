@@ -1,5 +1,5 @@
 ---
-title: "Koszt ryzyk związanych ze sztuczną inteligencją i rola bezpieczeństwa open-source"
+title: "OSS Scanner Anthropic: Wypełnianie Luki w Bezpieczeństwie Otwartoźródłowej SI"
 date: 2026-10-09
 category: analysis
 summary: "Gdy firmy zajmujące się SI mierzą się z wycenami uwzględniającymi ryzyka egzystencjalne, projekty open-source muszą priorytetowo traktować bezpieczeństwo, aby minimalizować podatności i budować zaufanie."

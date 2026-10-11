@@ -1,5 +1,5 @@
 ---
-title: "O Custo dos Riscos da IA e o Papel da Segurança em Open-Source"
+title: "OSS Scanner da Anthropic: Preenchendo a Lacuna de Segurança em IA de Código Aberto"
 date: 2026-10-09
 category: analysis
 summary: "Enquanto empresas de IA enfrentam avaliações baseadas em riscos existenciais, projetos open-source devem priorizar segurança para mitigar vulnerabilidades e construir confiança."

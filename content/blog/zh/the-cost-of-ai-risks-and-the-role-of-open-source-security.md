@@ -1,5 +1,5 @@
 ---
-title: "AI风险的成本与开源安全的作用"
+title: "Anthropic的OSS扫描仪：填补开源AI的安全漏洞"
 date: 2026-10-09
 category: analysis
 summary: "随着AI公司面临生存风险的估值问题，开源项目必须优先考虑安全性，以减轻漏洞并建立信任。"

@@ -1,5 +1,5 @@
 ---
-title: "The Cost of AI Risks and the Role of Open-Source Security"
+title: "Anthropic’s OSS Scanner: Bridging the Security Gap in Open-Source AI"
 date: 2026-10-09
 category: analysis
 summary: "As AI companies face existential risk valuations, open-source projects must prioritize security to mitigate vulnerabilities and build trust."

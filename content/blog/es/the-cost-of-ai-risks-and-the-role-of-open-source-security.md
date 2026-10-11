@@ -1,5 +1,5 @@
 ---
-title: "El costo de los riesgos de la IA y el papel de la seguridad en código abierto"
+title: "OSS Scanner de Anthropic: Cerrando la Brecha de Seguridad en IA de Código Abierto"
 date: 2026-10-09
 category: analysis
 summary: "Mientras las empresas de IA enfrentan valoraciones basadas en riesgos existenciales, los proyectos de código abierto deben priorizar la seguridad para mitigar vulnerabilidades y construir confianza."
