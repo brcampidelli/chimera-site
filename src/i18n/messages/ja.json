@@ -46,6 +46,7 @@
   "blog.published": "{date} 公開",
   "blog.readingSource": "GitHub でリリースを読む",
   "blog.releaseLanguage": "リリースノートは、書かれた言語のまま公開されます。",
+  "blog.releaseOurPost": "このバージョンについての日本語の記事:",
   "blog.releaseNote": "これは公開されたままのリリースノートであり、書き直したものではありません。",
   "blog.releaseStream": "リリース",
   "blog.sourcesHeading": "何を読んだか",

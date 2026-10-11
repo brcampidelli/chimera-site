@@ -462,3 +462,26 @@ export function blogHref(locale: LocaleSegment, slug?: string): string {
 export function categoryHref(locale: LocaleSegment, category: Category): string {
   return localePath(locale, `/blog/category/${category}`);
 }
+
+/**
+ * The post this project wrote about a release, in one language, or null.
+ *
+ * A release card is the note as published, in the language it was written in (English). A reader on
+ * /pt/ who opened one got a page of English with nothing pointing at the Portuguese text about the
+ * same version — which existed. Matched on `version`, with or without the leading "v".
+ */
+const updatesByLang = new Map<LocaleSegment, Map<string, Post>>();
+
+export function updatePostFor(lang: LocaleSegment, tag: string): Post | null {
+  // posts() reads every file on each call; a release list asks once per release, so build the index
+  // once per language (the content is fixed for the life of a build).
+  let index = updatesByLang.get(lang);
+  if (!index) {
+    index = new Map();
+    for (const post of postsFor(lang)) {
+      if (post.category === "update" && post.version) index.set(post.version, post);
+    }
+    updatesByLang.set(lang, index);
+  }
+  return index.get(tag.replace(/^v/, "")) ?? null;
+}

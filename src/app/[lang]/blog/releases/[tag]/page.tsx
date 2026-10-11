@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { blogHref } from "@/content/blog";
+import { blogHref, updatePostFor } from "@/content/blog";
 import { renderMarkdown } from "@/content/markdown";
 import { releases } from "@/content/releases";
 import { SEGMENTS, canonicalPath, isLocaleSegment } from "@/i18n/locales";
@@ -50,6 +50,7 @@ export default async function ReleasePost({
   if (!note) notFound();
 
   const t = translator(lang);
+  const ours = updatePostFor(lang, tag);
   const rendered = await renderMarkdown(note.body, (target) => target);
 
   return (
@@ -79,6 +80,15 @@ export default async function ReleasePost({
       <p className="mt-4 max-w-measure text-sm text-muted-foreground">
         {t("blog.releaseNote")} {t("blog.releaseLanguage")}
       </p>
+
+      {ours ? (
+        <p className="surface mt-5 max-w-measure border-l-2 border-l-accent p-3 text-sm">
+          {t("blog.releaseOurPost")}{" "}
+          <Link href={blogHref(lang, ours.slug)} className="focus-ring rounded text-accent2 hover:text-accent">
+            {ours.title} →
+          </Link>
+        </p>
+      ) : null}
 
       <div className="md mt-8 max-w-measure" dangerouslySetInnerHTML={{ __html: rendered.html }} />
 
