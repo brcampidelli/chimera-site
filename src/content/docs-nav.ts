@@ -51,6 +51,10 @@ export const DOCS_NAV: readonly DocsSection[] = [
       // What a typed decision sends to a hosted backend and what the redaction net keeps back: the
       // reader choosing a backend is deciding an operational and privacy question, so it sits here.
       { slug: "decisions-redaction", label: "docs.navDecisionsRedaction" },
+      // What an operator who deploys Chimera for others has to decide, and the threat model of
+      // hooks (chimera-agent, October 2026): both are read by the person running it, not using it.
+      { slug: "governance-for-deployers", label: "docs.navGovernanceForDeployers" },
+      { slug: "hooks-threat-model", label: "docs.navHooksThreatModel" },
     ],
   },
   {
@@ -75,3 +79,23 @@ export const NAV_SLUGS: readonly string[] = DOCS_NAV.flatMap((s) => s.items.map(
 
 /** `index` is the docs landing page and lives at `/docs/`, not `/docs/index/`. */
 export const DOCS_INDEX_SLUG = "index";
+
+/** Heading of the section that collects docs the curated nav has not placed yet. */
+export const NAV_MORE_HEADING = "docs.navMore";
+
+/**
+ * The nav as rendered: the curated sections, plus a "More" section with every doc the product
+ * ships that the list above has not placed yet.
+ *
+ * The curated list used to be the only path to a page, and the test that enforced it ran in the
+ * deploy. So every new doc in chimera-agent took the whole site down until somebody edited this
+ * file: on 2026-10-03 (multi-agent-policy) and again on 2026-10-07 (governance-for-deployers,
+ * hooks-threat-model), each time with every blog post behind it. A new page is still reachable
+ * the day it lands; placing it in a curated section stays a decision, not a precondition.
+ */
+export function navSections(available: readonly string[]): readonly DocsSection[] {
+  const placed = new Set(NAV_SLUGS);
+  const rest = available.filter((slug) => !placed.has(slug)).sort();
+  if (rest.length === 0) return DOCS_NAV;
+  return [...DOCS_NAV, { heading: NAV_MORE_HEADING, items: rest.map((slug) => ({ slug, label: "" })) }];
+}

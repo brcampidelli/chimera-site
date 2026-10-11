@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { docHref, docTitles } from "@/content/docs";
-import { DOCS_NAV } from "@/content/docs-nav";
+import { docHref, docSlugs, docTitles } from "@/content/docs";
+import { navSections } from "@/content/docs-nav";
 import type { Heading } from "@/content/markdown";
 import type { LocaleSegment } from "@/i18n/locales";
 import { translator } from "@/i18n/messages";
@@ -25,7 +25,7 @@ export function DocsShell({ locale, slug, title, headings, html, state }: Props)
     <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[16rem_minmax(0,1fr)_14rem]">
       <nav aria-label={t("nav.docs")} className="lg:sticky lg:top-20 lg:self-start">
         <ul className="space-y-6">
-          {DOCS_NAV.map((section) => (
+          {navSections(docSlugs()).map((section) => (
             <li key={section.heading}>
               <h2 className="text-xs uppercase tracking-widest text-muted-foreground">
                 {t(section.heading)}
