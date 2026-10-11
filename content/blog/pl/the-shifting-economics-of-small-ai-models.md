@@ -1,5 +1,5 @@
 ---
-title: "Zmieniająca się ekonomia małych modeli AI"
+title: "Claude Haiku 5.5 dowodzi, że małe modele AI mogą konkurować"
 date: 2026-10-08
 category: analysis
 summary: "Ostatnie premiery pokazują, że małe modele stają się konkurencyjne kosztowo w stosunku do gigantów, zmieniając podejście do architektury agentów."

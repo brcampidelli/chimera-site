@@ -1,5 +1,5 @@
 ---
-title: "The Shifting Economics of Small AI Models"
+title: "Claude Haiku 5.5 Proves Small AI Models Can Compete"
 date: 2026-10-08
 category: analysis
 summary: "Recent releases show small models becoming cost-competitive with giants, changing how builders should approach agent architecture."

@@ -1,5 +1,5 @@
 ---
-title: "小型AI模型的经济学变迁"
+title: "Claude Haiku 5.5证明小型AI模型可以竞争"
 date: 2026-10-08
 category: analysis
 summary: "近期发布表明，小型模型在成本上正与大型模型竞争，改变了开发者构建智能体架构的方式。"

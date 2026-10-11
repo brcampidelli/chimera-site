@@ -1,5 +1,5 @@
 ---
-title: "Die sich wandelnde Ökonomie kleiner KI-Modelle"
+title: "Claude Haiku 5.5 beweist, dass kleine KI-Modelle mithalten können"
 date: 2026-10-08
 category: analysis
 summary: "Aktuelle Veröffentlichungen zeigen, dass kleine Modelle kostentechnisch mit Giganten konkurrieren können, was die Herangehensweise an Agenten-Architekturen verändert."

@@ -1,5 +1,5 @@
 ---
-title: "A Mudança na Economia dos Modelos Pequenos de IA"
+title: "Claude Haiku 5.5 prova que modelos pequenos de IA podem competir"
 date: 2026-10-08
 category: analysis
 summary: "Lançamentos recentes mostram que modelos pequenos estão se tornando competitivos em custo com os gigantes, mudando a forma como desenvolvedores devem abordar a arquitetura de agentes."
