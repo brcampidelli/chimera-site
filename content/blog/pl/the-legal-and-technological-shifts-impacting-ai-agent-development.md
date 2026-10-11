@@ -1,5 +1,5 @@
 ---
-title: "Zmiany prawne i technologiczne wpływające na rozwój agentów AI"
+title: "Pozew USA Today i komputery kwantowe zmieniają rozwój agentów AI"
 date: 2026-10-08
 category: analysis
 summary: "Wyzwania prawne oraz inwestycje w obliczenia kwantowe zmieniają krajobraz dla developerów agentów AI, podkreślając potrzebę etycznego i przyszłościowego podejścia."

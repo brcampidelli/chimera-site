@@ -1,5 +1,5 @@
 ---
-title: "The Legal and Technological Shifts Impacting AI Agent Development"
+title: "USA Today lawsuit and quantum computing reshape AI agent development"
 date: 2026-10-08
 category: analysis
 summary: "Legal challenges and quantum computing investments are reshaping the landscape for AI agent developers, emphasizing the need for ethical and forward-thinking approaches."

@@ -1,5 +1,5 @@
 ---
-title: "Les changements juridiques et technologiques qui impactent le développement d'agents IA"
+title: "Le procès de USA Today et l'informatique quantique refaçonnent le développement d'agents IA"
 date: 2026-10-08
 category: analysis
 summary: "Les défis juridiques et les investissements en calcul quantique redéfinissent le paysage pour les développeurs d'agents IA, soulignant le besoin d'approches éthiques et visionnaires."

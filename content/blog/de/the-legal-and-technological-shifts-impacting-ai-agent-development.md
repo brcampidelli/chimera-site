@@ -1,5 +1,5 @@
 ---
-title: "Rechtliche und technologische Veränderungen in der Entwicklung von KI-Agenten"
+title: "USA Today-Klage und Quantencomputing verändern die Entwicklung von KI-Agenten"
 date: 2026-10-08
 category: analysis
 summary: "Juristische Herausforderungen und Investitionen in Quantencomputing verändern die Landschaft für Entwickler von KI-Agenten und unterstreichen die Notwendigkeit ethischer und zukunftsorientierter Ansätze."
