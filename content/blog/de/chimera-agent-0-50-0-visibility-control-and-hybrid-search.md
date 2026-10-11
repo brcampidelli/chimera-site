@@ -1,35 +1,31 @@
 ---
-title: "Chimera Agent 0.50.0: Sichtbarkeit, Kontrolle und Hybrid Search"
-date: 2026-10-08
+title: "Chimera Agent 0.50.0: Sichtbarkeit, Kontrolle und Hybrid-Suche"
+date: 2026-10-11
 category: update
-summary: "Dieses Release behebt stille Verhaltensweisen, fügt Governance-Kontrollen hinzu und verbessert die Retrieval-Leistung mit Hybrid Search."
+summary: "Dieses Release behebt stille Verhaltensweisen, fügt fehlende Kontrollen hinzu und verbessert die Retrieval-Leistung durch Hybrid-Suche."
 version: "0.50.0"
 ---
 
 ## Aufgaben sind jetzt sichtbar
 
-Agenten führten bisher eine interne Aufgabenliste, die während der Ausführung unzugänglich war. `RunState.tasks` existierte, wurde aber nie befüllt. Jetzt werden Aufgaben in Echtzeit mit Fortschrittsmarkierungen angezeigt, und die Liste bleibt auch bei der Kontextkomprimierung erhalten. Das bedeutet, dass lang laufende Agenten ihre eigenen Pläne nicht mehr mitten in der Ausführung verlieren.
+Agenten hatten bisher eine interne Aufgabenliste (`RunState.tasks`), die nie angezeigt oder gespeichert wurde. Lange Läufe konnten ihren Fortschritt während der Kontextkomprimierung verlieren. Jetzt wird die aktive Aufgabe während der Ausführung angezeigt, und abgeschlossene Aufgaben werden durchgestrichen. Die Liste überlebt die Komprimierung, sodass Agenten ihren Plan nicht mehr mitten im Lauf vergessen.
 
 ## Genehmigungsanfragen folgen Ihnen
 
-Genehmigungsworkflows gingen bisher davon aus, dass eine Konsole immer überwacht wird. Drei unbeaufsichtigte Oberflächen – einschließlich Cron-Jobs – konnten menschliche Eingaben anfordern, hatten aber keine Möglichkeit, die Frage zu übermitteln, wenn niemand zusah. Durch das Setzen von `CHIMERA_APPROVAL_WEBHOOK` werden Genehmigungsanfragen jetzt an einen bestimmten Kanal weitergeleitet. Systeme ohne Zustellfähigkeit melden korrekt `unreachable`, anstatt stillschweigend zu scheitern.
+Drei unbeaufsichtigte Ausführungsoberflächen (einschließlich Cron-Jobs) konnten Genehmigungen anfordern, aber der Mechanismus war undurchsichtig. Wenn mit `CHIMERA_APPROVAL_WEBHOOK` konfiguriert, leiten Agenten jetzt Genehmigungsfragen an den angegebenen Kanal weiter, anstatt stillschweigend zu scheitern, wenn keine Konsole verfügbar ist. Das System meldet auch explizit `unreachable`-Zustände, wenn die Zustellung nicht möglich ist.
 
-## Governance kann aktiviert werden
+## Verbesserungen bei Governance und Retrieval
 
-Das Sicherheits-Audit-Log war bisher eine passive Funktion ohne Aktivierungsmechanismus. `CHIMERA_GOVERNANCE` bietet jetzt eine Steuerung, um es zu aktivieren, und der Sicherheitsbildschirm zeigt explizit seinen aktuellen Zustand an. Dies wurde implementiert, weil ein Audit-Log, das nicht eingeschaltet werden konnte, keinen praktischen Nutzen hatte.
+Der Vertrauenskern (`CHIMERA_GOVERNANCE`) hatte bisher keine Aktivierungskontrolle, obwohl er Sicherheitsereignisse protokollierte. Er wird jetzt standardmäßig deaktiviert geliefert, mit einem sichtbaren Schalter. Für das Retrieval verwendet `chimera find` jetzt standardmäßig Hybrid-Suche (Keyword + Vektor), nachdem Tests gezeigt haben, dass sie die Keyword-only-Suche um 6,25 Punkte (p = 1,7e-04) auf dem Projektkorpus übertrifft. Die reine Vektorsuche schneidet schlechter ab, was den kombinierten Ansatz rechtfertigt.
 
-## Hybrid Search übertrifft Keywords
+## Behebungen bei der Modellverarbeitung
 
-`chimera find` verwendete bisher entweder Keyword- oder Vector-Search, wobei die Entscheidung nach dem Start des Laufs getroffen wurde. Hybrid Retrieval – eine Kombination beider Methoden – übertrifft jetzt Keyword-only-Suchen um 6,25 Punkte (p = 1,7e-04) im eigenen Korpus des Projekts. Vector-Search allein schneidet schlechter ab als Keywords, weshalb der Hybrid-Ansatz jetzt der Standard ist. Das System berechnet die Kosten auch im Voraus.
+Agenten gingen davon aus, dass nicht katalogisierte Modelle 128k-Token-Fenster hatten, was zu Abstürzen bei den 31 Modellen (von 431 indizierten) führte, die tatsächlich ≤64k bedienen. Das System überprüft jetzt den Live-Index für unbekannte Modelle. Fünf Katalogeinträge wurden aufgrund überhöhter Fenstergrößen korrigiert, und ein Preisierungsfehler (2,2x abweichend) wurde behoben.
 
-## Modellkompatibilitätskorrekturen
+## Nachvollziehbarkeit und Einschränkungen
 
-Agenten gingen davon aus, dass nicht katalogisierte Modelle ein 128.000-Token-Fenster hatten, was Abstürze für die 31 Modelle im Index verursachte, die tatsächlich nur 64.000 oder weniger Token unterstützen. Das System überprüft jetzt den Live-Index für unbekannte Modelle. Fünf Katalogeinträge wurden auch wegen falscher Fenstergrößen korrigiert, und ein Preisierungsfehler (2,2x zu hoch) wurde behoben.
+Traces zeichnen jetzt auf, welcher Backend jeden Schritt bedient hat, nicht nur welches Modell geantwortet hat. Dies ist wichtig für Dienste wie OpenRouter, bei denen Modell-Slugs Pools mit 8,8-fachen Preisunterschieden repräsentieren. Das Changelog zieht einige Leistungsangaben zurück, die fälschlicherweise gepoolte Messungen verglichen.
 
-## Backend-Sichtbarkeit in Traces
+Wichtige Einschränkungen bleiben bestehen: Installer sind unsigniert (obwohl Updater signiert sind), Governance wird deaktiviert geliefert, und der Komprimierungs-Zusammenfasser ist standardmäßig ausgeschaltet, da er in der Praxis nicht verwendet wird (0 Auslöser über 137 gemessene Läufe). Die Abbruchfunktion ist kooperativ - aktive Aufrufe werden vor dem Stoppen abgeschlossen.
 
-Traces zeichnen jetzt auf, welches Backend jeden Schritt bedient hat, nicht nur welches Modell geantwortet hat. Das ist wichtig, weil Modell-Slugs auf OpenRouter Pools mit stark unterschiedlichen Fähigkeiten darstellen können – ein Pool umfasst Endpunkte mit einem 5-fachen Unterschied in den Kontextfenstern und einer 8,8-fachen Preisvarianz. Frühere Leistungsangaben zu bestimmten Modellen haben tatsächlich Pools gemessen; das Changelog zieht betroffene Benchmarks zurück.
-
-### Was als Nächstes zu tun ist
-
-Aktualisieren Sie auf 0.50.0 und überprüfen Sie das [vollständige Changelog][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) für Implementierungsdetails. Aktivieren Sie die Governance, falls erforderlich, und testen Sie Hybrid Search mit `chimera find`.
+Siehe [Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) für Messungen und vollständiges Changelog. Zum Aktualisieren: `pip install --upgrade chimera-agent`.
