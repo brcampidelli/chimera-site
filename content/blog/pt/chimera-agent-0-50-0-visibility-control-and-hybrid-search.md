@@ -1,35 +1,31 @@
 ---
 title: "Chimera Agent 0.50.0: Visibilidade, Controle e Busca Híbrida"
-date: 2026-10-08
+date: 2026-10-11
 category: update
-summary: "Esta versão corrige comportamentos silenciosos, adiciona controles de governança e melhora a recuperação com busca híbrida."
+summary: "Esta versão corrige comportamentos silenciosos, adiciona controles faltantes e melhora a recuperação com busca híbrida."
 version: "0.50.0"
 ---
 
 ## Tarefas Agora São Visíveis
 
-Antes, os agentes mantinham uma lista interna de tarefas inacessível durante a execução. `RunState.tasks` existia, mas nunca era preenchida. Agora, as tarefas são exibidas em tempo real com marcadores de progresso, e a lista persiste através da compactação de contexto. Isso significa que agentes de longa duração não perdem mais o controle de seus próprios planos durante a execução.
+Antes, os agentes mantinham uma lista interna de tarefas (`RunState.tasks`) que nunca era exposta ou persistida. Execuções longas podiam perder o controle do próprio progresso durante a compactação de contexto. Agora, a tarefa ativa é exibida durante a execução, e as tarefas concluídas são riscadas. A lista sobrevive à compactação, então os agentes não esquecem mais o plano no meio da execução.
 
-## Solicitações de Aprovação Seguem Você
+## Solicitações de Aprovação Te Seguem
 
-Os fluxos de aprovação anteriores assumiam que um console estava sempre sendo monitorado. Três superfícies não monitoradas—incluindo cron jobs—podiam solicitar entrada humana, mas não tinham como entregar a pergunta se ninguém estivesse olhando. Definir `CHIMERA_APPROVAL_WEBHOOK` agora encaminha solicitações de aprovação para um canal especificado. Sistemas sem capacidade de entrega relatam corretamente `unreachable` em vez de falhar silenciosamente.
+Três superfícies de execução não monitoradas (incluindo cron jobs) podiam solicitar aprovações, mas o mecanismo era opaco. Se configurado com `CHIMERA_APPROVAL_WEBHOOK`, os agentes agora encaminham perguntas de aprovação para o canal especificado, em vez de falhar silenciosamente quando nenhum console está disponível. O sistema também relata explicitamente estados `unreachable` quando a entrega não é possível.
 
-## Governança Pode Ser Ativada
+## Melhorias de Governança e Recuperação
 
-O log de auditoria de segurança era anteriormente um recurso passivo sem mecanismo de ativação. `CHIMERA_GOVERNANCE` agora fornece um controle para ativá-lo, e a tela de Segurança mostra explicitamente seu estado atual. Isso foi implementado porque ter um log de auditoria que não podia ser ativado não tinha propósito prático.
+O núcleo de confiança (`CHIMERA_GOVERNANCE`) anteriormente não tinha controle de ativação, apesar de registrar eventos de segurança. Agora ele vem desativado por padrão com um botão visível. Para recuperação, `chimera find` agora usa busca híbrida (palavra-chave + vetor) por padrão, após testes mostrarem que ela supera a busca apenas por palavra-chave em 6,25 pontos (p = 1,7e-04) no corpus do projeto. A busca vetorial sozinha tem desempenho inferior, justificando a abordagem combinada.
 
-## Busca Híbrida Supera Palavras-Chave
+## Correções no Tratamento de Modelos
 
-`chimera find` anteriormente usava busca por palavra-chave ou vetorial, com a decisão tomada após o início da execução. A recuperação híbrida—combinando ambos os métodos—agora supera buscas apenas por palavra-chave em 6,25 pontos (p = 1,7e-04) no próprio corpus do projeto. A busca vetorial por si só tem desempenho inferior às palavras-chave, razão pela qual a abordagem híbrida agora é o padrão. O sistema também calcula os custos antecipadamente.
+Os agentes assumiam que modelos não catalogados tinham janelas de 128k tokens, causando falhas para os 31 modelos (de 431 indexados) que realmente servem ≤64k. O sistema agora verifica o índice ao vivo para modelos desconhecidos. Cinco entradas do catálogo foram corrigidas para tamanhos de janela inflados, e um erro de preço (2,2x acima) foi corrigido.
 
-## Correções de Compatibilidade de Modelos
+## Rastreabilidade e Ressalvas
 
-Os agentes assumiam que modelos não catalogados tinham uma janela de 128.000 tokens, o que causava falhas para os 31 modelos no índice que suportam 64.000 tokens ou menos. O sistema agora verifica o índice ao vivo para modelos desconhecidos. Cinco entradas do catálogo também foram corrigidas para tamanhos de janela imprecisos, e um erro de preço (2,2x acima) foi corrigido.
+Os rastreamentos agora registram qual backend serviu cada etapa, não apenas qual modelo respondeu. Isso é importante para serviços como OpenRouter, onde slugs de modelo representam pools com variações de preço de 8,8x. O changelog retira algumas afirmações de desempenho que comparavam erroneamente medições agrupadas.
 
-## Visibilidade de Backend em Traces
+Limitações-chave permanecem: instaladores não são assinados (embora atualizadores sejam), a governança vem desativada, e o compactador de resumo está desligado por padrão, pois não é usado na prática (0 acionamentos em 137 execuções medidas). O cancelamento é cooperativo - chamadas ativas são concluídas antes de parar.
 
-Os traces agora registram qual backend serviu cada etapa, não apenas qual modelo respondeu. Isso é importante porque os slugs de modelo no OpenRouter podem representar pools com capacidades extremamente variáveis—um pool abrange endpoints com diferença de 5x em janelas de contexto e variação de preço de 8,8x. Afirmações anteriores de desempenho sobre modelos específicos estavam na verdade medindo pools; o changelog retira benchmarks afetados.
-
-### O Que Fazer Agora
-
-Atualize para 0.50.0 e revise o [changelog completo][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) para detalhes de implementação. Ative a governança, se necessário, e teste a busca híbrida com `chimera find`.
+Veja [Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) para medições e o changelog completo. Para atualizar: `pip install --upgrade chimera-agent`.
