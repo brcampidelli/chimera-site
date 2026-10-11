@@ -1,35 +1,31 @@
 ---
 title: "Chimera Agent 0.50.0: Visibilidad, Control y Búsqueda Híbrida"
-date: 2026-10-08
+date: 2026-10-11
 category: update
-summary: "Esta versión corrige comportamientos silenciosos, añade controles de gobernanza y mejora la recuperación con búsqueda híbrida."
+summary: "Esta versión corrige comportamientos silenciosos, añade controles faltantes y mejora la recuperación con búsqueda híbrida."
 version: "0.50.0"
 ---
 
 ## Las Tareas Ahora Son Visibles
 
-Anteriormente, los agentes mantenían una lista interna de tareas que era inaccesible durante la ejecución. `RunState.tasks` existía, pero nunca se llenaba. Ahora, las tareas se muestran en tiempo real con marcadores de progreso, y la lista persiste a través de la compactación de contexto. Esto significa que los agentes de larga duración ya no pierden el rastro de sus propios planes durante la ejecución.
+Los agentes mantenían una lista interna de tareas (`RunState.tasks`) que nunca se exponía ni persistía. Ejecuciones largas podían perder el rastro de su progreso durante la compactación de contexto. Ahora, la tarea activa se muestra durante la ejecución y las tareas completadas se tachan. La lista sobrevive a la compactación, por lo que los agentes ya no olvidan su plan a mitad de ejecución.
 
 ## Las Solicitudes de Aprobación Te Siguen
 
-Los flujos de trabajo de aprobación asumían previamente que siempre había alguien atendiendo una consola. Tres superficies no atendidas—incluyendo trabajos cron—podían solicitar entrada humana, pero no tenían forma de entregar la pregunta si nadie estaba mirando. Configurar `CHIMERA_APPROVAL_WEBHOOK` ahora dirige las solicitudes de aprobación a un canal especificado. Los sistemas sin capacidad de entrega informan correctamente `unreachable` en lugar de fallar en silencio.
+Tres superficies de ejecución desatendidas (incluyendo trabajos cron) podían solicitar aprobaciones, pero el mecanismo era opaco. Si se configura con `CHIMERA_APPROVAL_WEBHOOK`, los agentes ahora enrutan preguntas de aprobación al canal especificado en lugar de fallar silenciosamente cuando no hay consola disponible. El sistema también reporta explícitamente estados `unreachable` cuando la entrega no es posible.
 
-## La Gobernanza Puede Activarse
+## Mejoras en Gobernanza y Recuperación
 
-El registro de auditoría de seguridad era anteriormente una característica pasiva sin mecanismo de activación. `CHIMERA_GOVERNANCE` ahora proporciona un control para activarlo, y la pantalla de Seguridad muestra explícitamente su estado actual. Esto se implementó porque tener un registro de auditoría que no se podía activar no tenía ningún propósito práctico.
+El núcleo de confianza (`CHIMERA_GOVERNANCE`) no tenía control de activación a pesar de registrar eventos de seguridad. Ahora viene desactivado por defecto con un interruptor visible. Para recuperación, `chimera find` usa búsqueda híbrida (palabras clave + vector) por defecto tras pruebas que mostraron un rendimiento 6.25 puntos superior (p = 1.7e-04) en el corpus del proyecto. La búsqueda vectorial sola tiene menor rendimiento, justificando el enfoque fusionado.
 
-## La Búsqueda Híbrida Supera a las Palabras Clave
+## Correcciones en Manejo de Modelos
 
-`chimera find` usaba previamente búsqueda por palabras clave o vectorial, con la decisión tomada después de iniciar la ejecución. La recuperación híbrida—combinando ambos métodos—ahora supera las búsquedas solo por palabras clave en 6.25 puntos (p = 1.7e-04) en el corpus propio del proyecto. La búsqueda vectorial sola tiene un rendimiento inferior a las palabras clave, por lo que el enfoque híbrido es ahora el predeterminado. El sistema también calcula los costos por adelantado.
+Los agentes asumían que modelos no catalogados tenían ventanas de 128k tokens, causando fallos en los 31 modelos (de 431 indexados) que realmente sirven ≤64k. El sistema ahora verifica el índice en vivo para modelos desconocidos. Se corrigieron cinco entradas del catálogo por tamaños de ventana inflados y un error de precios (2.2x de diferencia).
 
-## Correcciones de Compatibilidad de Modelos
+## Trazabilidad y Advertencias
 
-Los agentes asumían que los modelos no catalogados tenían una ventana de 128,000 tokens, lo que causaba fallos para los 31 modelos en el índice que realmente soportan 64,000 tokens o menos. El sistema ahora verifica el índice en vivo para modelos desconocidos. También se corrigieron cinco entradas del catálogo por tamaños de ventana inexactos, y se solucionó un error de precios (2.2x fuera de lo esperado).
+Los trazos ahora registran qué backend sirvió cada paso, no solo qué modelo respondió. Esto es relevante para servicios como OpenRouter donde los slugs de modelo representan grupos con variaciones de precio de 8.8x. El registro de cambios retira algunas afirmaciones de rendimiento que comparaban erróneamente mediciones agrupadas.
 
-## Visibilidad del Backend en los Trazos
+Quedan limitaciones clave: los instaladores no están firmados (aunque los actualizadores sí), la gobernanza viene desactivada, y el resumidor de compactación está desactivado por defecto al no usarse en la práctica (0 activaciones en 137 ejecuciones medidas). La cancelación es cooperativa - las llamadas activas se completan antes de detenerse.
 
-Los trazos ahora registran qué backend sirvió cada paso, no solo qué modelo respondió. Esto es importante porque los slugs de modelos en OpenRouter pueden representar grupos con capacidades muy variadas—un grupo abarca endpoints con diferencias de 5x en ventanas de contexto y variaciones de precio de 8.8x. Las afirmaciones anteriores sobre el rendimiento de modelos específicos en realidad medían grupos; el changelog retira los benchmarks afectados.
-
-### Qué Hacer Ahora
-
-Actualiza a 0.50.0 y revisa el [changelog completo][Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) para detalles de implementación. Activa la gobernanza si es necesario, y prueba la búsqueda híbrida con `chimera find`.
+Ver [Chimera Agent v0.50.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.50.0) para mediciones y registro completo de cambios. Para actualizar: `pip install --upgrade chimera-agent`.
