@@ -1,5 +1,5 @@
 ---
-title: "L'évolution des agents IA : de l'utilité à la personnalité"
+title: "Les agents d'IA évoluent : Équilibre entre personnalité et fonctionnalité technique"
 date: 2026-10-09
 category: analysis
 summary: "L'évolution des agents IA dépasse désormais la simple fonctionnalité, mettant l'accent sur la personnalité et la confiance communautaire, ce qui redéfinit l'approche des développeurs dans la conception des agents."

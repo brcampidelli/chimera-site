@@ -1,5 +1,5 @@
 ---
-title: "Zmiana w podejściu do agentów AI: od użyteczności do osobowości"
+title: "Agenty AI ewoluują: Równowaga między osobowością a funkcjonalnością techniczną"
 date: 2026-10-09
 category: analysis
 summary: "Ewolucja agentów AI wykracza poza funkcjonalność, kładąc nacisk na osobowość i zaufanie społeczności, co zmienia sposób, w jaki developerzy podchodzą do projektowania agentów."

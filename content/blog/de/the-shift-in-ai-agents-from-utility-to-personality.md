@@ -1,5 +1,5 @@
 ---
-title: "Der Wandel bei KI-Agenten: Von Funktionalität zu Persönlichkeit"
+title: "KI-Agenten entwickeln sich: Persönlichkeit und technische Funktionalität im Gleichgewicht"
 date: 2026-10-09
 category: analysis
 summary: "Die Entwicklung von KI-Agenten geht über reine Funktionalität hinaus und betont Persönlichkeit und Vertrauen in der Community, was die Herangehensweise von Entwicklern an Agenten-Design verändert."
