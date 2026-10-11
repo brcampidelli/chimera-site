@@ -1,5 +1,5 @@
 ---
-title: "Le débat sur le frein d'urgence pour l'IA et ses implications pour les développeurs d'agents"
+title: "Le PDG de Microsoft plaide pour un frein d'urgence IA dans les frameworks d'agents"
 date: 2026-10-11
 category: analysis
 summary: "Alors que les appels pour des mécanismes de sécurité en IA se multiplient, les développeurs d'agents doivent réfléchir à la mise en place de gouvernance sans étouffer l'innovation."

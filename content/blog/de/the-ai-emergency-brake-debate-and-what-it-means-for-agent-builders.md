@@ -1,5 +1,5 @@
 ---
-title: "Die Debatte um den KI-Notstopp und was das für Agent-Entwickler bedeutet"
+title: "Microsoft-CEO befürwortet Notbremse für KI in Agenten-Frameworks"
 date: 2026-10-11
 category: analysis
 summary: "Während die Forderungen nach KI-Sicherheitsmechanismen zunehmen, müssen Entwickler von Agenten Governance implementieren, ohne Innovation zu behindern."

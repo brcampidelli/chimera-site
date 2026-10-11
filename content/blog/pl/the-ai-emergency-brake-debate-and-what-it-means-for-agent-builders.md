@@ -1,5 +1,5 @@
 ---
-title: "Debata o hamulcu awaryjnym AI i jej znaczenie dla twórców agentów"
+title: "CEO Microsoft opowiada się za hamulcem awaryjnym AI w frameworkach agentów"
 date: 2026-10-11
 category: analysis
 summary: "W miarę jak rosną wezwania do wprowadzenia mechanizmów bezpieczeństwa AI, programiści agentów muszą zastanowić się, jak wdrożyć zarządzanie bez hamowania innowacji."

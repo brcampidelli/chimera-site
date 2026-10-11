@@ -1,5 +1,5 @@
 ---
-title: "El debate sobre el freno de emergencia en IA y lo que significa para los desarrolladores de agentes"
+title: "CEO de Microsoft aboga por freno de emergencia para IA en frameworks de agentes"
 date: 2026-10-11
 category: analysis
 summary: "A medida que crecen las demandas de mecanismos de seguridad en IA, los desarrolladores de agentes deben considerar cómo implementar gobernanza sin frenar la innovación."

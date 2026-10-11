@@ -1,5 +1,5 @@
 ---
-title: "O Debate sobre o Freio de Emergência em IA e o que Ele Significa para Desenvolvedores de Agentes"
+title: "CEO da Microsoft defende freio de emergência para IA em frameworks de agentes"
 date: 2026-10-11
 category: analysis
 summary: "Enquanto crescem os chamados por mecanismos de segurança em IA, desenvolvedores de agentes precisam considerar como implementar governança sem sufocar a inovação."
