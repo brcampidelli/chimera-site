@@ -1,5 +1,5 @@
 ---
-title: "AI Agents Are Redefining Research and Business Workflows"
+title: "Anthropic's Claude Science maps UV sky, Google's Gemini agents transform workflows"
 date: 2026-10-09
 category: analysis
 summary: "The integration of AI agents into scientific research and enterprise workflows demonstrates their transformative potential, enabling tasks that were previously impractical or inefficient."

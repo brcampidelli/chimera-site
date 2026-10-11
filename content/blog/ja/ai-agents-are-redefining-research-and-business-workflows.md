@@ -1,5 +1,5 @@
 ---
-title: "AIエージェントが研究とビジネスのワークフローを再定義する"
+title: "AnthropicのClaude ScienceがUV空をマッピング、GoogleのGeminiエージェントがワークフローを変革"
 date: 2026-10-09
 category: analysis
 summary: "AIエージェントを科学研究や企業のワークフローに統合することで、これまで非現実的または非効率だったタスクを可能にする変革的なポテンシャルが示されています。"

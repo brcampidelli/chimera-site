@@ -1,5 +1,5 @@
 ---
-title: "KI-Agenten revolutionieren Forschungs- und Geschäftsprozesse"
+title: "Anthropics Claude Science kartiert UV-Himmel, Googles Gemini-Agenten verändern Arbeitsabläufe"
 date: 2026-10-09
 category: analysis
 summary: "Die Integration von KI-Agenten in wissenschaftliche Forschung und Unternehmensabläufe zeigt ihr transformatives Potenzial, indem sie Aufgaben ermöglicht, die zuvor unpraktisch oder ineffizient waren."

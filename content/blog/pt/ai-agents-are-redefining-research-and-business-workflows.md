@@ -1,5 +1,5 @@
 ---
-title: "Agentes de IA Estão Redefinindo Pesquisas e Fluxos de Trabalho Empresariais"
+title: "Claude Science da Anthropic mapeia céu UV, agentes Gemini da Google transformam fluxos"
 date: 2026-10-09
 category: analysis
 summary: "A integração de agentes de IA em pesquisas científicas e fluxos de trabalho empresariais demonstra seu potencial transformador, permitindo tarefas que antes eram impraticáveis ou ineficientes."

@@ -1,5 +1,5 @@
 ---
-title: "Agenty AI Redefiniują Badania Naukowe i Procesy Biznesowe"
+title: "Claude Science od Anthropic mapuje niebo w UV, agenci Gemini Google zmieniają przepływy"
 date: 2026-10-09
 category: analysis
 summary: "Integracja agentów AI w badania naukowe i procesy biznesowe pokazuje ich transformacyjny potencjał, umożliwiając realizację zadań, które wcześniej były niepraktyczne lub nieefektywne."

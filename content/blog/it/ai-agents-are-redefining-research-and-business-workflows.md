@@ -1,5 +1,5 @@
 ---
-title: "Gli agenti AI stanno ridefinendo la ricerca e i flussi di lavoro aziendali"
+title: "Claude Science di Anthropic mappa il cielo UV, gli agenti Gemini di Google trasformano i flussi"
 date: 2026-10-09
 category: analysis
 summary: "L'integrazione degli agenti AI nella ricerca scientifica e nei flussi di lavoro aziendali dimostra il loro potenziale trasformativo, rendendo possibili compiti che prima erano impraticabili o inefficienti."

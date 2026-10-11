@@ -1,5 +1,5 @@
 ---
-title: "AI 代理正在重新定义科研与商业工作流"
+title: "Anthropic的Claude Science绘制紫外天空，谷歌Gemini代理改变工作流程"
 date: 2026-10-09
 category: analysis
 summary: "AI 代理在科学研究和企业工作流中的集成展示了其变革性潜力，使得以往不切实际或低效的任务成为可能。"

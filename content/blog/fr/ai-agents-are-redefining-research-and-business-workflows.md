@@ -1,5 +1,5 @@
 ---
-title: "Les agents IA redéfinissent les workflows de recherche et d'entreprise"
+title: "Claude Science d'Anthropic cartographie le ciel UV, les agents Gemini de Google transforment les flux"
 date: 2026-10-09
 category: analysis
 summary: "L'intégration des agents IA dans la recherche scientifique et les workflows d'entreprise démontre leur potentiel transformateur, permettant des tâches auparavant impraticables ou inefficaces."
