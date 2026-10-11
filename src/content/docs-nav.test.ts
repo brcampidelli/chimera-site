@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { docSlugs, docsAvailable, linkResolver } from "./docs";
-import { DOCS_NAV, NAV_SLUGS } from "./docs-nav";
+import { DOCS_NAV, NAV_MORE_HEADING, NAV_SLUGS, navSections } from "./docs-nav";
 import { expandAdmonitions, splitTitle, stripMaterialSyntax } from "./markdown";
 
 /**
@@ -9,16 +9,27 @@ import { expandAdmonitions, splitTitle, stripMaterialSyntax } from "./markdown";
  * files is exactly the thing that goes stale the first time somebody adds a page.
  */
 describe("docs nav — every page reachable, every entry real", () => {
-  it("lists every documentation file exactly once", () => {
+  it("makes every documentation file reachable, and says which still need a place", () => {
     if (!docsAvailable()) {
       console.warn("skipped: chimera-agent docs not found");
       return;
     }
     const onDisk = docSlugs();
-    const missing = onDisk.filter((slug) => !NAV_SLUGS.includes(slug));
-    // A page that exists and is not in the nav is a page nobody reads. Adding a doc should force
-    // the author to decide where it belongs, not let it disappear.
-    expect(missing, `not reachable from the nav: ${missing.join(", ")}`).toEqual([]);
+    const rendered = navSections(onDisk).flatMap((s) => s.items.map((i) => i.slug));
+    // Reachable is the hard rule: a page that exists and is not in the nav is a page nobody reads.
+    expect(onDisk.filter((slug) => !rendered.includes(slug))).toEqual([]);
+    // Placing it in a curated section is a decision for a person, so it is reported, not fatal:
+    // failing here used to take the whole site down whenever the product added a doc.
+    const unplaced = onDisk.filter((slug) => !NAV_SLUGS.includes(slug));
+    if (unplaced.length) console.warn(`docs in "More", waiting for a curated place: ${unplaced.join(", ")}`);
+  });
+
+  it("puts an unplaced doc in a More section instead of dropping it", () => {
+    const sections = navSections([...NAV_SLUGS, "zz-new-doc"]);
+    const more = sections[sections.length - 1]!;
+    expect(more.heading).toBe(NAV_MORE_HEADING);
+    expect(more.items.map((i) => i.slug)).toEqual(["zz-new-doc"]);
+    expect(navSections([...NAV_SLUGS])).toBe(DOCS_NAV);
   });
 
   it("has no entry pointing at a file that does not exist", () => {
