@@ -1,5 +1,5 @@
 ---
-title: "Energy and Infrastructure: The Next Frontier for AI Agents"
+title: "Google and Constellation Boost Nuclear Energy for AI Development"
 date: 2026-10-06
 category: analysis
 summary: "The growing demand for energy and infrastructure to support AI development is reshaping how agents are built and deployed."

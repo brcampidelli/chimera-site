@@ -1,5 +1,5 @@
 ---
-title: "Energie und Infrastruktur: Die nächste Grenze für KI-Agenten"
+title: "Google und Constellation fördern Kernenergie für die KI-Entwicklung"
 date: 2026-10-06
 category: analysis
 summary: "Die wachsende Nachfrage nach Energie und Infrastruktur zur Unterstützung der KI-Entwicklung verändert, wie Agenten gebaut und eingesetzt werden."

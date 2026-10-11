@@ -1,5 +1,5 @@
 ---
-title: "エネルギーとインフラ: AIエージェントの次のフロンティア"
+title: "GoogleとConstellation、AI開発のための原子力エネルギーを強化"
 date: 2026-10-06
 category: analysis
 summary: "AI開発を支えるエネルギーとインフラへの需要の高まりが、エージェントの構築と展開の方法を変革しています。"

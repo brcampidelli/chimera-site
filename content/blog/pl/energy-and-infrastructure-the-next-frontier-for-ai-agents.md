@@ -1,5 +1,5 @@
 ---
-title: "Energia i infrastruktura: Nowy front dla agentów AI"
+title: "Google i Constellation zwiększają energię jądrową dla rozwoju AI"
 date: 2026-10-06
 category: analysis
 summary: "Rosnące zapotrzebowanie na energię i infrastrukturę wspierającą rozwój AI zmienia sposób budowania i wdrażania agentów."

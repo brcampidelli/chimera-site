@@ -1,5 +1,5 @@
 ---
-title: "Energia e Infraestrutura: A Nova Fronteira para Agentes de IA"
+title: "Google e Constellation ampliam energia nuclear para desenvolvimento de IA"
 date: 2026-10-06
 category: analysis
 summary: "A crescente demanda por energia e infraestrutura para sustentar o desenvolvimento de IA está transformando a forma como os agentes são construídos e implantados."

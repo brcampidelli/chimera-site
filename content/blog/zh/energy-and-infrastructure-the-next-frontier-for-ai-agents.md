@@ -1,5 +1,5 @@
 ---
-title: "能源与基础设施：AI智能体的下一个前沿"
+title: "谷歌与Constellation推动核能助力AI发展"
 date: 2026-10-06
 category: analysis
 summary: "支持AI发展的能源与基础设施需求不断增长，正在重塑智能体的构建与部署方式。"
