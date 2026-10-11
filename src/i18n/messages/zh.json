@@ -46,6 +46,7 @@
   "blog.published": "发布于 {date}",
   "blog.readingSource": "在 GitHub 上阅读这条 release",
   "blog.releaseLanguage": "release 说明按其撰写时所用的语言发布。",
+  "blog.releaseOurPost": "阅读我们关于此版本的中文文章：",
   "blog.releaseNote": "这是原样发布的 release 说明，不是它的改写版。",
   "blog.releaseStream": "Releases",
   "blog.sourcesHeading": "我们读了什么",

@@ -46,6 +46,7 @@
   "blog.published": "Опубликовано {date}",
   "blog.readingSource": "Читать описание выпуска на GitHub",
   "blog.releaseLanguage": "Описания выпусков публикуются на том языке, на котором были написаны.",
+  "blog.releaseOurPost": "Наш текст об этой версии на русском:",
   "blog.releaseNote": "Это описание выпуска как оно опубликовано, а не его пересказ.",
   "blog.releaseStream": "Выпуски",
   "blog.sourcesHeading": "Что мы прочитали",

@@ -1,4 +1,4 @@
-import { posts, blogHref, type Category } from "./blog";
+import { posts, blogHref, updatePostFor, type Category } from "./blog";
 import { releases } from "./releases";
 import { localePath, type LocaleSegment } from "@/i18n/locales";
 import { SITE } from "@/lib/site";
@@ -31,7 +31,12 @@ function firstParagraph(body: string): string {
 export function releaseEntries(locale: LocaleSegment): Entry[] {
   const data = releases();
   if (!data) return [];
-  return data.history.map((release) => ({
+  // In a language other than English, a release that already has our post in that language is
+  // listed once, as the post. The raw card (English) would be the same news twice, and the one a
+  // reader of that language can not read. The card page itself stays reachable and links the post.
+  const history =
+    locale === "en" ? data.history : data.history.filter((release) => !updatePostFor(locale, release.tag));
+  return history.map((release) => ({
     kind: "release" as const,
     slug: release.tag,
     href: localePath(locale, `/blog/releases/${release.tag}`),

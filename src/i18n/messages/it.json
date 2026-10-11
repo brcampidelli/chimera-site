@@ -46,6 +46,7 @@
   "blog.published": "Pubblicato il {date}",
   "blog.readingSource": "Leggi la release su GitHub",
   "blog.releaseLanguage": "Le note di release sono pubblicate nella lingua in cui sono state scritte.",
+  "blog.releaseOurPost": "Leggi in italiano il nostro articolo su questa versione:",
   "blog.releaseNote": "Questa è la nota di release così com'è stata pubblicata, non una sua riscrittura.",
   "blog.releaseStream": "Release",
   "blog.sourcesHeading": "Cosa abbiamo letto",
