@@ -1,5 +1,5 @@
 ---
-title: "Przestawienie się na konfigurowalne i kontrolowalne agenty AI"
+title: "Konfigurowalne agenty Mistral AI dla przedsiębiorstw"
 date: 2026-10-07
 category: analysis
 summary: "Najnowsze osiągnięcia w dziedzinie AI podkreślają rosnące zapotrzebowanie na konfigurowalne, kontrolowalne i transparentne agenty AI, szczególnie w zastosowaniach dla przedsiębiorstw i młodzieży."

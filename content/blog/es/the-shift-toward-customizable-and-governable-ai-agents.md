@@ -1,5 +1,5 @@
 ---
-title: "El cambio hacia agentes de IA personalizables y gobernables"
+title: "Agentes personalizables de Mistral AI para empresas"
 date: 2026-10-07
 category: analysis
 summary: "Los últimos avances en IA destacan la creciente necesidad de agentes personalizables, gobernables y transparentes, especialmente en aplicaciones empresariales y dirigidas a jóvenes."

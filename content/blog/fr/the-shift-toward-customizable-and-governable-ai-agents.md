@@ -1,5 +1,5 @@
 ---
-title: "La tendance vers des agents IA personnalisables et gouvernables"
+title: "Agents personnalisables de Mistral AI pour les entreprises"
 date: 2026-10-07
 category: analysis
 summary: "Les dernières avancées en IA soulignent le besoin croissant d'agents IA personnalisables, gouvernables et transparents, notamment dans les applications pour les entreprises et les jeunes publics."

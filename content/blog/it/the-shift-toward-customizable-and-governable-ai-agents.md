@@ -1,5 +1,5 @@
 ---
-title: "La svolta verso agenti AI personalizzabili e governabili"
+title: "Agenti personalizzabili di Mistral AI per le aziende"
 date: 2026-10-07
 category: analysis
 summary: "Gli ultimi sviluppi nell'AI evidenziano la crescente necessità di agenti AI personalizzabili, governabili e trasparenti, specialmente nelle applicazioni enterprise e rivolte ai giovani."

@@ -1,5 +1,5 @@
 ---
-title: "向可定制与可治理的AI代理转变"
+title: "Mistral AI为企业提供的可定制代理"
 date: 2026-10-07
 category: analysis
 summary: "AI领域的最新发展凸显了对可定制、可治理且透明的AI代理的日益增长的需求，尤其是在企业和青少年应用场景中。"
