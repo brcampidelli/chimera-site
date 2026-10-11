@@ -1,5 +1,5 @@
 ---
-title: "AIエージェント開発における簡素化のシフト"
+title: "OpenAI Decisions APIがAIエージェント開発を簡素化"
 date: 2026-10-07
 category: analysis
 summary: "Meta、OpenAI、SAPの最近のアップデートから、AIエージェントの複雑な意思決定を簡素化し、開発者とエンドユーザーの両方の認知的負荷を軽減する明確なトレンドが見て取れる。"

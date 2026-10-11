@@ -1,5 +1,5 @@
 ---
-title: "The Simplification Shift in AI Agent Development"
+title: "OpenAI Decisions API Streamlines AI Agent Development"
 date: 2026-10-07
 category: analysis
 summary: "Recent updates from Meta, OpenAI, and SAP reveal a clear trend toward simplifying complex decision-making in AI agents, reducing cognitive load for both developers and end-users."

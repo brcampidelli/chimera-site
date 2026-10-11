@@ -1,5 +1,5 @@
 ---
-title: "Die Vereinfachungswende in der Entwicklung von KI-Agenten"
+title: "OpenAI Decisions API vereinfacht die Entwicklung von KI-Agenten"
 date: 2026-10-07
 category: analysis
 summary: "Aktuelle Updates von Meta, OpenAI und SAP zeigen einen klaren Trend zur Vereinfachung komplexer Entscheidungsprozesse in KI-Agenten, was die kognitive Belastung für Entwickler und Endnutzer reduziert."

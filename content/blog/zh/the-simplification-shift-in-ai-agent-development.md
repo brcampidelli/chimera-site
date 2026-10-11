@@ -1,5 +1,5 @@
 ---
-title: "AI智能体开发的简化趋势"
+title: "OpenAI Decisions API 简化AI代理开发"
 date: 2026-10-07
 category: analysis
 summary: "Meta、OpenAI和SAP近期的更新揭示了一个明确趋势：简化AI智能体的复杂决策流程，降低开发者和终端用户的认知负担。"

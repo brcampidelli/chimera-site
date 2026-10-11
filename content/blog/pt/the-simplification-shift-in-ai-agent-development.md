@@ -1,5 +1,5 @@
 ---
-title: "A Mudança para a Simplificação no Desenvolvimento de Agentes de IA"
+title: "API Decisions da OpenAI Simplifica Desenvolvimento de Agentes de IA"
 date: 2026-10-07
 category: analysis
 summary: "Atualizações recentes da Meta, OpenAI e SAP revelam uma tendência clara em direção à simplificação da tomada de decisões complexas em agentes de IA, reduzindo a carga cognitiva tanto para desenvolvedores quanto para usuários finais."

@@ -1,5 +1,5 @@
 ---
-title: "Zmiana w kierunku uproszczenia w rozwoju agentów AI"
+title: "API Decisions OpenAI Upraszcza Rozwój Agentów AI"
 date: 2026-10-07
 category: analysis
 summary: "Ostatnie aktualizacje od Meta, OpenAI i SAP pokazują wyraźny trend w kierunku upraszczania złożonego podejmowania decyzji w agentach AI, redukując obciążenie poznawcze zarówno dla developerów, jak i użytkowników końcowych."
