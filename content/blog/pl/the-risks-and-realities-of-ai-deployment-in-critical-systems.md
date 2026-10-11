@@ -1,5 +1,5 @@
 ---
-title: "Ryzyka i rzeczywistość wdrażania AI w systemach krytycznych"
+title: "Błąd AI Anthropic podkreśla ryzyka w systemach krytycznych"
 date: 2026-10-10
 category: analysis
 summary: "Ostatnie incydenty podkreślają potrzebę rygorystycznego zarządzania i ewaluacji systemów AI, szczególnie w środowiskach wrażliwych lub krytycznych."

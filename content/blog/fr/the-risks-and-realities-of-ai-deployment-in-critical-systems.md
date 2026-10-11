@@ -1,5 +1,5 @@
 ---
-title: "Les risques et réalités du déploiement de l'IA dans les systèmes critiques"
+title: "L'erreur de l'IA d'Anthropic met en lumière les risques des systèmes critiques"
 date: 2026-10-10
 category: analysis
 summary: "Des incidents récents soulignent la nécessité d'une gouvernance rigoureuse et d'une évaluation approfondie des systèmes d'IA, surtout lorsqu'ils sont déployés dans des environnements sensibles ou critiques."

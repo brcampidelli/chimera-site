@@ -1,5 +1,5 @@
 ---
-title: "Os Riscos e Realidades da Implementação de IA em Sistemas Críticos"
+title: "Erro da IA da Anthropic destaca riscos em sistemas críticos"
 date: 2026-10-10
 category: analysis
 summary: "Incidentes recentes destacam a necessidade de governança rigorosa e avaliação em sistemas de IA, especialmente quando implantados em ambientes sensíveis ou críticos."

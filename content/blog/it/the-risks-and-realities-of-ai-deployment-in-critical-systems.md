@@ -1,5 +1,5 @@
 ---
-title: "I Rischi e le Realtà del Deploy di AI in Sistemi Critici"
+title: "L'errore dell'IA di Anthropic evidenzia i rischi nei sistemi critici"
 date: 2026-10-10
 category: analysis
 summary: "Incidenti recenti evidenziano la necessità di una governance rigorosa e di valutazioni approfondite nei sistemi di AI, specialmente quando implementati in ambienti sensibili o critici."

@@ -1,5 +1,5 @@
 ---
-title: "The Risks and Realities of AI Deployment in Critical Systems"
+title: "Anthropic's AI Tip Error Highlights Risks in Critical Systems"
 date: 2026-10-10
 category: analysis
 summary: "Recent incidents highlight the need for rigorous governance and evaluation in AI systems, especially when deployed in sensitive or critical environments."

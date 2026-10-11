@@ -1,5 +1,5 @@
 ---
-title: "AI在关键系统中部署的风险与现实"
+title: "Anthropic的AI提示错误凸显关键系统风险"
 date: 2026-10-10
 category: analysis
 summary: "近期事件凸显了AI系统在敏感或关键环境中部署时，严格的治理和评估的必要性。"

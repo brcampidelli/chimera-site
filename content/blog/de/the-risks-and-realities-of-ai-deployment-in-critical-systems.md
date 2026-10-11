@@ -1,5 +1,5 @@
 ---
-title: "Die Risiken und Realitäten des Einsatzes von KI in kritischen Systemen"
+title: "Fehler der KI von Anthropic zeigt Risiken in kritischen Systemen"
 date: 2026-10-10
 category: analysis
 summary: "Jüngste Vorfälle unterstreichen die Notwendigkeit strenger Governance und Bewertung von KI-Systemen, insbesondere bei deren Einsatz in sensiblen oder kritischen Umgebungen."
