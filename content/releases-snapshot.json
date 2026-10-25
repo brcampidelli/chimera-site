@@ -1,5 +1,14 @@
 [
   {
+    "tag": "v0.76.0",
+    "version": "0.76.0",
+    "name": "v0.76.0",
+    "published": "2026-10-24T06:42:15Z",
+    "url": "https://github.com/brcampidelli/chimera-agent/releases/tag/v0.76.0",
+    "body": "## [0.76.0] - 2026-10-24\n### Fixed\n\n- **Claude models work in the Code screen again.** With an Anthropic model as the default, every coding turn failed on its first step with an error about a tool's input schema. The question tool's schema used a construct Anthropic's API refuses; it is now a plain object, and a test checks every tool's schema so the problem cannot come back. (#1077)\n\n### Added\n\n- **Each project can have its own model.** A Code conversation uses its own pinned model, then the project's, then the global default, and the turn's receipt says which one was used. Changing the model for one project no longer changes it for conversations in another. When the agent proposes a different model, it can only leave you a card naming the conversation or project it would apply to; nothing changes until you approve it. (#1078)",
+    "prerelease": false
+  },
+  {
     "tag": "v0.75.0",
     "version": "0.75.0",
     "name": "Chimera 0.75.0",
@@ -258,15 +267,6 @@
     "published": "2026-09-26T21:28:01Z",
     "url": "https://github.com/brcampidelli/chimera-agent/releases/tag/v0.62.1",
     "body": "### Fixed\n\n- **The owner's block is read last again.** When `todo_write` was registered, which is every terminal and desktop session, the task-list sentence was appended after the owner's instructions. That broke the precedence study 25 set for every situation: owner > situation > project > retrieved advice, with the owner last.\n  - The sentence now sits before the project's conventions and the owner.\n  - Its wording is unchanged. (#646)",
-    "prerelease": false
-  },
-  {
-    "tag": "v0.62.0",
-    "version": "0.62.0",
-    "name": "v0.62.0",
-    "published": "2026-09-26T20:55:13Z",
-    "url": "https://github.com/brcampidelli/chimera-agent/releases/tag/v0.62.0",
-    "body": "### Changed\n\n- **The default agent model is now `openrouter/openai/gpt-6-luna`.** A paired bake-off ran it against `deepseek-v4-flash-0731`, `deepseek-v4.1-flash` and `qwen3.7-flash` on SWE-bench django. The run used the Chimera harness, a network wall and a disk sandbox.\n  - luna resolved **78.7% against 61.8%** on 178 paired items: **+16.9 pp [+9.8, +23.7]**, Holm-adjusted McNemar p = 3e-5.\n  - It did so at **45% of the cost per resolved item** and with half the tokens.\n  - The tier presets, the judge and the context budgets are unchanged. Set `CHIMERA_DEFAULT_MODEL` to keep the old default. (#642, #643)\n\n- **Memory extraction is on by default.** After a turn, the model can propose facts worth keeping. Its bench recommended the switch.\n  - The bots are excluded.\n  - Its cost reaches the usage log.\n  - `CHIMERA_MEMORY_EXTRACT=0` turns it off. (#631, #637)\n\n- **Every prompt the product sends is registered and snapshotted.** A report-only lint checks them, and the system prompt's fingerprint is carried in every trace and receipt. The desktop shows it as `prompt <sha>`. Per-turn state moved out of the system message into a turn context, so the cached prefix stays stable. (#599, #606, #607, #623)\n\n### Added\n\n- **`chimera review`**, an experimental two-stage code review from another model family. The default reviewer is `gpt-6-luna`, the one `bench/review_reviewer` measured. (#630, #638)\n\n- **An Experimental card in the desktop Settings.** It holds three switches that until now existed only in `.env`: hand-over at browser walls, the web research sub-agent, and the explorer contract. All three ship **off**, because their measurements did not recommend them, and each switch says what was measured. (#627, #628, #636, #641)\n\n- **Real message history for `chat`**, behind a flag. It was measured and not adopted, so it stays off. (#626)\n\n### Fixed\n\n- **Identity and language.** The owner's identity reaches every agent a person talks to. The orchestration keeps one language rule and reads the owner last everywhere. (#600, #602)\n\n- **Security (taint).**\n  - The untrusted-data sentence survives a replaced prompt, and webhooks are fenced. (#601)\n  - A fetch tool's own refusal or error still reads as one through the fence. (#629)\n  - A taint source that raises is fenced and taints the run. (#634)\n  - The allowlist's escape warning reads the tools actually kept, not the names listed. (#632)\n\n- **Gateway.**\n  - The thinking switch reaches the provider on blocking calls too. (#615)\n  - An answer the route filed as reasoning is flagged and never made the answer. (#635)\n  - The ceiling no longer pins the weak rung to one route. (#639)\n  - A 429 now says whose limit it was. (#639)\n\n- **Agent loop.**\n  - An empty closing reply, or an empty reply on the natural ending, is asked for again. A second empty reply is reported as one. (#619, #624)\n  - A solve that asked a question is told to assume. The fusion panel is told it has no tools. (#603)\n  - A fusion grader that cannot tell abstains instead of grading zero. (#604)\n\n- **Context.** The compaction budget caps at the context the model was measured to read. The default model triggers at 102k. (#618, #620)\n\n- **Chat.** A session with `max_history=0` replays no earlier turn, instead of replaying all of them. (#625)\n\n- **Billing.** Every model call now reaches the bill: the plan gate, the summariser, tidy, the explorer, sub-agents and consolidate. (#640)\n\n- **Decisions.** The hosted backend asks for one output format. (#622)\n\n- **Catalogue.** `deepseek-v4-flash-0731` now quotes 0.022 in and 0.32 out. (#608) `glm-5.3` also accepts the 0.3794/1.1924 listing, the cheapest of its forty routes. (#645)\n\n### Benchmarks\n\nStudy 25 ran every hypothesis against a pre-registration, and the nulls are published: H1, H2/H3, H6, H7, H9, H10 and H11, useful context, and the default-model bake-off. (#598, #609–#618, #621, #633, #643)",
     "prerelease": false
   }
 ]
