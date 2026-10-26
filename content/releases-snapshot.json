@@ -1,5 +1,14 @@
 [
   {
+    "tag": "v0.77.0",
+    "version": "0.77.0",
+    "name": "Chimera 0.77.0",
+    "published": "2026-10-25T11:11:27Z",
+    "url": "https://github.com/brcampidelli/chimera-agent/releases/tag/v0.77.0",
+    "body": "Chimera 0.77.0\r\n\r\n## [0.77.0] - 2026-10-25\r\n### Fixed\r\n\r\n- **The desktop app's background service no longer gets stuck half-stopped.** A messaging adapter that had never connected (for example a Discord bot with a wrong token) made the service's shutdown fail partway. The service then stayed running without answering, and the app could not reach it until the process was ended by hand. Each shutdown step now runs on its own, and the service always exits. (#1086)\r\n\r\n- **The agent's questions reach you even when it phrases the call loosely.** A question sent with both a heading and a list of questions used to be refused with an error that did not say what to change, and the agent could retry the same call a dozen times without the question ever reaching the screen. The list of questions is now asked, and the extra heading no longer makes the call fail. (#1084)\r\n\r\n- **A reply cut off mid-tool-call no longer ends the turn with half a project.** The call that could not be read goes back to the model with a request to retry it. Removing the Tailwind or PostCSS setup from a critical config file (next, postcss, tailwind, vite) is now flagged for review, a project with only a build script is verified by running that build, a project's model now applies in its subfolders, `chimera run -` reads non-ASCII input correctly on Windows, and the background service reserves far less memory. (#1082)\r\n\r\n### Changed\r\n\r\n- **Claude models now use the prompt cache, so long turns cost far less.** Every call path marks the stable part of the conversation, including the latest tool result, so each step rereads the previous one from the provider's cache instead of paying for it again. It is on by default for Claude models; `CHIMERA_PROMPT_CACHE=0` turns it off. (#1083)\r\n\r\n### Added\r\n\r\n- **The agent can check a page at phone width before calling it done.** A new browser action measures whether the page scrolls sideways at 375 px (or another width) and names the elements that overflow. It also reports whether the page's CSS actually loaded, so a site that lost its styles is no longer reported as finished. (#1087)\r\n\r\n- **The agent can look at the app it is building.** When a Code turn starts a dev server in the background inside the project folder, its browser may open that server's port, and only that one. Reading a page served entirely from that port no longer makes later commands ask for approval; a page that loads anything from elsewhere, or opens a connection elsewhere, is treated as before. Chimera's own ports and other local ports stay closed. (#1085)",
+    "prerelease": false
+  },
+  {
     "tag": "v0.76.0",
     "version": "0.76.0",
     "name": "v0.76.0",
@@ -258,15 +267,6 @@
     "published": "2026-09-27T01:38:58Z",
     "url": "https://github.com/brcampidelli/chimera-agent/releases/tag/v0.62.2",
     "body": "### Added\n\n- **`chimera mcp desktop`: Claude can operate the running desktop app.** It is a stdio MCP server that bridges to the app's own local API, and every call runs in the original handler. It is set up in two steps:\n  1. Turn on **Settings → Claude → \"Allow Claude to operate this app\"**.\n  2. Register the server with `claude mcp add chimera-desktop -- chimera mcp desktop`.\n  - **Operate** gives 22 area tools over the whole app, with approvals read-only. Each tool takes a closed list of actions from one route table, so a client can never name an arbitrary URL. The owner's posture is injected server-side, and any attempt to widen it is refused.\n  - **Full control**, a second switch, adds approving or denying pending items, and editing settings, identity and agents. With it off, those tools are not listed and the app refuses them with 403.\n  - **Credentials are out whatever the switches say.** No tool reads or writes a key or token value, and every response is scrubbed.\n  - Both switches are off by default and take effect live. The discovery file holds a per-session token and is deleted when the switch goes off or the app quits.\n  - A workspace inside or above the app's data folder is refused, so the operate level cannot approve by writing an answer file. (#648)\n- **The live price check no longer reddens on a cheaper route.** A row whose listing floats across many providers (`glm-5.3`) accepts a cheaper listing and still refuses a dearer one. (#650)",
-    "prerelease": false
-  },
-  {
-    "tag": "v0.62.1",
-    "version": "0.62.1",
-    "name": "v0.62.1",
-    "published": "2026-09-26T21:28:01Z",
-    "url": "https://github.com/brcampidelli/chimera-agent/releases/tag/v0.62.1",
-    "body": "### Fixed\n\n- **The owner's block is read last again.** When `todo_write` was registered, which is every terminal and desktop session, the task-list sentence was appended after the owner's instructions. That broke the precedence study 25 set for every situation: owner > situation > project > retrieved advice, with the owner last.\n  - The sentence now sits before the project's conventions and the owner.\n  - Its wording is unchanged. (#646)",
     "prerelease": false
   }
 ]
