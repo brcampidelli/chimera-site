@@ -1,33 +1,43 @@
 ---
-title: "Chimera Agent 0.92.0: Kostenbelege, Planner-Steuerung und Einstellungssuche"
-date: 2026-11-19
+title: "Chimera Agent 0.92.0: Belege mit echten Kosten, Planer-Steuerung und durchsuchbare Einstellungen"
+date: 2026-11-22
 category: update
-summary: "Runs außerhalb von serve zeigen jetzt präzise Kosten pro Modell, der Planner lässt sich pro Lane oder API-Call deaktivieren, und die Desktop-Einstellungssuche findet die Routing-Tabelle."
+summary: "Kostenbelege nutzen jetzt den öffentlichen Preisindex von OpenRouter für Runs außerhalb von serve. Der Planer ist pro Lane konfigurierbar, und die Desktop-Einstellungssuche findet die Routing-Tabelle."
 version: "0.92.0"
 ---
 
-## Was du zahlst, ist was du siehst
+## Was sich für Agent-Entwickler tatsächlich geändert hat
 
-Die Kostenerfassung für Runs außerhalb von `serve` war geraten. Das System nutzte einen generischen Fallback, der das tatsächlich aufgerufene Modell ignorierte. Wenn du einen strikten Admission-Check gegen einen bestimmten Modell-Slug ausgeführt hast, zeigte der Beleg trotzdem den breiten Katalogpreis. Die Zahlen waren grob richtig, aber im Detail falsch – und das machte Kostenaudits unzuverlässig.
+Drei Reibungspunkte wurden in diesem Release behoben: undurchsichtiges Kosten-Tracking außerhalb der `serve`-Umgebung, ein Planer, der sich nicht abschalten ließ, wo er störte, und ein Desktop-Einstellungsdialog, der die Routing-Tabelle vor der Suche versteckte.
 
-Version 0.92.0 behebt das, indem die Preise aus dem öffentlichen Preisindex von OpenRouter gezogen werden. Exakte Modell-Slugs lösen jetzt zu ihren eigenen Preisen auf, statt einen Familiendurchschnitt zu erben. Strikte Calls behalten das bei der Admission eingeholte Angebot bei, sodass der Beleg zu der Entscheidung passt, die das System bereits getroffen hat. Der Katalogeintrag `gpt-oss-20b` wurde ebenfalls aktualisiert, um die aktuelle Preisgestaltung abzubilden. Wenn du Kosten pro Run verfolgst oder nachgelagerte Verbraucher abrechnest, sind die Zahlen, die du siehst, jetzt die Zahlen, die tatsächlich verwendet wurden.
+Nichts davon war katastrophal. Es waren diese kleinen Stolpersteine, die einen dazu bringen, ein zweites Terminal zu öffnen, um eine Logdatei zu durchsuchen, oder sich durch vier Tabs zu klicken, um das eine Dropdown zu finden, das man braucht. Die Fixes sind klein, aber sie entfernen Schritte aus Workflows, die dutzende Male am Tag ablaufen.
 
-## Planner-Steuerung dort, wo du sie brauchst
+## Kostenbelege, die zu dem passen, was tatsächlich abgerechnet wird
 
-Vor diesem Release lief der Planner bei jeder Interaktion. Es gab keine Möglichkeit, ihn für eine bestimmte Kanban-Lane, einen API-Run oder einen Workflow-Solve-Step abzuschalten. Das zwang Planungs-Overhead auf Aufgaben, die nicht davon profitierten – einfache Transformationen, deterministische Pipelines oder Schritte, bei denen du die nächste Aktion bereits kanntest.
+Vor 0.92.0 mussten Runs außerhalb von `serve` die Modellpreise schätzen. Das Framework hatte keinen Zugriff auf dieselben Preisdaten, die die gehostete Umgebung nutzte, sodass Belege von dem abweichen konnten, was OpenRouter tatsächlich berechnete. Wer die Kosten pro Agent für einen Kunden oder ein Budget trackte, musste manuell abgleichen.
 
-Du kannst jetzt `use_planner` auf einzelnen Lanes, API-Runs und Solve-Steps setzen. Der Planner bleibt standardmäßig aktiv, damit bestehende Workflows ihr Verhalten nicht ändern. Der Unterschied ist, dass du dich jetzt dort abmelden kannst, wo Planung Latenz hinzufügt, ohne Mehrwert zu schaffen. Eine Lane, die einen einzelnen Tool-Call ausführt, braucht keine Planungsphase. Ein API-Run, der einer festen Sequenz folgt, braucht das Modell nicht, um zu entscheiden, was als Nächstes kommt. Die Steuerung ist granular: Du deaktivierst Planung pro Kontext, nicht global.
+Jetzt beziehen diese Runs ihre Daten aus dem öffentlichen Preisindex von OpenRouter. Exakte Modell-Slugs erhalten ihre eigenen Preise, statt auf eine pauschale Schätzung für die Modellfamilie zurückzufallen. Strict-Calls behalten das bei der Zulassung verwendete Angebot bei, sodass der Beleg den Preis widerspiegelt, zu dem der Call angenommen wurde, und nicht einen nachträglich abgerufenen Tarif. Der Katalogeintrag für `gpt-oss-20b` wurde ebenfalls aktualisiert, was relevant ist, falls dieses Modell Teil eurer Kostenbasis war.
 
-## Einstellungen, die du tatsächlich findest
+Die Änderung betrifft keine Runs innerhalb von `serve` – diese hatten bereits korrekte Belege. Sie schließt die Lücke für alles andere: CLI-Aufrufe, Cron-Jobs, Pipeline-Schritte, die auf einer Workstation statt auf dem Server laufen.
 
-Die Desktop-Einstellungen hatten ein Suchfeld, das die Modell-nach-Rolle-Routing-Tabelle nicht durchsuchte. In dieser Tabelle weist du Modelle Rollen wie `assistant`, `tool` oder `vision` zu. Wenn du vergessen hast, wo sie liegt, hast du durch Panels gescrollt, bis du sie gefunden hast. Jetzt deckt der Suchindex sie ab. Tippe einen Rollennamen oder einen Modell-Slug ein, und die Routing-Tabelle erscheint in den Ergebnissen.
+## Der Planer ist nicht mehr verpflichtend
 
-Dasselbe Desktop-Update behebt zwei Lokalisierungslücken. Routing-Labels und Belegtexte werden jetzt korrekt auf brasilianischem Portugiesisch angezeigt. Indikatoren für neue Konversationen und der Answer-only-Turn-Status sind ebenfalls klarer und beseitigen die Mehrdeutigkeit, ob das System im Leerlauf ist oder verarbeitet.
+`use_planner` ist jetzt ein Konfigurationsflag für Kanban-Lanes, API-Runs und Workflow-Solve-Schritte. Der Planer bleibt standardmäßig aktiv, sodass sich das bestehende Verhalten nur ändert, wenn man explizit aussteigt.
 
-## Was experimentell blieb
+Warum das wichtig ist: Der Planer fügt vor der Ausführung einen Reasoning-Durchlauf ein. Das ist nützlich, wenn der Agent eine vage Anfrage in konkrete Schritte zerlegen muss. Es ist Overhead, wenn die Schritte bereits explizit sind – wenn eine Lane eine bekannte Sequenz auslöst oder ein Solve-Schritt ein einzelnes Tool mit strukturierter Eingabe aufruft. In diesen Fällen konnte der Planer Latenz und Token-Kosten verursachen, ohne das Ergebnis zu verbessern. Jetzt kann man ihn dort deaktivieren, wo er nichts bringt.
 
-Drei Experimente erhielten Updates, ohne die Standardwerte zu ändern. Der Benchmark zur Speicherextraktion war nicht aussagekräftig, daher bleiben die 6.000-Zeichen-Grenze und das globale Modell bestehen. Du kannst dich für ein explizites Extraktionsmodell und einen deterministischen Vorfilter entscheiden, wenn du engeres Speicherverhalten testen möchtest. Das Experiment zu Cron-Modell-Stufen zeigte volle Korrektheit bei sieben von acht synthetischen Jobs, aber synthetische Jobs sind keine Produktionslasten. Die Standardwerte sind unverändert. Das schlanke Design-Refinement und die Experimente zur Prompt-Proportionalität bleiben ebenfalls standardmäßig deaktiviert.
+## Desktop-Einstellungen, die man tatsächlich findet
 
-## Jetzt holen
+Die Einstellungssuche der Desktop-App indexiert jetzt die Modell-nach-Rolle-Routing-Tabelle. Bisher lieferte die Suche nach „Routing“ oder einem Rollennamen keine Ergebnisse, obwohl die Einstellung existierte. Man musste wissen, wo sie sich befindet, und manuell dorthin navigieren. Das ist behoben.
 
-Upgrade mit `pip install chimera-agent==0.92.0`. Desktop-Installer sind unsigniert und können beim ersten Start nachfragen; die App verifiziert Signaturen bei Updater-Bundles. Vollständige Hinweise unter [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0).
+Zwei Lokalisierungsfixes wurden gleich mitgeliefert: Routing- und Belegtexte werden jetzt korrekt auf brasilianischem Portugiesisch angezeigt, und neue Konversationen sowie reine Antwort-Runden zeigen klarere Statusindikatoren. Das sind keine Features, aber sie beseitigen Mehrdeutigkeiten im UI-Zustand.
+
+## Was weiterhin experimentell ist
+
+Parallel zu diesem Release liefen mehrere Experimente. Die Speicherextraktion erhielt einen Benchmark, der nicht schlüssig war – das 6.000-Zeichen-Limit und das globale Modell bleiben die Standardeinstellungen, ein explizites Extraktionsmodell und ein deterministischer Vorfilter sind optional verfügbar. Cron-Modell-Stufen testeten ein günstigeres Modell für synthetische Jobs; es war bei sieben von acht vollständig korrekt, aber der Benchmark deckte keine Produktionslasten ab, sodass die Standardeinstellungen unverändert bleiben. Experimente zur Design-Verfeinerung und Prompt-Proportionalität bleiben standardmäßig deaktiviert. Nichts davon ändert, was eure Agenten tun, es sei denn, ihr schaltet es ein.
+
+## Was jetzt zu tun ist
+
+Wenn ihr Kosten für Runs außerhalb von `serve` trackt, gleicht einen Beleg mit eurer OpenRouter-Abrechnung ab. Die Zahlen sollten ohne manuelle Anpassung übereinstimmen. Wenn ihr Lanes oder Solve-Schritte habt, bei denen der Planer Latenz ohne Mehrwert verursacht, setzt `use_planner: false` in diesen Konfigurationen. Wenn ihr die Routing-Tabelle bisher nicht über die Desktop-Suche finden konntet, versucht es jetzt.
+
+Desktop-Installer sind weiterhin unsigniert und können beim ersten Start eine Warnung anzeigen. Die App verifiziert Signaturen bei Updater-Paketen. Vollständige Anmerkungen: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
