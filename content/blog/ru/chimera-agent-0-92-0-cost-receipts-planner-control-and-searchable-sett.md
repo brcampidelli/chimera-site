@@ -1,37 +1,43 @@
 ---
-title: "Chimera Agent 0.92.0: recibos com custo real, controle do planner e busca nos settings"
-date: 2026-11-20
+title: "Chimera Agent 0.92.0: чеки затрат, управление планировщиком и поиск по настройкам"
+date: 2026-11-24
 category: update
-summary: "Execuções fora do serve agora usam taxas reais do OpenRouter, o planner é configurável por raia e a busca nos settings do Desktop encontra a tabela de roteamento."
+summary: "Чеки затрат теперь используют актуальные цены, планировщик можно отключать для отдельных запусков, а поиск по настройкам Desktop находит таблицу маршрутизации."
 version: "0.92.0"
 ---
 
-## O que você paga é o que você vê
+## Что реально изменилось для разработчиков агентов
 
-O rastreamento de custos para execuções lançadas fora do `serve` estava desconectado da realidade. O framework usava um catálogo interno defasado que não refletia o que os provedores de fato cobravam. Se você rodasse um agente a partir de um script ou de um harness de teste, o recibo mostrava um número sem relação alguma com a fatura. Isso quebrava qualquer planejamento orçamentário de quem itera localmente antes de implantar.
+Три вещи в этом релизе меняют то, как вы запускаете агентов изо дня в день. Остальное — эксперименты, которые по умолчанию выключены, и им место в лаборатории, а не в вашем пайплайне.
 
-A versão 0.92.0 conecta essas execuções ao índice público de preços do OpenRouter. Quando você passa um slug exato de modelo, o framework consulta aquela taxa específica em vez de cair para uma correspondência fuzzy. Chamadas strict agora retêm a cotação capturada no momento da admissão, então o recibo bate com o custo que o provedor prometeu quando a requisição foi aceita. A entrada de catálogo `gpt-oss-20b` também foi atualizada para refletir o preço corrente. O resultado é uma fonte única de verdade: o número no recibo é o número que você verá na fatura do provedor.
+**Чеки затрат перестали гадать.** До 0.92.0 у запуска вне `serve` не было надёжного источника цен. Чек показывал то, что закешировал локальный каталог, а эти данные могли устареть или отсутствовать для новых моделей. Если вы использовали точный slug модели, которого не было в каталоге, строка затрат оказывалась неверной или вообще пропадала. Это ломало бюджетирование всем, кто закрепляет конкретный эндпоинт провайдера.
 
-Isso importa porque quem constrói agentes frequentemente testa com modelos baratos e troca para modelos maiores em produção. Sem taxas precisas por modelo, comparações de custo entre execuções não fazem sentido. Agora você pode comparar duas execuções do planner lado a lado e confiar que a diferença no recibo reflete uma diferença real de gasto.
+Теперь запуски вне `serve` берут данные из публичного индекса цен OpenRouter. Точные slug моделей получают собственные тарифы вместо наследования от неточного совпадения. Строгие вызовы admission сохраняют котировку, которая действовала на момент допуска вызова, поэтому чек соответствует тому, что было фактически зарезервировано. Запись каталога `gpt-oss-20b` обновили в рамках того же прохода. Если вы отслеживаете затраты на запуск, цифры теперь воспроизводимы.
 
-## O planner não está mais sempre ligado
+**Планировщик стал переключателем.** Планировщик всегда был включён. Его нельзя было отключить для отдельной Kanban-дорожки, отдельного вызова API или отдельного шага solve в рабочем процессе. Это означало, что каждая лёгкая задача платила задержкой и накладными расходами токенов на планирование, даже когда инструкция была тривиальной или модели не требовалась декомпозиция.
 
-Antes desta release, o planner rodava em todo turno, em todo contexto. Não havia como desabilitá-lo para uma raia específica do Kanban, uma chamada de API ou um passo de solve de workflow. Isso impunha uma sobrecarga de planejamento a tarefas que não se beneficiavam dele — recuperação simples, transformações determinísticas ou passos em que a próxima ação já é conhecida. A única alternativa era bifurcar a definição do workflow e torcer para nada quebrar.
+С `use_planner` вы задаёте это там, где это важно: в определении дорожки, в payload запуска API или на шаге solve рабочего процесса. По умолчанию флаг по-прежнему включён, так что существующее поведение не меняется. Но если у вас есть дорожка, которая только форматирует вывод, вы можете пропустить планировщик и сэкономить один round trip. Один и тот же флаг работает на всех трёх уровнях, так что ментальная модель — это один булев параметр, а не три отдельные конфигурации.
 
-Agora `use_planner` é uma flag de configuração. Defina-a em uma raia, passe-a em uma execução de API ou anexe-a a um passo de solve. O planner permanece ligado por padrão, então workflows existentes não mudam de comportamento. Mas quando você sabe que um passo não precisa de um plano, você o desliga e economiza o round trip. Isso reduz latência e custo em pipelines que misturam estágios intensivos em planejamento com estágios livres de planejamento.
+**Настройки Desktop стали находимыми.** Таблица маршрутизации моделей по ролям была закопана. Нужно было знать, в какой вкладке настроек она лежит, и скроллить до неё. Теперь поиск по настройкам индексирует её, так что ввод «routing» или имени роли выводит её на экран. Это важно, когда вы переключаетесь между проектами, которые используют разные модели для одной и той же роли.
 
-## Settings do Desktop que você consegue encontrar
+Вместе с этим вышли два исправления локализации: текст маршрутизации и чеков теперь корректно отображается на бразильском португальском, а новые диалоги и ходы только с ответом показывают более понятный статус. Изменение статуса небольшое, но убирает неоднозначность, когда ход ждёт вызова инструмента, а не ответа модели.
 
-A busca nos settings do app Desktop anteriormente ignorava a tabela de roteamento por papel do modelo. Você podia buscar por "router" ou "routing" e não obter resultado algum, mesmo sendo a tabela a superfície de configuração mais complexa do app. O único jeito de alcançá-la era rolar o painel de settings até reconhecê-la. Isso dificultava a integração de novos usuários e atrasava usuários experientes que queriam ajustar atribuições de papel rapidamente.
+## Что означают эксперименты (и чего они не означают)
 
-O índice de busca agora inclui a tabela de roteamento. Digite o nome de um papel ou de um modelo e a busca retorna a entrada correspondente. A mesma atualização corrige dois bugs de localização: rótulos de roteamento e o texto do recibo agora são exibidos corretamente em português brasileiro, onde strings truncadas e traduções faltantes tornavam a interface confusa. Novas conversas e turnos somente de resposta também mostram mensagens de status mais claras, para que você saiba se o agente está esperando entrada ou processando.
+Вышли четыре эксперимента, все opt-in и все выключены по умолчанию. Ни один из них не меняет поведение в проде, пока вы явно их не включите.
 
-## O que permanece experimental
+Извлечение памяти прошло бенчмарк, результаты которого оказались неубедительными. Лимит в 6 000 символов и глобальная модель остаются значениями по умолчанию. Вы можете включить явную модель извлечения и детерминированный предварительный фильтр, но пока нет доказательств, что хоть что-то из этого измеримо улучшает recall. Включайте, если хотите собрать собственные данные.
 
-Vários experimentos receberam atualizações sem alterar os padrões. O benchmark de extração de memória foi inconclusivo, então o limite de 6.000 caracteres e o modelo global permanecem. Você pode optar por um modelo de extração explícito e um pré-filtro determinístico se quiser testar o novo caminho. O experimento de tiers de modelo para cron mostrou acerto total em sete de oito jobs sintéticos, mas jobs sintéticos não são cargas de trabalho de produção, e os padrões não mudaram. Os experimentos de refinamento enxuto de Design e de proporcionalidade de prompt também permanecem desligados por padrão.
+Уровни моделей для cron тестировались на синтетических задачах. Более дешёвый уровень оказался полностью корректным в семи случаях из восьми. Это ничего не говорит о ваших продакшен-cron-задачах, потому что синтетические задачи — это не ваши задачи. Значения по умолчанию не изменились. Если вы гоняете cron с большим объёмом, можете поэкспериментировать с более дешёвым уровнем и проверить его по собственным критериям успеха.
 
-Esses experimentos estão documentados nas notas vinculadas. Se você está rodando agentes com uso intensivo de memória ou workflows cron agendados, vale a pena testar as flags de opt-in em um ambiente de staging.
+Уточнение дизайна и пропорциональность промптов по-прежнему выключены по умолчанию. Это внутренние эксперименты без пользовательского интерфейса. В заметках они упомянуты для прозрачности, а не потому, что вам стоит их трогать.
 
-## Obtenha a release
+## Что делать сейчас
 
-Atualize com `pip install chimera-agent --upgrade` e verifique a versão com `chimera --version`. Os instaladores do Desktop não são assinados e podem pedir confirmação na primeira execução; o app verifica assinaturas nos pacotes do atualizador. Notas completas em [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0).
+Если вы отслеживаете затраты, заберите свежий образ и запустите задачу вне `serve`. Сверьте чек с опубликованными тарифами OpenRouter. Если вы закрепляете точные slug моделей, проверьте, что строка тарифа совпадает с вашим провайдером.
+
+Если у вас есть лёгкие Kanban-дорожки, добавьте `use_planner: false` на одну дорожку и сравните задержку. Флаг задокументирован в схеме конфигурации запуска.
+
+Если вы пользуетесь Desktop, откройте настройки и найдите имя роли. Убедитесь, что таблица маршрутизации появляется.
+
+Заметки о релизе с полным списком: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
