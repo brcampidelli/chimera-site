@@ -1,37 +1,43 @@
 ---
-title: "Chimera Agent 0.92.0: コストレシート、プランナー制御、検索可能な設定"
-date: 2026-11-20
+title: "Chimera Agent 0.92.0: recibos de custo, controle do planner e configurações pesquisáveis"
+date: 2026-11-24
 category: update
-summary: "`serve` 外の実行が実際の OpenRouter 料金を反映し、プランナーがレーンごとに設定可能になり、Desktop の設定検索がルーティングテーブルを見つけられるようになった。"
+summary: "Os recibos de custo agora usam preços em tempo real, o planner pode ser ligado/desligado por execução e a busca das configurações do Desktop encontra a tabela de roteamento."
 version: "0.92.0"
 ---
 
-## 支払いと表示の一致
+## O que realmente mudou para quem constrói agentes
 
-`serve` 外で起動された実行のコスト追跡は、現実とかけ離れていた。フレームワークはプロバイダーの実際の請求額を反映していない、古い内部カタログを使用していた。スクリプトやテストハーネスからエージェントを実行すると、レシートには請求書と無関係な数字が表示された。これは、デプロイ前にローカルでイテレーションを行う開発者にとって、予算管理を破綻させるものだった。
+Três coisas neste lançamento mudam a forma como você executa agentes no dia a dia. O resto são experimentos que permanecem desligados por padrão e pertencem ao laboratório, não ao seu pipeline.
 
-バージョン 0.92.0 では、これらの実行を OpenRouter の公開価格インデックスに接続する。正確なモデルスラッグを渡すと、フレームワークはあいまい一致にフォールバックせず、その特定のレートを検索する。厳密な呼び出しでは、受付時に取得した見積もりが保持されるため、レシートはリクエストが受け入れられた時点でプロバイダーが約束したコストと一致する。`gpt-oss-20b` カタログエントリも現在の価格を反映するように更新された。結果として、単一の信頼できる情報源が得られる。レシートの数字は、プロバイダーの請求書に表示される数字そのものだ。
+**Os recibos de custo pararam de chutar.** Antes da 0.92.0, uma execução fora do `serve` não tinha uma fonte de preço confiável. O recibo mostrava o que o catálogo local tinha em cache, que podia estar desatualizado ou ausente para modelos mais novos. Se você usasse um slug exato de modelo que não estava no catálogo, a linha de custo ficava errada ou nem aparecia. Isso quebrava o orçamento de quem fixa um endpoint específico de provedor.
 
-これが重要なのは、エージェントビルダーが安価なモデルでテストし、本番でより大きなモデルに切り替えることが多いからだ。モデルごとの正確なレートがなければ、実行間のコスト比較は無意味になる。これで、2 つのプランナー実行を並べて比較し、レシートの差が実際の支出の差を反映していると信頼できるようになった。
+Agora, execuções fora do `serve` consultam o índice público de preços do OpenRouter. Slugs exatos de modelo recebem suas próprias taxas em vez de herdar uma correspondência aproximada. Chamadas de admissão estrita preservam a cotação usada no momento da admissão, então o recibo reflete o que foi realmente reservado. A entrada do catálogo `gpt-oss-20b` foi atualizada na mesma leva. Se você rastreia custo por execução, os números agora são reproduzíveis.
 
-## プランナーは常時オンではなくなった
+**O planner virou uma chave.** O planner estava sempre ligado. Você não podia desligá-lo para uma única raia do Kanban, uma única chamada de API ou um único passo de resolução em um workflow. Isso significava que toda tarefa leve pagava a latência e o overhead de tokens do planejamento, mesmo quando a instrução era trivial ou o modelo não se beneficiava da decomposição.
 
-今回のリリース以前は、プランナーはあらゆるターン、あらゆるコンテキストで実行されていた。特定のカンバンレーン、API 呼び出し、ワークフローの解決ステップに対してプランナーを無効にする方法はなかった。そのため、単純な検索、決定論的変換、あるいは次のアクションが既知であるステップなど、プランナーの恩恵を受けないタスクに計画のオーバーヘッドが強制されていた。唯一の回避策はワークフロー定義をフォークし、何も壊れないことを祈ることだった。
+Com `use_planner`, você define onde importa: na definição de uma raia, no payload de uma execução de API ou em um passo de resolução de workflow. O padrão ainda é ligado, então o comportamento existente não muda. Mas se você tem uma raia que só formata saída, pode pular o planner e economizar um round trip. A mesma flag funciona nas três superfícies, então o modelo mental é um booleano, não três configurações separadas.
 
-今回、`use_planner` が設定フラグになった。レーンに設定したり、API 実行で渡したり、解決ステップに付加したりできる。プランナーはデフォルトでオンのままなので、既存のワークフローの動作は変わらない。しかし、ステップに計画が不要と分かっている場合は、これをオフにしてラウンドトリップを省ける。これにより、計画重視のステージと計画不要のステージが混在するパイプラインで、レイテンシとコストが削減される。
+**As configurações do Desktop ficaram encontráveis.** A tabela de roteamento de modelos por papel estava escondida. Você precisava saber em qual aba de configurações ela ficava e rolar até lá. A busca das configurações agora a indexa, então digitar "routing" ou o nome de um papel a traz à tona. Isso importa quando você está alternando entre projetos que usam modelos diferentes para o mesmo papel.
 
-## 見つけられる Desktop 設定
+Duas correções de localização vieram juntas: os textos de roteamento e recibos agora aparecem corretamente em português brasileiro, e novas conversas e turnos só de resposta mostram um status mais claro. A mudança de status é pequena, mas remove a ambiguidade quando um turno está esperando uma chamada de ferramenta versus esperando a resposta do modelo.
 
-Desktop アプリの設定検索は、これまでロール別モデルのルーティングテーブルを無視していた。「router」や「routing」を検索しても結果は得られず、そのテーブルはアプリで最も複雑な設定画面であるにもかかわらず、見つからなかった。そこに到達する唯一の方法は、設定パネルをスクロールして見つけることだった。これにより、新規ユーザーのオンボーディングが難しくなり、ロール割り当てを素早く調整したい経験豊富なユーザーの速度も低下していた。
+## O que os experimentos significam (e o que não significam)
 
-検索インデックスにルーティングテーブルが含まれるようになった。ロール名やモデルを入力すると、検索が一致するエントリを返す。同じアップデートで 2 つのローカライゼーションバグも修正された。ルーティングラベルとレシートのコピーがブラジル系ポルトガル語で正しく表示されるようになった。文字列の切り捨てや翻訳漏れがインターフェースを混乱させていた。新しい会話と回答のみのターンでも、より明確なステータスメッセージが表示されるため、エージェントが入力を待っているのか処理中なのかが分かる。
+Quatro experimentos chegaram, todos opcionais e desligados por padrão. Nenhum deles altera o comportamento em produção a menos que você os habilite explicitamente.
 
-## 実験的機能の現状
+A extração de memória passou por um benchmark que foi inconclusivo. O limite de 6.000 caracteres e o modelo global continuam como padrão. Você pode optar por um modelo de extração explícito e um pré-filtro determinístico, mas ainda não há evidência de que algum deles melhore a recuperação de forma mensurável. Habilite-os se quiser coletar seus próprios dados.
 
-いくつかの実験的機能が、デフォルトを変更せずにアップデートされた。メモリ抽出ベンチマークは決定的な結果が出なかったため、6,000 文字の上限とグローバルモデルは維持されている。新しいパスをテストしたい場合は、明示的な抽出モデルと決定論的プレフィルタにオプトインできる。cron モデルティアの実験では、8 つの合成ジョブのうち 7 つで完全な正しさを示したが、合成ジョブは本番ワークロードではなく、デフォルトは変更されていない。リーンな Design リファインメントとプロンプト比例性の実験も、デフォルトではオフのままである。
+Os tiers de modelo para cron foram testados em jobs sintéticos. O tier mais barato foi totalmente correto em sete de oito casos. Isso não te diz nada sobre seus jobs cron em produção, porque jobs sintéticos não são os seus jobs. Os padrões não mudaram. Se você executa cron de alto volume, pode experimentar o tier mais barato e validar com seus próprios critérios de sucesso.
 
-これらの実験はリンク先のノートに文書化されている。メモリを多用するエージェントやスケジュールされた cron ワークフローを実行している場合、ステージング環境でオプトインフラグをテストする価値はある。
+O refinamento de design e a proporcionalidade de prompts permanecem desligados por padrão. São experimentos internos sem superfície voltada ao usuário ainda. As notas os referenciam por transparência, não para que você mexa neles.
 
-## リリースの入手
+## O que fazer agora
 
-`pip install chimera-agent --upgrade` でアップグレードし、`chimera --version` でバージョンを確認する。Desktop インストーラーは署名されておらず、初回起動時にプロンプトが表示される場合がある。アプリはアップデーターバンドルの署名を検証する。詳細なノートは [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0) にある。
+Se você rastreia custos, baixe a imagem mais recente e execute um job fora do `serve`. Confira o recibo com as taxas publicadas do OpenRouter. Se você fixa slugs exatos de modelo, verifique se a linha da taxa corresponde ao seu provedor.
+
+Se você tem raias de Kanban leves, adicione `use_planner: false` a uma raia e compare a latência. A flag está documentada no schema de configuração de execução.
+
+Se você usa o Desktop, abra as configurações e busque pelo nome de um papel. Confirme que a tabela de roteamento aparece.
+
+Notas de lançamento com a lista completa: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
