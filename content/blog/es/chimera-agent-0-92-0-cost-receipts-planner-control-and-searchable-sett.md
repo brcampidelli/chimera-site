@@ -1,37 +1,43 @@
 ---
-title: "Chimera Agent 0.92.0: Recibos de custo, controle do planejador e configurações pesquisáveis"
-date: 2026-11-20
+title: "Chimera Agent 0.92.0: Recibos de coste, control del planificador y ajustes con búsqueda"
+date: 2026-11-24
 category: update
-summary: "Execuções fora do serve agora usam taxas reais do OpenRouter, o planejador é configurável por raia e a busca de configurações do Desktop encontra a tabela de roteamento."
+summary: "Los recibos de coste ahora usan precios en tiempo real, el planificador se puede activar o desactivar por ejecución y la búsqueda de ajustes en Desktop encuentra la tabla de enrutamiento."
 version: "0.92.0"
 ---
 
-## O que você paga é o que você vê
+## Qué cambió realmente para los que construyen agentes
 
-O rastreamento de custos para execuções lançadas fora do `serve` estava desconectado da realidade. O framework usava um catálogo interno desatualizado que não refletia o que os provedores de fato cobravam. Se você executasse um agente a partir de um script ou de um harness de teste, o recibo mostrava um número sem relação alguma com a fatura. Isso quebrava o orçamento de qualquer um que iterasse localmente antes de implantar.
+Tres cosas en esta versión modifican la forma en que ejecutas agentes en el día a día. El resto son experimentos que permanecen desactivados por defecto, y pertenecen al laboratorio, no a tu pipeline.
 
-A versão 0.92.0 conecta essas execuções ao índice público de preços do OpenRouter. Quando você passa um slug exato de modelo, o framework consulta essa taxa específica em vez de recorrer a uma correspondência aproximada. Chamadas estritas agora retêm a cotação capturada no momento da admissão, então o recibo corresponde ao custo que o provedor prometeu quando a requisição foi aceita. A entrada de catálogo `gpt-oss-20b` também foi atualizada para refletir o preço atual. O resultado é uma fonte única de verdade: o número no recibo é o número que você verá na fatura do seu provedor.
+**Los recibos de coste dejaron de adivinar.** Antes de la 0.92.0, una ejecución fuera de `serve` no tenía una fuente de precios fiable. El recibo mostraba lo que la caché del catálogo local tuviera, lo cual podía estar desactualizado o directamente no existir para modelos más nuevos. Si usabas un slug de modelo exacto que no estaba en el catálogo, la línea de coste era incorrecta o no aparecía. Eso rompía el presupuesto de cualquiera que apuntara a un endpoint de proveedor específico.
 
-Isso é relevante porque quem constrói agentes frequentemente testa com modelos baratos e muda para modelos maiores em produção. Sem taxas precisas por modelo, comparações de custo entre execuções não fazem sentido. Agora você pode comparar duas execuções do planejador lado a lado e confiar que a diferença no recibo reflete uma diferença real de gasto.
+Ahora las ejecuciones fuera de `serve` obtienen los precios del índice público de OpenRouter. Los slugs de modelo exactos obtienen sus propias tarifas en lugar de heredar una coincidencia difusa. Las llamadas de admisión estricta conservan la cotización que se usó cuando la llamada fue admitida, por lo que el recibo coincide con lo que realmente se reservó. La entrada del catálogo `gpt-oss-20b` se actualizó como parte del mismo proceso. Si haces seguimiento del coste por ejecución, los números ahora son reproducibles.
 
-## O planejador não está mais sempre ligado
+**El planificador se convirtió en un interruptor.** El planificador siempre estaba activo. No podías desactivarlo para un solo carril Kanban, una sola llamada a la API o un solo paso de resolución en un flujo de trabajo. Eso significaba que cada tarea ligera pagaba la latencia y el overhead de tokens de la planificación, incluso cuando la instrucción era trivial o el modelo no se beneficiaba de la descomposición.
 
-Antes desta versão, o planejador executava em todo turno, em todo contexto. Não havia como desabilitá-lo para uma raia específica do Kanban, uma chamada de API ou um passo de resolução de workflow. Isso impunha uma sobrecarga de planejamento a tarefas que não se beneficiavam dele—recuperação simples, transformações determinísticas ou passos onde a próxima ação já é conhecida. A única alternativa era bifurcar a definição do workflow e torcer para nada quebrar.
+Con `use_planner`, lo configuras donde importa: en la definición de un carril, en el payload de una ejecución de API o en un paso de resolución de un flujo de trabajo. El valor por defecto sigue siendo activado, por lo que el comportamiento existente no cambia. Pero si tienes un carril que no hace más que formatear la salida, puedes saltarte el planificador y ahorrarte un viaje de ida y vuelta. El mismo flag funciona en las tres superficies, por lo que el modelo mental es un booleano, no tres configuraciones separadas.
 
-Agora `use_planner` é uma flag de configuração. Defina-a em uma raia, passe-a em uma execução de API ou anexe-a a um passo de resolução. O planejador permanece ligado por padrão, então workflows existentes não mudam de comportamento. Mas quando você sabe que um passo não precisa de um plano, você o desliga e economiza o round trip. Isso reduz latência e custo em pipelines que misturam estágios intensivos em planejamento e estágios livres de planejamento.
+**Los ajustes de Desktop se volvieron localizables.** La tabla de enrutamiento de modelo por rol estaba enterrada. Tenías que saber en qué pestaña de ajustes se encontraba y desplazarte hasta ella. La búsqueda de ajustes ahora la indexa, por lo que escribir "enrutamiento" o el nombre de un rol la muestra. Esto importa cuando cambias entre proyectos que usan diferentes modelos para el mismo rol.
 
-## Configurações do Desktop que você consegue encontrar
+Dos correcciones de localización se incluyeron al mismo tiempo: el enrutamiento y el texto del recibo ahora se leen correctamente en portugués brasileño, y las nuevas conversaciones y los turnos de solo respuesta muestran un estado más claro. El cambio de estado es pequeño pero elimina la ambigüedad cuando un turno está esperando una llamada a herramienta versus esperando una respuesta del modelo.
 
-A busca de configurações no aplicativo Desktop anteriormente ignorava a tabela de roteamento por papel do modelo. Você podia buscar por "roteador" ou "roteamento" e não obter resultados, mesmo sendo a tabela a superfície de configuração mais complexa do aplicativo. A única forma de acessá-la era rolar o painel de configurações até reconhecê-la. Isso dificultava a integração de novos usuários e atrasava usuários experientes que queriam ajustar atribuições de papel rapidamente.
+## Qué significan los experimentos (y qué no)
 
-O índice de busca agora inclui a tabela de roteamento. Digite o nome de um papel ou de um modelo e a busca retorna a entrada correspondente. A mesma atualização corrige dois bugs de localização: rótulos de roteamento e o texto do recibo agora são exibidos corretamente em português brasileiro, onde strings truncadas e traduções faltantes tornavam a interface confusa. Novas conversas e turnos somente de resposta também mostram mensagens de status mais claras, para que você saiba se o agente está esperando entrada ou processando.
+Cuatro experimentos aterrizaron, todos opcionales y todos desactivados por defecto. Ninguno de ellos cambia el comportamiento en producción a menos que los habilites explícitamente.
 
-## O que permanece experimental
+La extracción de memoria tuvo una ejecución de referencia que no fue concluyente. El límite de 6.000 caracteres y el modelo global siguen siendo los valores por defecto. Puedes optar por un modelo de extracción explícito y un prefiltro determinista, pero aún no hay evidencia de que ninguno mejore la recuperación de forma medible. Habilítalos si quieres recopilar tus propios datos.
 
-Vários experimentos receberam atualizações sem alterar os padrões. O benchmark de extração de memória foi inconclusivo, então o limite de 6.000 caracteres e o modelo global permanecem. Você pode optar por um modelo de extração explícito e um pré-filtro determinístico se quiser testar o novo caminho. O experimento de camadas de modelo cron mostrou total correção em sete de oito tarefas sintéticas, mas tarefas sintéticas não são cargas de trabalho de produção, e os padrões não foram alterados. O refinamento enxuto de Design e o experimento de proporcionalidade de prompt também permanecem desligados por padrão.
+Los tiers de modelo para Cron se probaron en trabajos sintéticos. El tier más barato fue completamente correcto en siete de ocho. Eso no te dice nada sobre tus trabajos cron en producción, porque los trabajos sintéticos no son tus trabajos. Los valores por defecto no se modifican. Si ejecutas cron de alto volumen, puedes experimentar con el tier más barato y validarlo contra tus propios criterios de éxito.
 
-Esses experimentos estão documentados nas notas vinculadas. Se você está executando agentes com uso intensivo de memória ou workflows cron agendados, vale a pena testar as flags de adesão em um ambiente de staging.
+El refinamiento de diseño y la proporcionalidad de prompts permanecen desactivados por defecto. Son experimentos internos sin superficie de cara al usuario todavía. Las notas los referencian por transparencia, no para que los toques.
 
-## Obtenha a versão
+## Qué hacer ahora
 
-Atualize com `pip install chimera-agent --upgrade` e verifique a versão com `chimera --version`. Os instaladores Desktop não são assinados e podem solicitar confirmação na primeira execução; o aplicativo verifica assinaturas nos pacotes de atualização. Notas completas em [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0).
+Si haces seguimiento de costes, descarga la última imagen y ejecuta un trabajo fuera de `serve`. Compara el recibo con las tarifas publicadas de OpenRouter. Si fijas slugs de modelo exactos, verifica que la línea de tarifa coincida con tu proveedor.
+
+Si tienes carriles Kanban ligeros, añade `use_planner: false` a un carril y compara la latencia. El flag está documentado en el esquema de configuración de ejecución.
+
+Si usas Desktop, abre los ajustes y busca el nombre de un rol. Confirma que la tabla de enrutamiento aparece.
+
+Notas de la versión con la lista completa: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
