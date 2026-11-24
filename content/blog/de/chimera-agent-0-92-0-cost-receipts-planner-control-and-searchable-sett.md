@@ -1,37 +1,43 @@
 ---
-title: "Chimera Agent 0.92.0: Belege mit echten Kosten, Planer-Steuerung und durchsuchbare Einstellungen"
-date: 2026-11-20
+title: "Chimera Agent 0.92.0: Kostenbelege, Planner-Steuerung und durchsuchbare Einstellungen"
+date: 2026-11-24
 category: update
-summary: "Extern ausgeführte Runs nutzen jetzt echte OpenRouter-Preise, der Planer lässt sich pro Lane konfigurieren und die Einstellungssuche in der Desktop-App findet die Routing-Tabelle."
+summary: "Kostenbelege nutzen jetzt Live-Preise, der Planner lässt sich pro Lauf umschalten, und die Desktop-Einstellungssuche findet die Routing-Tabelle."
 version: "0.92.0"
 ---
 
-## Was du bezahlst, siehst du auch
+## Was sich für Agent-Builder tatsächlich geändert hat
 
-Die Kostenerfassung für Runs außerhalb von `serve` hatte mit der Realität nichts zu tun. Das Framework nutzte einen veralteten internen Katalog, der nicht widerspiegelte, was Provider tatsächlich berechnen. Hast du einen Agenten aus einem Skript oder einem Test-Harness gestartet, zeigte der Beleg eine Zahl, die in keinem Verhältnis zur Rechnung stand. Damit war jede Budgetplanung für alle kaputt, die lokal iterieren, bevor sie deployen.
+Drei Dinge in diesem Release verändern, wie ihr Agents im Alltag ausführt. Der Rest sind Experimente, die standardmäßig aus bleiben – sie gehören ins Labor, nicht in eure Pipeline.
 
-Version 0.92.0 verdrahtet diese Runs mit dem öffentlichen Preisindex von OpenRouter. Übergibst du einen exakten Model-Slug, schlägt das Framework den spezifischen Tarif nach, statt auf einen unscharfen Match zurückzufallen. Strikte Calls behalten jetzt den bei der Annahme erfassten Kostenvoranschlag, sodass der Beleg genau dem Preis entspricht, den der Provider bei Annahme der Anfrage zugesichert hat. Der Katalogeintrag für `gpt-oss-20b` wurde ebenfalls auf die aktuellen Preise aktualisiert. Das Ergebnis ist eine einzige Quelle der Wahrheit: Die Zahl auf dem Beleg ist die Zahl, die du auf deiner Provider-Rechnung siehst.
+**Kostenbelege raten nicht mehr.** Vor 0.92.0 hatte ein Lauf außerhalb von `serve` keine verlässliche Preisquelle. Der Beleg zeigte, was der lokale Katalog gerade gecacht hatte – das konnte veraltet sein oder bei neueren Modellen fehlen. Wer einen exakten Model-Slug nutzte, der nicht im Katalog stand, bekam eine falsche oder gar keine Kostenzeile. Das machte die Budgetplanung für alle kaputt, die einen bestimmten Provider-Endpoint pinnen.
 
-Das ist wichtig, weil Agenten-Entwickler oft mit günstigen Modellen testen und in Produktion auf größere wechseln. Ohne akkurate Preise pro Modell sind Kostenvergleiche zwischen Runs wertlos. Jetzt kannst du zwei Planer-Durchläufe direkt nebeneinander vergleichen und darauf vertrauen, dass der Unterschied im Beleg einen echten Unterschied in den Ausgaben widerspiegelt.
+Läufe außerhalb von `serve` ziehen die Preise jetzt aus OpenRouters öffentlichem Preisindex. Exakte Model-Slugs bekommen ihre eigenen Raten, statt einen unscharfen Match zu erben. Strikte Admission-Calls behalten das Quote bei, das bei der Zulassung des Calls verwendet wurde – der Beleg entspricht also dem, was tatsächlich reserviert wurde. Der `gpt-oss-20b`-Katalogeintrag wurde im selben Durchgang aktualisiert. Wer Kosten pro Lauf trackt, bekommt jetzt reproduzierbare Zahlen.
 
-## Der Planer ist nicht mehr immer an
+**Der Planner wurde zum Schalter.** Der Planner war immer an. Man konnte ihn nicht für eine einzelne Kanban-Lane, einen einzelnen API-Call oder einen einzelnen Solve-Step in einem Workflow ausschalten. Das bedeutete: Jede leichte Aufgabe zahlte die Latenz- und Token-Kosten der Planung, selbst wenn die Anweisung trivial war oder das Modell nicht von einer Zerlegung profitierte.
 
-Vor diesem Release lief der Planer in jedem Turn, in jedem Kontext. Es gab keine Möglichkeit, ihn für eine bestimmte Kanban-Lane, einen API-Call oder einen Workflow-Solve-Step zu deaktivieren. Das hat Planungs-Overhead für Aufgaben erzwungen, die nicht davon profitierten – einfache Retrievals, deterministische Transformationen oder Schritte, bei denen die nächste Aktion bereits feststeht. Der einzige Workaround war, die Workflow-Definition zu forken und zu hoffen, dass nichts kaputtgeht.
+Mit `use_planner` setzt ihr das dort, wo es zählt: auf einer Lane-Definition, in einem API-Run-Payload oder auf einem Workflow-Solve-Step. Der Default bleibt an, bestehendes Verhalten verschiebt sich also nicht. Aber wenn ihr eine Lane habt, die nichts anderes tut als Output zu formatieren, könnt ihr den Planner überspringen und euch einen Roundtrip sparen. Derselbe Flag funktioniert auf allen drei Ebenen – das mentale Modell ist also ein Boolean, nicht drei getrennte Configs.
 
-Jetzt ist `use_planner` ein Konfigurations-Flag. Setze es auf einer Lane, übergib es in einem API-Run oder hänge es an einen Solve-Step. Der Planer bleibt standardmäßig an, sodass bestehende Workflows ihr Verhalten nicht ändern. Aber wenn du weißt, dass ein Schritt keinen Plan braucht, schaltest du ihn aus und sparst dir den Roundtrip. Das reduziert Latenz und Kosten in Pipelines, die planungsintensive und planungsfreie Phasen mischen.
+**Desktop-Einstellungen wurden auffindbar.** Die Modell-nach-Rolle-Routing-Tabelle war vergraben. Man musste wissen, unter welchem Einstellungs-Tab sie lag, und dorthin scrollen. Die Einstellungssuche indexiert sie jetzt – wer „routing“ oder einen Rollennamen eintippt, bekommt sie angezeigt. Das ist relevant, wenn ihr zwischen Projekten wechselt, die für dieselbe Rolle unterschiedliche Modelle nutzen.
 
-## Desktop-Einstellungen, die du findest
+Zwei Lokalisierungs-Fixes kamen gleich mit: Routing- und Belegtexte lesen sich jetzt korrekt auf brasilianischem Portugiesisch, und neue Konversationen sowie Answer-only-Turns zeigen einen klareren Status. Die Statusänderung ist klein, beseitigt aber die Mehrdeutigkeit, ob ein Turn auf einen Tool-Call oder auf eine Modellantwort wartet.
 
-Die Einstellungssuche in der Desktop-App hat bisher die Modell-nach-Rolle-Routing-Tabelle ignoriert. Du konntest nach "Router" oder "Routing" suchen und bekamst keine Treffer, obwohl die Tabelle die komplexeste Konfigurationsoberfläche der App war. Der einzige Weg dorthin war, durch das Einstellungs-Panel zu scrollen, bis du sie erkannt hast. Das machte den Einstieg für neue Nutzer schwerer und bremste erfahrene Nutzer aus, die Rollenzuweisungen schnell anpassen wollten.
+## Was die Experimente bedeuten (und was nicht)
 
-Der Suchindex umfasst jetzt die Routing-Tabelle. Gib einen Rollennamen oder ein Modell ein und die Suche liefert den passenden Eintrag. Dasselbe Update behebt zwei Lokalisierungsfehler: Routing-Labels und Belegtexte werden jetzt korrekt in brasilianischem Portugiesisch angezeigt, wo abgeschnittene Strings und fehlende Übersetzungen die Oberfläche verwirrend machten. Neue Konversationen und reine Antwort-Turns zeigen zudem klarere Statusmeldungen, sodass du weißt, ob der Agent auf Eingaben wartet oder verarbeitet.
+Vier Experimente sind gelandet, alle opt-in und alle standardmäßig aus. Keines davon ändert das Produktionsverhalten, außer ihr aktiviert es explizit.
 
-## Was experimentell bleibt
+Memory Extraction hat einen Benchmark-Lauf bekommen, der nicht aussagekräftig war. Das 6.000-Zeichen-Limit und das globale Modell bleiben die Defaults. Ihr könnt ein explizites Extraktionsmodell und einen deterministischen Pre-Filter aktivieren, aber es gibt noch keinen Beleg, dass eines davon den Recall messbar verbessert. Aktiviert sie, wenn ihr eigene Daten sammeln wollt.
 
-Mehrere Experimente haben Updates erhalten, ohne die Defaults zu ändern. Der Benchmark zur Speicherextraktion war nicht schlüssig, daher bleiben das 6.000-Zeichen-Limit und das globale Modell bestehen. Du kannst auf ein explizites Extraktionsmodell und einen deterministischen Pre-Filter opt-in, wenn du den neuen Pfad testen willst. Das Experiment zu Cron-Modell-Stufen zeigte volle Korrektheit bei sieben von acht synthetischen Jobs, aber synthetische Jobs sind keine Produktions-Workloads, und die Defaults bleiben unverändert. Die Experimente zum schlanken Design-Refinement und zur Prompt-Proportionalität bleiben ebenfalls standardmäßig deaktiviert.
+Cron-Modell-Stufen wurden mit synthetischen Jobs getestet. Die günstigere Stufe war bei sieben von acht vollständig korrekt. Das sagt nichts über eure Produktions-Cron-Jobs aus, denn synthetische Jobs sind nicht eure Jobs. Die Defaults bleiben unverändert. Wer Cron in hohem Volumen fährt, kann mit der günstigeren Stufe experimentieren und gegen die eigenen Erfolgskriterien validieren.
 
-Diese Experimente sind in den verlinkten Notizen dokumentiert. Wenn du speicherintensive Agenten oder geplante Cron-Workflows betreibst, lohnt sich ein Test der Opt-in-Flags in einer Staging-Umgebung.
+Design Refinement und Prompt Proportionality bleiben standardmäßig aus. Es sind interne Experimente ohne sichtbare Oberfläche. Die Notes referenzieren sie aus Transparenzgründen, nicht weil ihr sie anfassen solltet.
 
-## Release beziehen
+## Was ihr jetzt tun solltet
 
-Upgrade mit `pip install chimera-agent --upgrade` und prüfe die Version mit `chimera --version`. Die Desktop-Installer sind unsigniert und können beim ersten Start nachfragen; die App verifiziert Signaturen bei Updater-Bundles. Vollständige Notizen unter [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0).
+Wenn ihr Kosten trackt, zieht das neueste Image und führt einen Job außerhalb von `serve` aus. Gleicht den Beleg mit OpenRouters veröffentlichten Raten ab. Wenn ihr exakte Model-Slugs pint, prüft, ob die Ratenzeile zu eurem Provider passt.
+
+Wenn ihr leichtgewichtige Kanban-Lanes habt, setzt `use_planner: false` auf eine Lane und vergleicht die Latenz. Der Flag ist im Run-Configuration-Schema dokumentiert.
+
+Wenn ihr Desktop nutzt, öffnet die Einstellungen und sucht nach einem Rollennamen. Prüft, ob die Routing-Tabelle erscheint.
+
+Release Notes mit der vollständigen Liste: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
