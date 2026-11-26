@@ -1,43 +1,35 @@
 ---
 title: "Chimera Agent 0.92.0: Recibos de costo, control del planner y búsqueda en configuración"
-date: 2026-11-22
+date: 2026-11-26
 category: update
-summary: "Los recibos de costo ahora usan el índice público de precios de OpenRouter para ejecuciones fuera de serve. El planner se configura por carril, y la búsqueda en configuración de Desktop encuentra la tabla de enrutamiento."
+summary: "Los recibos de costo ahora usan el índice público de precios de OpenRouter para ejecuciones fuera de serve. El planner se configura por carril, y la búsqueda de configuración en Desktop encuentra la tabla de enrutamiento."
 version: "0.92.0"
 ---
 
-## Lo que realmente cambió para los constructores de agentes
+## Qué cambia en el seguimiento de costos
 
-Tres puntos de fricción se resolvieron en esta versión: el seguimiento de costos opaco fuera del entorno `serve`, un planner que no se podía desactivar donde estorbaba, y un panel de configuración de Desktop que ocultaba la tabla de enrutamiento de la búsqueda.
+Antes de la 0.92.0, los recibos de costo para ejecuciones fuera de `serve` dependían de un catálogo interno estático. Si el slug del modelo no coincidía exactamente, el recibo mostraba cero o una tarifa genérica que no reflejaba el costo real de la llamada. La entrada `gpt-oss-20b` estaba desactualizada, y las llamadas de admisión estricta perdían la cotización con la que fueron admitidas, lo que hacía imposible auditar por qué una ejecución costó lo que costó.
 
-Nada de esto era catastrófico. Eran de esos roces que te hacen abrir una segunda terminal para hacer grep en un archivo de log, o hacer clic en cuatro pestañas para encontrar el menú desplegable que necesitas. Las correcciones son pequeñas, pero eliminan pasos de flujos de trabajo que se ejecutan docenas de veces al día.
+Esta versión migra esas ejecuciones al índice público de precios de OpenRouter. Los slugs exactos de modelo ahora obtienen sus tarifas directamente de ese índice. Cuando se admite una llamada estricta, el recibo conserva la cotización usada en la admisión en lugar de recalcularla después. La entrada del catálogo `gpt-oss-20b` se actualizó para reflejar los precios actuales. En conjunto, estos cambios significan que el número que ves en el recibo es el número que realmente se cobró, no una aproximación de una tabla de búsqueda obsoleta.
 
-## Recibos de costo que coinciden con lo que realmente te facturan
+## El control del planner va donde configurás el trabajo
 
-Antes de 0.92.0, las ejecuciones fuera de `serve` tenían que adivinar el precio de los modelos. El framework no tenía acceso a los mismos datos de tarifas que usa el entorno alojado, por lo que los recibos podían desviarse de lo que OpenRouter realmente cobraba. Si estabas rastreando costos por agente para un cliente o un presupuesto, tenías que conciliar manualmente.
+El planner siempre estaba activo y no había un interruptor para apagarlo en un carril específico, una ejecución de API o un paso de resolución de workflow. Si querías que un carril se ejecutara sin fase de planificación, tenías que hacer una pirueta con el framework. Esa pirueta se rompía cuando cambiaba el valor por defecto o cuando un workflow reutilizaba la definición del carril.
 
-Ahora esas ejecuciones obtienen los datos del índice público de precios de OpenRouter. Los slugs exactos de modelo obtienen sus propias tarifas en lugar de recurrir a una estimación genérica por familia. Las llamadas estrictas conservan la cotización que se usó en el momento de admisión, por lo que el recibo refleja el precio al que se aceptó la llamada, no una tarifa obtenida después. La entrada del catálogo `gpt-oss-20b` también se actualizó, lo cual importa si ese modelo era parte de tu línea base de costos.
+Ahora `use_planner` es una configuración en los carriles Kanban, ejecuciones de API y pasos de resolución de workflow. El planner sigue activo por defecto, así que las configuraciones existentes no cambian su comportamiento. Poner `use_planner: false` en un carril omite la fase de planificación solo para ese carril. La misma configuración en una ejecución de API o un paso de resolución anula el valor por defecto del carril para esa ejecución. Esto pone la decisión junto a la definición del trabajo, que es donde corresponde, en lugar de un flag global o una variable de entorno.
 
-El cambio no afecta las ejecuciones dentro de `serve`—esas ya tenían recibos precisos. Cierra la brecha para todo lo demás: invocaciones de CLI, trabajos cron, pasos de pipeline que se ejecutan en una estación de trabajo en lugar del servidor.
+## Configuración de Desktop que ahora se puede encontrar
 
-## El planner ya no es obligatorio
+La tabla de enrutamiento por rol existía antes de esta versión, pero la búsqueda de configuración no la indexaba. Tenías que saber dónde estaba y navegar manualmente hasta ella. En portugués brasileño, las etiquetas de enrutamiento y el texto de los recibos se renderizaban mal, y las conversaciones nuevas mostraban un estado que no dejaba claro qué estaba pasando.
 
-`use_planner` ahora es una bandera de configuración en carriles Kanban, ejecuciones de API y pasos de resolución de flujos de trabajo. El planner permanece activado por defecto, por lo que el comportamiento existente no cambia a menos que lo desactives explícitamente.
+La búsqueda de configuración ahora encuentra la tabla de enrutamiento. Podés escribir el nombre de un rol y llegar directamente a la asignación. El texto de enrutamiento y recibos se lee correctamente en portugués brasileño. Las conversaciones nuevas y los turnos de solo respuesta muestran un estado más claro, para que sepas si el modelo está cargando, pensando o esperando entrada.
 
-Por qué esto importa: el planner añade una pasada de razonamiento antes de la ejecución. Eso es útil cuando el agente necesita descomponer una solicitud vaga en pasos concretos. Es sobrecarga cuando los pasos ya son explícitos—cuando un carril dispara una secuencia conocida, o un paso de resolución llama a una sola herramienta con entrada estructurada. En esos casos, el planner podía introducir latencia y costo de tokens sin mejorar el resultado. Ahora puedes desactivarlo donde no aporta valor.
+## Experimentos que no cambiaron los valores por defecto
 
-## Configuración de Desktop que realmente puedes encontrar
+Tres experimentos aterrizaron en esta versión, y ninguno cambia el comportamiento por defecto. El benchmark de extracción de memoria no fue concluyente; el límite de 6.000 caracteres y el modelo global siguen siendo los valores por defecto, con un modelo de extracción explícito y un prefiltro determinista disponibles como opción. El experimento de cron model tier mostró corrección total en siete de ocho trabajos sintéticos, pero los trabajos sintéticos no son trabajos de producción, y los valores por defecto no cambiaron. Los experimentos de refinamiento lean de Design y proporcionalidad de prompts siguen desactivados por defecto.
 
-La búsqueda de configuración de la app Desktop ahora indexa la tabla de enrutamiento por rol de modelo. Anteriormente, buscar "routing" o el nombre de un rol no devolvía nada, aunque la configuración existía. Tenías que saber dónde estaba y navegar manualmente. Eso está arreglado.
-
-Dos correcciones de localización se incluyeron: el texto de enrutamiento y recibos ahora se lee correctamente en portugués brasileño, y las nuevas conversaciones y los turnos de solo respuesta muestran indicadores de estado más claros. No son funcionalidades, pero eliminan ambigüedad del estado de la UI.
-
-## Lo que sigue siendo experimental
-
-Varios experimentos corrieron junto a esta versión. La extracción de memoria obtuvo un benchmark que no fue concluyente—el límite de 6,000 caracteres y el modelo global siguen siendo los valores por defecto, con un modelo de extracción explícito y pre-filtro determinista disponibles como opción. Los tiers de modelo de Cron probaron un modelo más barato en trabajos sintéticos; fue completamente correcto en siete de ocho, pero el benchmark no cubrió cargas de trabajo de producción, por lo que los valores por defecto no cambian. Los experimentos de refinamiento de diseño y proporcionalidad de prompts permanecen desactivados por defecto. Nada de esto cambia lo que hacen tus agentes a menos que los actives.
+Estos experimentos están documentados en las notas de la versión para los equipos que quieran probarlos con sus propias cargas de trabajo. No los actives en producción sin medirlos contra tus propios datos.
 
 ## Qué hacer ahora
 
-Si rastreas costos para ejecuciones fuera de `serve`, revisa un recibo contra tu facturación de OpenRouter. Los números deberían alinearse sin ajuste manual. Si tienes carriles o pasos de resolución donde el planner añade latencia sin valor, establece `use_planner: false` en esas configuraciones. Si antes no podías encontrar la tabla de enrutamiento mediante la búsqueda de Desktop, pruébalo ahora.
-
-Los instaladores de Desktop permanecen sin firmar y pueden pedir confirmación en el primer lanzamiento. La app verifica firmas en los paquetes del actualizador. Notas completas: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
+Actualizá con `pip install chimera-agent==0.92.0`. Si ejecutás cargas de trabajo con seguimiento de costos fuera de `serve`, revisá tus recibos después de la actualización: los números reflejarán el índice público de OpenRouter. Si tenés carriles que deberían omitir la planificación, agregá `use_planner: false` en la definición del carril. Los usuarios de Desktop en macOS y Windows deben tener en cuenta que los instaladores no están firmados y pueden pedir confirmación en el primer lanzamiento; la aplicación verifica firmas en los paquetes de actualización posteriores. Las notas completas de la versión están en [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0).
