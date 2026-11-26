@@ -1,43 +1,35 @@
 ---
 title: "Chimera Agent 0.92.0: Cost receipts, planner control, and settings search"
-date: 2026-11-22
+date: 2026-11-26
 category: update
 summary: "Cost receipts now use OpenRouter's public price index for runs outside serve. The planner is configurable per lane, and Desktop settings search finds the routing table."
 version: "0.92.0"
 ---
 
-## What actually changed for agent builders
+## What changes for cost tracking
 
-Three friction points got addressed in this release: opaque cost tracking outside the `serve` environment, a planner that couldn't be turned off where it got in the way, and a Desktop settings panel that hid the routing table from search.
+Before 0.92.0, cost receipts for runs executed outside `serve` relied on a static internal catalogue. If a model slug did not match exactly, the receipt showed a zero or a fallback rate that did not reflect the actual cost of the call. The `gpt-oss-20b` entry was stale, and strict admission calls lost the quote they were admitted with, making it impossible to audit why a particular run cost what it did.
 
-None of these were catastrophic. They were the kind of papercuts that make you open a second terminal to grep a log file, or click through four tabs to find the one dropdown you need. The fixes are small, but they remove steps from workflows that run dozens of times a day.
+This release switches those runs to OpenRouter's public price index. Exact model slugs now pull their own rates directly from that index. When a strict call is admitted, the receipt preserves the quote used at admission rather than recalculating it later. The `gpt-oss-20b` catalogue entry has been refreshed to match current pricing. Together, these changes mean the number you see in the receipt is the number that was actually charged, not an approximation from a stale lookup table.
 
-## Cost receipts that match what you're actually billed
+## Planner control moves to where you configure the work
 
-Before 0.92.0, runs executed outside `serve` had to guess at model pricing. The framework didn't have access to the same rate data that the hosted environment used, so receipts could drift from what OpenRouter actually charged. If you were tracking per-agent costs for a client or a budget, you had to reconcile manually.
+The planner was always on, and there was no switch to turn it off for a specific lane, an API run, or a workflow solve step. If you wanted a lane to execute without a planning phase, you had to work around the framework. That workaround broke when the default changed or when a workflow reused the lane definition.
 
-Now those runs pull from OpenRouter's public price index. Exact model slugs get their own rates instead of falling back to a family-wide estimate. Strict calls preserve the quote that was used at admission time, so the receipt reflects the price the call was accepted at, not a rate fetched after the fact. The `gpt-oss-20b` catalogue entry also got refreshed, which matters if that model was part of your cost baseline.
+Now `use_planner` is a setting on Kanban lanes, API runs, and workflow solve steps. The planner stays on by default, so existing configurations do not change behavior. Setting `use_planner: false` on a lane skips the planning phase for that lane only. The same setting on an API run or a solve step overrides the lane default for that execution. This puts the decision next to the work definition, where it belongs, instead of in a global flag or an environment variable.
 
-The change doesn't affect runs inside `serve`—those already had accurate receipts. It closes the gap for everything else: CLI invocations, cron jobs, pipeline steps that run on a workstation instead of the server.
+## Desktop settings that are actually findable
 
-## The planner is no longer mandatory
+The model-by-role routing table existed before this release, but settings search did not index it. You had to know where it lived and navigate to it manually. In Brazilian Portuguese, routing labels and receipt copy rendered incorrectly, and new conversations showed a status that did not make clear what was happening.
 
-`use_planner` is now a configuration flag on Kanban lanes, API runs, and workflow solve steps. The planner stays on by default, so existing behavior doesn't change unless you opt out.
+Settings search now finds the routing table. You can type a role name and reach the assignment directly. The routing and receipt copy reads correctly in Brazilian Portuguese. New conversations and answer-only turns show a clearer status, so you know whether the model is loading, thinking, or waiting on input.
 
-Why this matters: the planner adds a reasoning pass before execution. That's useful when the agent needs to decompose a vague request into concrete steps. It's overhead when the steps are already explicit—when a lane triggers a known sequence, or a solve step calls a single tool with structured input. In those cases, the planner could introduce latency and token cost without improving the result. Now you can disable it where it doesn't pull its weight.
+## Experiments that did not change defaults
 
-## Desktop settings you can actually find
+Three experiments landed in this release, and none of them change default behavior. The memory extraction benchmark was inconclusive; the 6,000-character cap and global model remain the defaults, with an explicit extraction model and a deterministic pre-filter available as opt-in. The cron model tier experiment showed full correctness on seven of eight synthetic jobs, but synthetic jobs are not production jobs, and the defaults are unchanged. The lean Design refinement and prompt proportionality experiments remain off by default.
 
-The Desktop app's settings search now indexes the model-by-role routing table. Previously, searching for "routing" or a role name returned nothing, even though the setting existed. You had to know where it lived and navigate there manually. That's fixed.
-
-Two localization fixes shipped alongside: routing and receipt copy now read correctly in Brazilian Portuguese, and new conversations and answer-only turns show clearer status indicators. These aren't features, but they remove ambiguity from the UI state.
-
-## What's still experimental
-
-Several experiments ran alongside this release. Memory extraction got a benchmark that was inconclusive—the 6,000-character cap and global model remain the defaults, with an explicit extraction model and deterministic pre-filter available as opt-in. Cron model tiers tested a cheaper model on synthetic jobs; it was fully correct on seven of eight, but the benchmark didn't cover production workloads, so defaults stay unchanged. Design refinement and prompt proportionality experiments remain off by default. None of these change what your agents do unless you turn them on.
+These experiments are documented in the release notes for teams that want to test them on their own workloads. Do not enable them in production without measuring against your own data.
 
 ## What to do now
 
-If you track costs for runs outside `serve`, check a receipt against your OpenRouter billing. The numbers should align without manual adjustment. If you have lanes or solve steps where the planner adds latency without value, set `use_planner: false` on those configurations. If you couldn't find the routing table through Desktop search before, try it now.
-
-Desktop installers remain unsigned and may prompt on first launch. The app verifies signatures on updater bundles. Full notes: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
+Upgrade with `pip install chimera-agent==0.92.0`. If you run cost-tracked workloads outside `serve`, check your receipts after the upgrade—the numbers will reflect OpenRouter's public index. If you have lanes that should skip planning, add `use_planner: false` to the lane definition. Desktop users on macOS and Windows should note that installers are unsigned and may prompt on first launch; the app verifies signatures on updater bundles after that. Full release notes are at [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0).
