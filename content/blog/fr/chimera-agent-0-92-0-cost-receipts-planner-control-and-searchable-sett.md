@@ -1,43 +1,41 @@
 ---
-title: "Chimera Agent 0.92.0: Recibos de custo, controle do planner e configurações pesquisáveis"
-date: 2026-11-24
+title: "Chimera Agent 0.92.0: recibos de custo, controle do planner e configurações pesquisáveis"
+date: 2026-11-28
 category: update
-summary: "Os recibos de custo agora usam preços em tempo real, o planner pode ser ativado ou desativado por execução, e a busca das configurações no Desktop encontra a tabela de roteamento."
+summary: "Os recibos de custo agora usam o índice de preços público do OpenRouter para execuções fora do serve, o planner é configurável por raia e a busca das configurações do Desktop encontra a tabela de roteamento de modelos."
 version: "0.92.0"
 ---
 
-## O que realmente mudou para quem constrói agentes
+## O que mudou nos recibos de custo
 
-Três coisas nesta versão mudam a forma como você executa agentes no dia a dia. O resto são experimentos que permanecem desligados por padrão e pertencem ao laboratório, não ao seu pipeline.
+Execuções feitas fora do `serve` antes dependiam de um catálogo de preços estático ou incompleto. Quando o slug do modelo não batia exatamente, o recibo mostrava uma taxa errada ou simplesmente omitia a linha de custo. Isso dificultava a auditoria de gastos com variantes fine-tunadas ou modelos recém-lançados.
 
-**Os recibos de custo pararam de chutar.** Antes da 0.92.0, uma execução fora do `serve` não tinha uma fonte de preço confiável. O recibo mostrava o que o catálogo local tivesse em cache, o que podia estar desatualizado ou ausente para modelos mais novos. Se você usasse um slug exato de modelo que não estava no catálogo, a linha de custo ficava errada ou nem aparecia. Isso quebrava o orçamento de quem fixa um endpoint específico de provedor.
+A versão 0.92.0 migra essas execuções para o índice de preços público do OpenRouter. Slugs exatos de modelo agora puxam suas próprias taxas diretamente do índice. Chamadas strict também preservam a cotação aceita no momento da admissão, então o recibo reflete o preço com o qual o agente de fato se comprometeu, não uma estimativa posterior. A entrada do catálogo `gpt-oss-20b` foi atualizada para corresponder ao preço atual.
 
-Agora, execuções fora do `serve` consultam o índice público de preços do OpenRouter. Slugs exatos de modelo recebem suas próprias taxas em vez de herdar uma correspondência aproximada. As chamadas de admissão estrita preservam a cotação usada no momento da admissão, então o recibo bate com o que foi realmente reservado. A entrada do catálogo `gpt-oss-20b` foi atualizada na mesma leva. Se você monitora custo por execução, os números agora são reproduzíveis.
+Para quem acompanha custos por execução fora do caminho `serve`, os recibos agora são precisos sem correção manual. Se um modelo está listado no índice público, o agente o precifica corretamente. Se o slug é desconhecido, o recibo deixa isso claro em vez de silenciosamente assumir zero.
 
-**O planner virou um interruptor.** O planner estava sempre ligado. Você não conseguia desligá-lo para uma única raia do Kanban, uma única chamada de API ou um único passo de resolução em um workflow. Isso significava que toda tarefa leve pagava a latência e o overhead de tokens do planejamento, mesmo quando a instrução era trivial ou o modelo não se beneficiava da decomposição.
+## O planner não está mais sempre ligado
 
-Com `use_planner`, você define onde importa: na definição de uma raia, no payload de uma execução de API ou em um passo de resolução de workflow. O padrão ainda é ligado, então o comportamento existente não muda. Mas se você tem uma raia que só formata saída, pode pular o planner e economizar um round trip. A mesma flag funciona nas três superfícies, então o modelo mental é um booleano, não três configurações separadas.
+Antes desta versão, o planner executava em toda raia, toda chamada de API e todo passo de resolução de workflow. Não havia como desabilitá-lo para tarefas em que o planejamento adicionava latência sem melhorar o resultado. Times que queriam execução mais rápida em raias simples precisavam contornar o framework.
 
-**As configurações do Desktop ficaram encontráveis.** A tabela de roteamento de modelos por papel estava enterrada. Você precisava saber em qual aba de configurações ela ficava e rolar até lá. A busca de configurações agora a indexa, então digitar "routing" ou o nome de um papel a traz à tona. Isso importa quando você está alternando entre projetos que usam modelos diferentes para o mesmo papel.
+`use_planner` agora é uma flag de configuração exposta em raias Kanban, execuções de API e passos de resolução de workflow. O planner permanece ligado por padrão, então o comportamento existente não muda a menos que você opte por desligar. Definir a flag como `false` em uma raia pula inteiramente a fase de planejamento e segue direto para a execução.
 
-Duas correções de localização vieram juntas: o texto de roteamento e recibos agora são exibidos corretamente em português brasileiro, e novas conversas e turnos só de resposta mostram um status mais claro. A mudança de status é pequena, mas remove a ambiguidade quando um turno está esperando uma chamada de ferramenta versus esperando a resposta do modelo.
+Isso é mais relevante para raias que lidam com operações determinísticas de passo único. Uma raia que busca um endpoint conhecido ou transforma um payload com um schema fixo não se beneficia de uma etapa de planejamento. Removê-la reduz latência e o consumo de tokens sem afetar a correção. A flag é por raia, então você pode manter o planner ligado para tarefas ambíguas e desligá-lo para as mecânicas dentro do mesmo projeto.
 
-## O que os experimentos significam (e o que não significam)
+## As configurações do Desktop estão pesquisáveis
 
-Quatro experimentos chegaram, todos opcionais e desligados por padrão. Nenhum deles altera o comportamento em produção a menos que você os habilite explicitamente.
+A busca de configurações no app Desktop antes não indexava a tabela de roteamento de modelos por papel. Encontrar qual modelo estava atribuído a um papel específico exigia rolar a lista inteira. Esse atrito crescia conforme times adicionavam mais papéis e modelos de fallback.
 
-A extração de memória passou por uma execução de benchmark que foi inconclusiva. O limite de 6.000 caracteres e o modelo global permanecem como padrão. Você pode optar por um modelo de extração explícito e um pré-filtro determinístico, mas ainda não há evidência de que algum deles melhore a recuperação de forma mensurável. Habilite-os se quiser coletar seus próprios dados.
+A busca agora cobre a tabela de roteamento. Digitar o nome de um papel ou slug de modelo na barra de busca das configurações retorna diretamente as entradas de roteamento correspondentes. A mesma atualização corrige o texto de roteamento e recibos em português brasileiro, onde labels truncadas dificultavam a leitura da tabela. Novas conversas e turnos somente de resposta também mostram indicadores de status mais claros, para que você saiba se o agente está esperando a resposta de um modelo ou processando uma chamada de ferramenta.
 
-Os tiers de modelo do Cron foram testados em jobs sintéticos. O tier mais barato foi totalmente correto em sete de oito casos. Isso não te diz nada sobre seus jobs de cron em produção, porque jobs sintéticos não são os seus jobs. Os padrões não mudaram. Se você executa cron de alto volume, pode experimentar o tier mais barato e validar contra seus próprios critérios de sucesso.
+## Experimentos que permaneceram opt-in
 
-O refinamento de design e a proporcionalidade de prompt permanecem desligados por padrão. São experimentos internos sem superfície voltada ao usuário ainda. As notas os referenciam por transparência, não porque você deva mexer neles.
+Vários experimentos chegaram sem alterar os padrões. A extração de memória com um modelo explícito e pré-filtro determinístico está disponível, mas desligada. O benchmark foi inconclusivo, então o limite de 6.000 caracteres e o modelo global permanecem. Uma camada mais barata de modelo cron foi testada em jobs sintéticos e acertou sete de oito, mas cargas de trabalho em produção não foram medidas. Os experimentos de refinamento de design e proporcionalidade de prompt também permanecem desligados por padrão.
+
+Eles estão disponíveis atrás de feature flags para times que quiserem testá-los em seus próprios ambientes. Nada mudou automaticamente.
 
 ## O que fazer agora
 
-Se você monitora custos, baixe a imagem mais recente e execute um job fora do `serve`. Confira o recibo com as taxas publicadas do OpenRouter. Se você fixa slugs exatos de modelo, verifique se a linha da taxa corresponde ao seu provedor.
+Atualize com `pip install chimera-agent==0.92.0`. Se você executa agentes fora do `serve`, confira seu próximo recibo para confirmar que o preço corresponde ao índice público do OpenRouter. Para raias que não precisam de planejamento, adicione `use_planner: false` à configuração da raia. Usuários do Desktop podem abrir as configurações e buscar por um nome de papel para verificar se a tabela de roteamento está indexada.
 
-Se você tem raias de Kanban leves, adicione `use_planner: false` a uma raia e compare a latência. A flag está documentada no schema de configuração de execução.
-
-Se você usa o Desktop, abra as configurações e busque pelo nome de um papel. Confirme se a tabela de roteamento aparece.
-
-Notas de versão com a lista completa: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
+Notas completas da versão: [Chimera Agent v0.92.0](https://github.com/brcampidelli/chimera-agent/releases/tag/v0.92.0)
